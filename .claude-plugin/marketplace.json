@@ -1,0 +1,15 @@
+{
+  "name": "frodx-content-factory",
+  "owner": {
+    "name": "FrodX d.o.o.",
+    "email": "jani.pahor@frodx.com"
+  },
+  "plugins": [
+    {
+      "name": "content-factory",
+      "source": "./plugins/content-factory",
+      "version": "0.1.0",
+      "description": "Veriga skillov za produkcijo FrodX kolumn in socialnih objav: izbira teme, pisanje, kritika, transkreacija, slika, meta podatki, predaja v objavo."
+    }
+  ]
+}

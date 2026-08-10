@@ -1,0 +1,9 @@
+{
+  "name": "content-factory",
+  "version": "0.1.0",
+  "description": "Veriga skillov za produkcijo FrodX kolumn in socialnih objav.",
+  "author": {
+    "name": "FrodX d.o.o.",
+    "email": "jani.pahor@frodx.com"
+  }
+}
