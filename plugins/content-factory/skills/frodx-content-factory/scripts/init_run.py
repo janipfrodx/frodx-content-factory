@@ -93,28 +93,33 @@ def main() -> int:
 
     danes = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     mapa = Path(sys.argv[2]) / f"{danes}-{slug}"
-    if mapa.exists():
+
+    # mapa.mkdir() brez exist_ok je atomaren zahtevek: hkrati preverba IN
+    # ustvarjanje, brez razmika med njima. FileExistsError (podrazred
+    # OSError) mora stati pred splosnim OSError, sicer ga ta pogoltne.
+    try:
+        mapa.mkdir(parents=True)
+    except FileExistsError:
         print(f"Tek {mapa} ze obstaja. Nadaljuj ta tek ali izberi drugo temo.")
         return 1
-
-    try:
-        (mapa / "critique").mkdir(parents=True)
-        (mapa / "images").mkdir()
     except OSError as napaka:
         print(f"Ni bilo mogoce ustvariti mape teka {mapa}: {napaka}")
-        if mapa.exists():
-            shutil.rmtree(mapa, ignore_errors=True)
         return 1
 
-    cas = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    pot = mapa / "state.json"
+    # Od tu naprej je mapa zagotovo nasa - ta zagon jo je pravkar ustvaril.
+    # Ciscenje ob napaki je zato varno.
     try:
+        (mapa / "critique").mkdir()
+        (mapa / "images").mkdir()
+
+        cas = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        pot = mapa / "state.json"
         pot.write_text(
             json.dumps(zgradi_stanje(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     except OSError as napaka:
-        print(f"Ni bilo mogoce zapisati {pot}: {napaka}")
+        print(f"Priprava teka v {mapa} ni uspela: {napaka}")
         shutil.rmtree(mapa, ignore_errors=True)
         return 1
 

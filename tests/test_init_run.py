@@ -66,7 +66,36 @@ def test_cli_ne_povozi_obstojecega(tmp_path):
     assert prvi.returncode == 0
     drugi = subprocess.run(args, capture_output=True, text=True)
     assert drugi.returncode == 1
+    # sporocilo "ze obstaja" je izpisano samo v veji FileExistsError - ce bi
+    # drugi klic padel skozi splosno OSError vejo, bi bilo sporocilo drugacno
+    # ("Ni bilo mogoce ustvariti mape teka ..."), zato ta trditev dokazuje
+    # pravi razlog neuspeha, ne le neuspeh sam.
     assert "ze obstaja" in drugi.stdout.lower() or "že obstaja" in drugi.stdout.lower()
+
+
+def test_cli_ne_izbrise_obstojecega_teka(tmp_path):
+    """Ce mapa teka ze obstaja (npr. dokoncan tek drugega zagona), CLI ne
+    sme pobrisati nic - niti mape same, niti njene vsebine."""
+    from datetime import datetime, timezone
+    from init_run import _okrajsaj_slug, slugify
+
+    naslov = "Zasedena tema za test brisanja"
+    danes = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    slug = _okrajsaj_slug(slugify(naslov))
+    mapa = tmp_path / f"{danes}-{slug}"
+    mapa.mkdir(parents=True)
+    oznaka = mapa / "oznaka.txt"
+    oznaka.write_text("dokoncan tek drugega zagona")
+
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), naslov, str(tmp_path)],
+        capture_output=True, text=True,
+    )
+
+    assert r.returncode == 1
+    assert mapa.exists()
+    assert oznaka.exists()
+    assert oznaka.read_text() == "dokoncan tek drugega zagona"
 
 
 def test_okrajsaj_slug_reze_na_meji_besede():
