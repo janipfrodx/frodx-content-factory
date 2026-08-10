@@ -30,7 +30,11 @@ Skripta izpiše pot do `state.json`. Če pove, da tek že obstaja, vprašaj Igor
 
 ## Koraki
 
-Po vsakem koraku: zapiši rezultat v `state.json`, dvigni `_run.step`, nastavi `_run.status` na `awaiting_approval`, pokaži Igorju rezultat in vprašaj za potrditev. Ob potrditvi zapiši čas v `_run.approvals`.
+Za korake 2-7 velja: po vsakem koraku zapiši rezultat v `state.json`, dvigni `_run.step`, nastavi `_run.status` na `awaiting_approval`, pokaži Igorju rezultat in vprašaj za potrditev. Ob potrditvi zapiši čas v `_run.approvals`.
+
+**Korak 1 (`frodx-topic-pick`) v to generično pravilo ni zajet.** Gate koraka 1 je Igorjeva izbira teme, ki se zgodi znotraj `frodx-topic-pick` samega - ta skill Igorja vpraša »katero temo pišemo« sam, in šele po njegovi izbiri zapiše `_run.status = in_progress` (ne `awaiting_approval`). Ko se `frodx-topic-pick` vrne z izbrano temo, ne vprašaj Igorja znova in ne prepiši `_run.status` nazaj na `awaiting_approval` - pojdi naravnost naprej, kot je opisano spodaj.
+
+Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` teče **pred** `init_run.py` (»Zagon« zgoraj, točka 1 pred točko 2), ker je naslov teme, ki jo Igor izbere, vhod za slug, ki ga `init_run.py` ustvari. `state.json` ob teku `frodx-topic-pick` torej **še ne obstaja** - ustvari ga dirigent (ti) takoj po Igorjevi izbiri, s `python3 scripts/init_run.py "<izbrana tema>" runs`, preden `frodx-topic-pick` vanj zapiše `_run.brief` in `_run.topic_source`. Vsi ostali koraki (2-7) tečejo **po** `init_run.py` in pišejo v že obstoječ `state.json`.
 
 | Korak | Skill | Kaj vprašaš Igorja |
 |---|---|---|

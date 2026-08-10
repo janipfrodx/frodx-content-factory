@@ -27,7 +27,7 @@ Iz vrste tem na SharePointu izbere kandidate in Igorju predlaga največ tri.
    - `_run.topic_source` = `{excel_row_id, picked_at}` - `excel_row_id` je vrednost stolpca `id` izbrane vrstice, `picked_at` je ISO čas Igorjeve izbire
    - `_run.step` = 1, `_run.status` = `in_progress`
 
-   Za razliko od poznejših korakov `_run.status` po tem koraku ni `awaiting_approval`: Igorjeva izbira v točki 6 je potrditev za ta korak, zato gre stanje naravnost na `in_progress` in dirigent nadaljuje brez dodatnega vprašanja.
+   Dirigent koraka 1 ne postavlja pod ponovno potrditev - glej `frodx-content-factory/SKILL.md`, razdelek »Koraki«, kjer je ta izjema izrecno zapisana. Igorjeva izbira v točki 6 zgoraj je gate za ta korak, zato `_run.status` pojdi naravnost na `in_progress`, ne na `awaiting_approval`.
 8. V Excelu nastavi izbrani vrstici `status = picked` in `run_slug` na slug teka (isti slug, ki ga je izpisal `init_run.py`).
 
 ## Kaj ne delaš
