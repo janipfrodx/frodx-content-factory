@@ -16,18 +16,32 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 3. Nastavi delovno spremenljivko `besedilo` = `languages.sl.content` iz `state.json`. To je vhod v **krog 1**.
 4. Za `krog` = 1, 2, 3 (največ trikrat), ponavljaj:
 
-   a. Kliči n8n workflow `GZmnPGOcVANH2sfy` prek `execute_workflow`, webhook `critique-text`, s telesom:
+   a. Kliči n8n workflow `GZmnPGOcVANH2sfy` (webhook `critique-text`) prek orodja `execute_workflow`. Telo webhooka gre gnezdeno pod `inputs.webhookData.body` - ne kot plošček `text`/`context`/... na vrhu klica:
 
    ```json
    {
-     "text": "<besedilo>",
-     "context": "<_run.brief.topic> | ciljani prompt: <_run.brief.target_prompt>",
-     "language": "sl",
-     "critiquePrompt": "<vsebina references/critique-prompt.md>"
+     "workflowId": "GZmnPGOcVANH2sfy",
+     "executionMode": "manual",
+     "inputs": {
+       "type": "webhook",
+       "webhookData": {
+         "method": "POST",
+         "body": {
+           "text": "<besedilo>",
+           "context": "<_run.brief.topic> | ciljani prompt: <_run.brief.target_prompt>",
+           "language": "sl",
+           "critiquePrompt": "<vsebina references/critique-prompt.md>"
+         }
+       }
+     }
    }
    ```
 
-   `<besedilo>` je vrednost delovne spremenljivke `besedilo` **v tem trenutku** - v krogu 1 je to `languages.sl.content` iz state.json (točka 3), v krogu 2 in 3 je to popravljena verzija iz prejšnjega kroga (točka e spodaj). Nikoli ne pošlji izvirnega besedila iz state.json v krog 2 ali 3 - poslati moraš rezultat zadnjega popravka.
+   `executionMode` naj bo `"manual"` - workflow trenutno ni aktiven (`active: false`), `"production"` pa je namenjen samo objavljenemu (aktivnemu) workflowu kot živi izvedbi. `"manual"` orodje izrecno dovoljuje tudi za klice, ki dejansko kličejo zunanje storitve (OpenAI, Gemini) - ne samo za suha testiranja - zato je to pravi način tudi za resnično kritiko, ne le za preizkus.
+
+   `<besedilo>` v polju `body.text` je vrednost delovne spremenljivke `besedilo` **v tem trenutku** - v krogu 1 je to `languages.sl.content` iz state.json (točka 3), v krogu 2 in 3 je to popravljena verzija iz prejšnjega kroga (točka e spodaj). Nikoli ne pošlji izvirnega besedila iz state.json v krog 2 ali 3 - poslati moraš rezultat zadnjega popravka.
+
+   `body.context` je vedno niz (ne objekt) - `Normalize Input` polje `context` je tipizirano kot `string` in ga oba ocenjevalca (`OpenAI Critique`, `Gemini Critique`) v uporabniškem sporočilu dobita pred besedilom kolumne, kadar ni prazen (n8n stran tega ne pusti prazne glave, če je `context` prazen niz).
 
    b. Preberi izhod prek `get_execution` iz vozlišč `OpenAI Critique` in `Gemini Critique`.
 

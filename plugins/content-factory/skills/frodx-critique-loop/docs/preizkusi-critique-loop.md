@@ -44,6 +44,7 @@ Preveri:
 - [ ] `get_execution` vrne neprazna izhoda iz `OpenAI Critique` in `Gemini Critique`
 - [ ] `critiquePrompt` iz telesa je res prišel do modelov (kritika naj sledi obliki iz prompta: sodba v prvi vrstici, potem pripombe)
 - [ ] `critique/round-1.json` nastane in ima vseh šest ključev
+- [ ] `context` je res prišel do modelov - kritika se sklicuje na temo ali ciljani prompt iz polja `context` (npr. omenja »programe zvestobe« ali podoben pojem iz tvojega testnega `context`), ne le na golo besedilo kolumne. Če se kritika ne sklicuje na kontekst, je nekaj narobe z izrazom v `OpenAI Critique`/`Gemini Critique`, ki naj bi `context` dodal pred besedilo.
 
 **Opomba o stroških:** vsak krog porabi plačljiv OpenAI in Gemini klic. Za preizkus zadošča ena zanka na kratkem besedilu.
 
@@ -67,3 +68,5 @@ Preveri:
 - [ ] po tretjem krogu se zanka ustavi sama, brez napake
 - [ ] nastanejo `critique/round-1.json`, `critique/round-2.json` in `critique/round-3.json`, vsak z vsemi šestimi ključi
 - [ ] Igor je ob koncu pokazan zadnjo verzijo besedila in odprte pripombe iz zadnjega kroga - ne nadaljevanje v krog 4
+
+Izvirni stavek iz načrta, iz katerega izhajajo zgornje tri postavke (dobesedno): »Pošlji namerno slabo besedilo (npr. tri odstavke splošnih trditev brez številk in brez hooka). Preveri, da se skill ustavi po tretjem krogu in Igorju pokaže odprte pripombe namesto da nadaljuje.«
