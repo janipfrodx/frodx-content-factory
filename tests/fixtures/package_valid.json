@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "title": "Zakaj lojalnostni programi kaznujejo zveste kupce",
+    "exported_at": "2026-08-10T09:00:00.000Z",
+    "version": "1.1"
+  },
+  "universal": {
+    "slug": "lojalnostni-programi-kaznujejo-zveste"
+  },
+  "social_posts": [
+    {
+      "text": "Prodajalec mi je ponudil popust, ki ga imam že tri leta. Zvestoba se ne meri v odstotkih.",
+      "publish_date": ""
+    }
+  ],
+  "languages": {
+    "sl": {
+      "language_code": "sl",
+      "content": "Prvi odstavek slovenske kolumne.\n\nigor.pauletic@frodx.com",
+      "slug": "lojalnostni-programi-kaznujejo-zveste",
+      "seo_title": "Zakaj lojalnostni programi kaznujejo zveste kupce",
+      "meta_description": "Lojalnostni programi pogosto nagradijo nove kupce bolj kot tiste, ki so jim zvesti. Poglejmo, zakaj se to dogaja in kaj lahko trgovec naredi drugace ze danes.",
+      "topic_cluster": "Programi zvestobe",
+      "campaign_name": "Interest - Programi zvestobe",
+      "tag_id": "207432704834",
+      "tag_name": "Loyalty programi zvestobe",
+      "tag_slug": "loyalty-programi-zvestobe",
+      "featured_image_alt": "Kupec pri blagajni drzi kartico zvestobe, prodajalec gleda v zaslon."
+    },
+    "en": {
+      "language_code": "en",
+      "content": "First paragraph of the English column.\n\nigor.pauletic@frodx.com",
+      "slug": "loyalty-programmes-punish-loyal-customers",
+      "seo_title": "Why loyalty programmes punish loyal customers",
+      "meta_description": "Loyalty programmes often reward new customers more than loyal ones. Here is why that happens and what a retailer can actually do about it now.",
+      "topic_cluster": "Loyalty programmes",
+      "campaign_name": "Interest - Programi zvestobe",
+      "tag_id": "",
+      "tag_name": "",
+      "tag_slug": "",
+      "featured_image_alt": "A customer at the till holds a loyalty card while the cashier looks at a screen."
+    },
+    "hr": {
+      "language_code": "hr",
+      "content": "Prvi odlomak hrvatske kolumne.\n\nigor.pauletic@frodx.com",
+      "slug": "programi-lojalnosti-kaznjavaju-vjerne-kupce",
+      "seo_title": "Zasto programi lojalnosti kaznjavaju vjerne kupce",
+      "meta_description": "Programi lojalnosti cesto nagraduju nove kupce vise nego one koji su im vjerni. Pogledajmo zasto se to dogada i sto trgovac zapravo moze uciniti drugacije.",
+      "topic_cluster": "Programi lojalnosti",
+      "campaign_name": "Interest - Programi zvestobe",
+      "tag_id": "",
+      "tag_name": "",
+      "tag_slug": "",
+      "featured_image_alt": "Kupac na blagajni drzi karticu vjernosti dok blagajnik gleda u zaslon."
+    }
+  }
+}
