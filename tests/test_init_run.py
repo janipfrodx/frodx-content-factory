@@ -67,3 +67,71 @@ def test_cli_ne_povozi_obstojecega(tmp_path):
     drugi = subprocess.run(args, capture_output=True, text=True)
     assert drugi.returncode == 1
     assert "ze obstaja" in drugi.stdout.lower() or "že obstaja" in drugi.stdout.lower()
+
+
+def test_okrajsaj_slug_reze_na_meji_besede():
+    from init_run import _okrajsaj_slug
+    dolg = "-".join(["beseda"] * 20)
+    okrajsan = _okrajsaj_slug(dolg, 80)
+    assert len(okrajsan) <= 80
+    assert not okrajsan.endswith("-")
+    assert dolg.startswith(okrajsan)
+    # naslednji znak za odrezanim slugom je vezaj - dokaz, da smo rezali na meji besede
+    assert dolg[len(okrajsan)] == "-"
+
+
+def test_okrajsaj_slug_pusti_kratek_slug_nedotaknjen():
+    from init_run import _okrajsaj_slug
+    kratek = "kratek-slug-brez-potrebe-po-rezanju"
+    assert _okrajsaj_slug(kratek, 80) == kratek
+    na_meji = "a" * 80
+    assert _okrajsaj_slug(na_meji, 80) == na_meji
+    tik_pod_mejo = "a" * 79
+    assert _okrajsaj_slug(tik_pod_mejo, 80) == tik_pod_mejo
+
+
+def test_cli_z_zelo_dolgim_naslovom_ne_sesuje_programa(tmp_path):
+    from init_run import SLUG_MAX
+    naslov = " ".join(["beseda"] * 60)
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), naslov, str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    pot = Path(r.stdout.strip())
+    assert pot.is_file()
+
+    ime_mape = pot.parent.name
+    _, _, _, slug_iz_imena = ime_mape.split("-", 3)
+    assert len(slug_iz_imena) <= SLUG_MAX
+    assert not slug_iz_imena.endswith("-")
+
+    stanje = json.loads(pot.read_text(encoding="utf-8"))
+    assert stanje["universal"]["slug"] == slug_iz_imena
+
+
+def test_cli_napacno_stevilo_argumentov(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "samo-en-argument"],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 1
+    assert "uporaba" in r.stdout.lower()
+
+
+def test_cli_prazna_tema_vrne_1(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "   ", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 1
+    assert "prazen" in r.stdout.lower()
+
+
+def test_cli_prazen_slug_vrne_1(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "???", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 1
+    assert "sluga" in r.stdout.lower()

@@ -6,12 +6,14 @@ Izpiše pot do ustvarjenega state.json. Exit 1, če tek že obstaja.
 """
 import json
 import re
+import shutil
 import sys
 import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
 JEZIKI = ("sl", "en", "hr")
+SLUG_MAX = 80
 
 
 def slugify(naslov: str) -> str:
@@ -21,6 +23,21 @@ def slugify(naslov: str) -> str:
     nizko = brez_naglasov.lower()
     z_vezaji = re.sub(r"[^a-z0-9]+", "-", nizko)
     return z_vezaji.strip("-")
+
+
+def _okrajsaj_slug(slug: str, najvecja_dolzina: int = SLUG_MAX) -> str:
+    """Okrajša slug na mejo besede, če je daljši od najvecja_dolzina.
+
+    Reže na zadnjem vezaju znotraj meje, da beseda ostane cela. Če znotraj
+    meje ni nobenega vezaja, reže trdo na najvecja_dolzina.
+    """
+    if len(slug) <= najvecja_dolzina:
+        return slug
+    odrezan = slug[:najvecja_dolzina]
+    zadnji_vezaj = odrezan.rfind("-")
+    if zadnji_vezaj != -1:
+        odrezan = odrezan[:zadnji_vezaj]
+    return odrezan.strip("-")
 
 
 def _prazen_jezik(koda: str) -> dict:
@@ -72,6 +89,7 @@ def main() -> int:
     if not slug:
         print(f"Iz naslova '{tema}' ni bilo mogoce sestaviti sluga.")
         return 1
+    slug = _okrajsaj_slug(slug)
 
     danes = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     mapa = Path(sys.argv[2]) / f"{danes}-{slug}"
@@ -79,15 +97,27 @@ def main() -> int:
         print(f"Tek {mapa} ze obstaja. Nadaljuj ta tek ali izberi drugo temo.")
         return 1
 
-    (mapa / "critique").mkdir(parents=True)
-    (mapa / "images").mkdir()
+    try:
+        (mapa / "critique").mkdir(parents=True)
+        (mapa / "images").mkdir()
+    except OSError as napaka:
+        print(f"Ni bilo mogoce ustvariti mape teka {mapa}: {napaka}")
+        if mapa.exists():
+            shutil.rmtree(mapa, ignore_errors=True)
+        return 1
 
     cas = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
     pot = mapa / "state.json"
-    pot.write_text(
-        json.dumps(zgradi_stanje(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    try:
+        pot.write_text(
+            json.dumps(zgradi_stanje(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    except OSError as napaka:
+        print(f"Ni bilo mogoce zapisati {pot}: {napaka}")
+        shutil.rmtree(mapa, ignore_errors=True)
+        return 1
+
     print(pot)
     return 0
 
