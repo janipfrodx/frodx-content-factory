@@ -1,0 +1,54 @@
+# Ocenjevanje in rangiranje tem
+
+Ta datoteka je prirejena iz `aeo-topic-brief` (skill, ki isto presojo dela nad mail-brifom iz HubSpot AEO poročila, ne nad Excelom). Logika presoje je prenesena nespremenjena; polja so preslikana na stolpce iz `references/excel-contract.md`. Kjer vir uporablja podatek, ki ga Excel nima (izračunane sezname `new_prompts`/`disappeared_prompts`, `visibility_direction`, `opportunities` po kanalih), je to spodaj izrecno povedano - ne nadomeščaj manjkajočega s izmišljenimi števili.
+
+## Kaj šteje kot dobra tema
+
+Vsa štiri merila morajo veljati (vir: `aeo-topic-brief`, razdelek »Good-topic criteria«):
+
+- **Naslavlja konkreten `target_prompt`**, ne splošne teme. Če je vrstica v Excelu zapisana kot kategorija (»O programih zvestobe«), to ni dovolj - preden temo predlagaš Igorju, jo zaostri v stališče, ki dejansko odgovarja na `target_prompt` te vrstice.
+- **Odgovor bi bil citirljiv za AI iskalnik**: jasen, strukturiran, samostojen - vprašanje iz `target_prompt` postane naslov razdelka z direktnim odgovorom v prvem stavku.
+- **Vezana na FrodX ekspertizo**: HubSpot, SAP Engagement Cloud / Emarsys, Open Loyalty, CloudTalk. Za primerjave, ki vključujejo orodja, ki jih FrodX ne implementira, pisati kot **nevtralen integrator**, ne kot zagovornik ene platforme.
+- **Realen obseg** za en kos vsebine.
+
+**Igorjev prag** (vir: isti razdelek, »Igor's bar«): tema mora biti dovolj zaostrena, da iz nje nastane dober kos vsebine. Če tema, kot jo je zapisala rutina `frodx-aeo-watch` v stolpcu `topic`, bere kot kategorija, jo pred predlogom zaostri - ne prenašaj je nespremenjene samo zato, ker že stoji v Excelu.
+
+## Formati
+
+Vir: `aeo-topic-brief`, razdelek »Format rules«. Pravilo je nespremenjeno; le da tu Excel že prinaša predlog v stolpcu `format`.
+
+| Signal v `target_prompt` | format |
+|---|---|
+| Konkretno vprašanje z več podvprašanji | `FAQ` |
+| »kako narediti X« | `vodnik` |
+| »kaj je bolje, X ali Y«, »X proti Y« | `primerjava` |
+| Široka / mnenjska / miselno-vodilna teza | `kolumna` |
+
+Stolpec `format` v Excelu je **namig, ne odločitev** - enako kot je bil v viru `rec_format` namig, ne prevlada nad obliko prompta. Preveri, ali oblika `target_prompt` ustreza vrednosti v `format`; če se ne ujema, v predlogu Igorju povej svoj format in navedi zakaj.
+
+## Pravila o jezikih - se NE prenašajo
+
+Vir vsebuje razdelek »Language targeting« (privzeto `sl/en/hr`, oženje samo za tržno vezane teme). Ta skill ga izpusti namenoma:
+
+- `references/excel-contract.md` nima stolpca za jezike, in `_run.brief` (izhod tega skilla) tudi ne vsebuje polja `languages` (glej `state-schema.md`).
+- Veriga korakov (dirigent, korak 4) transkreira SL→EN in SL→HR **vedno**, za vsak tek - to ni odločitev, ki bi jo ta skill sprejemal na nivoju teme.
+
+Če je tema izrazito vezana na en trg (npr. slovenska specifika), to omeni v `rationale`, a ne dodajaj polja za jezike, ki ga izhodna shema ne predvideva.
+
+## Prioriteta in rangiranje
+
+Vir: `aeo-topic-brief`, razdelek »Prioritization by trend«. Tam se je prioriteta računala iz `new_prompts` / `disappeared_prompts` / `visibility_direction` / `has_previous` - te izračunane sezname Excel nima. Namesto njih ima vsaka vrstica `visibility_signal` (prosto besedilo iz dashboarda) in `date_added`. Logika prioritete je enaka, preslikava je tale:
+
+- **Vrstica z `visibility_signal`, ki opisuje svež, nepokrit prompt** (npr. besedilo v pomenu »nov prompt, brez pokritosti«) - to je ustreznik `new_prompts`: najvišja prioriteta, gap je svež.
+- **Vrstica z `visibility_signal`, ki opisuje prompt, ki vztraja kljub prejšnjim poskusom** (npr. besedilo v pomenu »vztrajajoč prompt, N. teden«) - trenutni pristop ne prime. Če Excel oz. `source_recommendation` razkriva, kateri format/kanal je bil že poskušen, v predlogu Igorju priporoči **drugačen** format ali kot, ne ponovitve.
+- **`source_recommendation`** je ustreznik `top_recommendation` iz vira - dobesedno priporočilo iz AEO poročila. Vtkaj ga v `rationale`, enako kot je vir zahteval vtkanje `top_recommendation` in `opportunities`.
+- **`channel`** pove, kateri kanal (LinkedIn / Reddit / Owned content) je AEO za to vrstico priporočil. Excel nima agregata po kanalih na ravni celotnega poročila (v viru je bil to `opportunities: {linkedin, reddit, owned_content}`, številke za vse tri kanale hkrati) - tega tu ni in si ga ne izmišljuj. `channel` je zato informacija o tej eni vrstici, ne signal za prerazporejanje uteži med kandidati.
+- **`date_added`** je informativen znak, ne pravilo s pragom: starejša vrstica je čakala dlje, kar lahko omeniš, a to ni razlog za avtomatično prednost - ne izmišljuj si števila dni, po katerem tema »zapada«.
+- `visibility_signal`, ki nakazuje, da je prompt izginil s seznama manjkajočih (ustreznik `disappeared_prompts` - pristop je torej deloval), se v praksi ne bo pojavil med kandidati, ker take vrstice dobijo `status = done` in jih ta skill ne bere (glej `excel-contract.md`, razdelek Branje). Če pa bi kdaj vseeno naletel na tak signal pri vrstici s `status = new`, to pomeni: format/kot, ki je pri sorodnem promptu deloval, je vreden ponovitve pri trenutnem kandidatu - enako kot v viru.
+
+## Pogoste napake (vir: »Common mistakes«, prilagojeno)
+
+- **Tema kot kategorija** namesto kot stališče - glej zgoraj, zaostri pred predlogom.
+- **Predlagaš vse kandidate namesto rangiranja.** Vir: »Covering all missing_prompts« - enako velja tu: rangiraj in izberi največ tri, ne izpuščaj rangiranja samo zato, ker je kandidatov malo.
+- **Izmišljaš številke, ki jih Excel ne daje** (točke vidnosti, deleže citiranja, dneve do zapadlosti). Vir prepoveduje izmišljanje metrik iz mail-brifa; tu enako velja za vse, česar `excel-contract.md` ne navaja.
+- **Izbiraš namesto Igorja.** Ni v izvornem skillu (tam ni bilo izbire osebe), a velja tu - glej `SKILL.md`, razdelek »Kaj ne delaš«.
