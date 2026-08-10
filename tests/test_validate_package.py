@@ -122,3 +122,142 @@ def test_cli_vrne_1_za_neveljaven_paket():
     r = subprocess.run([sys.executable, str(SKRIPTA), str(FIXTURES / "package_bad_campaign.json")], capture_output=True, text=True)
     assert r.returncode == 1
     assert "campaign_name" in r.stdout
+
+
+# --- Popravni krog 1: campaign_name enakost med jeziki ---
+
+def test_campaign_name_razlicna_med_jeziki_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["en"]["campaign_name"] = "Interest - CX Customer Experience"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("campaign_name" in n and "enak" in n for n in napake)
+
+
+# --- Popravni krog 1: prepovedane fraze ---
+
+def test_prepovedana_fraza_sl_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = "Tu je trik, ki deluje.\n\nigor.pauletic@frodx.com"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("tu je trik" in n for n in napake)
+
+
+def test_prepovedana_fraza_en_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["en"]["content"] = "Here's the trick that works.\n\nigor.pauletic@frodx.com"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("here's the trick" in n for n in napake)
+
+
+def test_prepovedana_fraza_hr_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["hr"]["content"] = "Ovdje je trik koji djeluje.\n\nigor.pauletic@frodx.com"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("ovdje je trik" in n for n in napake)
+
+
+def test_prepovedana_fraza_neobcutljiva_na_velikost_crk_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = "Tu Je Trik, ki deluje.\n\nigor.pauletic@frodx.com"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("tu je trik" in n for n in napake)
+
+
+# --- Popravni krog 1: featured_image_alt ---
+
+def test_featured_image_alt_prazen_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["featured_image_alt"] = ""
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("featured_image_alt" in n and "prazen" in n for n in napake)
+
+
+def test_featured_image_alt_predolg_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["featured_image_alt"] = "x" * 161
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("featured_image_alt" in n and "160" in n for n in napake)
+
+
+# --- Popravni krog 1: meta.version ---
+
+def test_meta_version_napacna_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["meta"]["version"] = "1.0"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("meta.version" in n for n in napake)
+
+
+# --- Popravni krog 1: tag_name/tag_slug neujemanje s taksonomijo ---
+
+def test_tag_name_se_ne_ujema_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["tag_name"] = "Napačno ime"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("tag_name" in n and "sl" in n for n in napake)
+
+
+def test_tag_slug_se_ne_ujema_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["tag_slug"] = "napacen-slug"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("tag_slug" in n and "sl" in n for n in napake)
+
+
+# --- Popravni krog 1: podpis - ponovljen, ni sam v vrstici, ni na koncu, hiperpovezava ---
+
+def test_podpis_ponovljen_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = (
+        "Prvi odstavek.\n\nigor.pauletic@frodx.com\n\nigor.pauletic@frodx.com"
+    )
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("krat" in n and "igor.pauletic@frodx.com" in n for n in napake)
+
+
+def test_podpis_ni_sam_v_vrstici_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = "Prvi odstavek.\n\nIgor Pauletic igor.pauletic@frodx.com"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("ne stoji sam" in n for n in napake)
+
+
+def test_podpis_ni_na_koncu_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = (
+        "Prvi odstavek.\n\nigor.pauletic@frodx.com\n\n"
+        "Vrstica 1.\nVrstica 2.\nVrstica 3.\nVrstica 4.\nVrstica 5."
+    )
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("ni na koncu" in n for n in napake)
+
+
+def test_podpis_hiperpovezava_markdown_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = "Prvi odstavek.\n\n[pišite mi](mailto:igor.pauletic@frodx.com)"
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("hiperpovezava" in n for n in napake)
+
+
+def test_podpis_hiperpovezava_html_pade():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = (
+        'Prvi odstavek.\n\n<a href="mailto:igor.pauletic@frodx.com">pišite mi</a>'
+    )
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    assert any("hiperpovezava" in n for n in napake)

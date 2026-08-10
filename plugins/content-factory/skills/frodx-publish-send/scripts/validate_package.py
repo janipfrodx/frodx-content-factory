@@ -20,10 +20,26 @@ EM_DASH = "\u2014"
 PODPIS = "igor.pauletic@frodx.com"
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREPOVEDANE = ("tu je trik", "here's the trick", "ovdje je trik")
+PODPIS_SAM_VRSTICA = re.compile(rf"[*_>\s]*{re.escape(PODPIS)}[*_\s]*", re.I)
 
 _TU = Path(__file__).resolve()
 _REPO = _TU.parents[5]
 TAXONOMY = _REPO / "plugins" / "content-factory" / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
+
+
+def _podpis_je_povezava(vsebina: str) -> bool:
+    """Zazna PODPIS v kateri koli povezavni obliki: markdown, avtomatska povezava ali HTML sidro."""
+    e = re.escape(PODPIS)
+    vzorci = (
+        rf"\[[^\]]*\]\(\s*mailto:{e}\s*\)",       # [karkoli](mailto:PODPIS)
+        rf"\[[^\]]*\]\(\s*{e}\s*\)",               # [karkoli](PODPIS)
+        rf"\[\s*{e}\s*\]\([^)]*\)",                # [PODPIS](karkoli)
+        rf"<\s*mailto:{e}\s*>",                    # <mailto:PODPIS>
+        rf"<\s*{e}\s*>",                            # <PODPIS>
+        rf'href\s*=\s*["\']mailto:{e}["\']',       # href="mailto:PODPIS"
+        rf"<a\b[^>]*>[^<]*{e}[^<]*</a>",           # <a ...>...PODPIS...</a>
+    )
+    return any(re.search(v, vsebina, re.I | re.S) for v in vzorci)
 
 
 def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
@@ -66,8 +82,31 @@ def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
             for fraza in PREPOVEDANE:
                 if fraza in nizka:
                     napake.append(f"languages.{jezik}.content vsebuje prepovedano frazo '{fraza}'")
-            if PODPIS not in vsebina:
+
+            nlines = [l.strip() for l in vsebina.splitlines() if l.strip()]
+            n_podpis = sum(l.lower().count(PODPIS) for l in nlines)
+            podpis_idx = [i for i, l in enumerate(nlines) if PODPIS in l.lower()]
+            if n_podpis == 0:
                 napake.append(f"languages.{jezik}.content se ne zapre s podpisom {PODPIS}")
+            elif n_podpis > 1:
+                napake.append(
+                    f"languages.{jezik}.content vsebuje podpis {PODPIS} {n_podpis}-krat, dovoljen je samo en"
+                )
+            else:
+                idx = podpis_idx[0]
+                sam = PODPIS_SAM_VRSTICA.fullmatch(nlines[idx]) is not None
+                near_end = idx >= len(nlines) - 4
+                if not sam:
+                    napake.append(
+                        f"languages.{jezik}.content: podpis {PODPIS} ne stoji sam v svoji vrstici (brez imena ali besedila ob njem)"
+                    )
+                elif not near_end:
+                    napake.append(
+                        f"languages.{jezik}.content: podpis {PODPIS} ni na koncu - mora biti zadnja vsebinska vrstica (pred morebitnim P.S.)"
+                    )
+
+            if _podpis_je_povezava(vsebina):
+                napake.append(f"languages.{jezik}.content: podpis {PODPIS} je hiperpovezava, mora biti gol tekst")
 
         naslov = str(podatki.get("seo_title", "")).strip()
         if not naslov:
