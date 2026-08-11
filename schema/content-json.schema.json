@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Opisna referenca za izhodni package (state.json brez bloka _run, po koraku 7 - glej plugins/content-factory/skills/frodx-content-factory/references/state-schema.md). Ni programsko izvršena: v projektu ni odvisnosti jsonschema (Global Constraint: samo standardna knjižnica). Dejanski gate je plugins/content-factory/skills/frodx-publish-send/scripts/validate_package.py.",
   "title": "FrodX Content Factory paket",
   "type": "object",
   "required": ["meta", "universal", "social_posts", "languages"],
@@ -28,11 +29,14 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["text", "publish_date"],
+        "required": ["text"],
         "additionalProperties": false,
         "properties": {
           "text": { "type": "string", "minLength": 1 },
-          "publish_date": { "type": "string" }
+          "publish_date": {
+            "type": "string",
+            "description": "Neobvezno. Ta veriga ga ne zapolni - datum objave izbere Igor v aplikaciji. Polje je prisotno za skladnost z Igorjevim izvornim formatom (glej igor-column-writer/references/publishing-contract.md)."
+          }
         }
       }
     },
