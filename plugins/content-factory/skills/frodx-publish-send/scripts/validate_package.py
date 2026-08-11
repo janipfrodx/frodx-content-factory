@@ -23,8 +23,8 @@ PREPOVEDANE = ("tu je trik", "here's the trick", "ovdje je trik")
 PODPIS_SAM_VRSTICA = re.compile(rf"[*_>\s]*{re.escape(PODPIS)}[*_\s]*", re.I)
 
 _TU = Path(__file__).resolve()
-_REPO = _TU.parents[5]
-TAXONOMY = _REPO / "plugins" / "content-factory" / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
+_PLUGIN = _TU.parents[3]
+TAXONOMY = _PLUGIN / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
 
 
 def _podpis_je_povezava(vsebina: str) -> bool:
@@ -166,8 +166,8 @@ def main() -> int:
         print("Uporaba: validate_package.py <pot-do-state.json>")
         return 1
 
-    sys.path.insert(0, str(_REPO))
-    from tools.taxonomy import load_campaigns, load_tags
+    sys.path.insert(0, str(_TU.parent))
+    from taxonomy import load_campaigns, load_tags
 
     pkg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     pkg.pop("_run", None)

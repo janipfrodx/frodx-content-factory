@@ -1,18 +1,18 @@
 import json
+import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(REPO))
-
-from tools.taxonomy import load_campaigns, load_tags
 
 SKRIPTA = REPO / "plugins" / "content-factory" / "skills" / "frodx-publish-send" / "scripts" / "validate_package.py"
 TAXONOMY = REPO / "plugins" / "content-factory" / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
 FIXTURES = REPO / "tests" / "fixtures"
 
 sys.path.insert(0, str(SKRIPTA.parent))
+
+from taxonomy import load_campaigns, load_tags
 
 
 def _validate(ime):
@@ -261,3 +261,24 @@ def test_podpis_hiperpovezava_html_pade():
     )
     napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
     assert any("hiperpovezava" in n for n in napake)
+
+
+# --- Popravni krog 2: gate ne rabi ničesar izven plugins/content-factory ---
+
+def test_gate_dela_iz_samostojno_kopiranega_plugina(tmp_path):
+    """Cowork namesti samo plugins/content-factory/ (glej marketplace.json).
+
+    Gate ne sme uvažati ničesar izven te mape - ne sme pasti z
+    ModuleNotFoundError, ko poganjamo skripto iz kopije, ki vsebuje
+    samo to mapo, brez repo korena in brez tools/.
+    """
+    plugin_kopija = tmp_path / "content-factory"
+    shutil.copytree(REPO / "plugins" / "content-factory", plugin_kopija)
+    skripta_kopija = plugin_kopija / "skills" / "frodx-publish-send" / "scripts" / "validate_package.py"
+
+    r = subprocess.run(
+        [sys.executable, str(skripta_kopija), str(FIXTURES / "package_valid.json")],
+        capture_output=True,
+        text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
