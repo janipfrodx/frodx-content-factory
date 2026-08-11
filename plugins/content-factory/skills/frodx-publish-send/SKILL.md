@@ -18,6 +18,8 @@ Zadnji korak. Validira in preda.
 python3 scripts/validate_package.py <pot-do-state.json>
 ```
 
+Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-publish-send/`); enako velja za `outbox/` v koraku 5 spodaj - nastane relativno na CWD ob zagonu ukaza. Cowork-ovo dejansko CWD ob zagonu skilla ni preverjeno v tej seji - Jani to preveri ob prvi živi namestitvi (Task 12) in po potrebi popravi na absolutno pot.
+
 3. **Če gate pade (exit 1):** ne pošiljaj. Pokaži Igorju seznam kršitev in za vsako povej, kateri korak jo popravi:
 
    | Polje | Korak |
@@ -35,7 +37,7 @@ python3 scripts/validate_package.py <pot-do-state.json>
    - `featured_image` = `images/izbrana.png`, kodiran v base64, `mime_type` `image/png`, `filename` `<slug>.png`
    - `source` = `{run_slug, generated_at, author: "igor"}`
 
-5. **Dry-run (trenutno stanje):** zapiši telo v `outbox/<slug>.json` in povej Igorju, da endpointa v aplikaciji še ni. Nastavi `_run.status` = `ready`.
+5. **Dry-run (trenutno stanje):** zapiši telo v `outbox/<slug>.json` in povej Igorju, da endpointa v aplikaciji še ni. Nastavi `_run.status` = `ready` in `_run.step` = `7`.
 
 6. **Živo pošiljanje (ko endpoint obstaja):** pošlji
 
@@ -50,7 +52,7 @@ Content-Type: application/json
 
    | Status | Kaj narediš |
    |---|---|
-   | 202 | povej Igorju, naj odpre aplikacijo in potrdi osnutek; `_run.status` = `sent` |
+   | 202 | povej Igorju, naj odpre aplikacijo in potrdi osnutek; `_run.status` = `sent`, `_run.step` = `7` |
    | 401 | napačen API ključ - povej Janiju, ne poskušaj znova |
    | 409 | ta tek je že poslan; ne pošiljaj znova |
    | 422 | aplikacija je zavrnila paket - pokaži njen seznam napak |
