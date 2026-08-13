@@ -5,7 +5,7 @@ Cowork plugin z verigo skillov za produkcijo kolumn in socialnih objav.
 ## Namestitev v Claude Cowork
 
 1. *Customize → Plugins → Add marketplace*
-2. Vnesi `https://github.com/<owner>/frodx-content-factory`
+2. Vnesi `https://github.com/janipfrodx/frodx-content-factory`
 3. Namesti plugin **content-factory**
 4. Ob spremembi klikni *Update* na marketplaceu
 
