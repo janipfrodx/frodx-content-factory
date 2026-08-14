@@ -1,5 +1,6 @@
 {
   "name": "frodx-content-factory",
+  "description": "Interni FrodX marketplace s Content Factory pluginom za produkcijo kolumn in socialnih objav.",
   "owner": {
     "name": "FrodX d.o.o.",
     "email": "jani.pahor@frodx.com"
