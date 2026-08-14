@@ -1,6 +1,6 @@
 ---
 name: frodx-topic-pick
-description: Pick the next FrodX content topic from the AEO topic queue on SharePoint. Reads the aeo-teme.xlsx sheet, ranks the open topics by how much they would move AI visibility, and proposes at most three with reasoning so Igor can choose. Use when starting a content run without a given topic, or when Igor asks "kaj naj pišem", "katere teme imamo", "predlagaj temo". Writes the chosen topic into the run state and marks the row as picked.
+description: Pick the next FrodX content topic from the AEO topic queue on OneDrive. Reads the aeo-themes.xlsx sheet, ranks the open topics by how much they would move AI visibility, and proposes at most three with reasoning so Igor can choose. Use when starting a content run without a given topic, or when Igor asks "kaj naj pišem", "katere teme imamo", "predlagaj temo". Writes the chosen topic into the run state and marks the row as picked.
 metadata:
   version: 0.1.0
 ---

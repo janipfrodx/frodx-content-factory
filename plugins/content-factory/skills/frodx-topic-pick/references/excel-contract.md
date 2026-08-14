@@ -1,8 +1,24 @@
 # Excel s temami
 
-Lokacija: SharePoint spletišče TEST473, `Dokumenti/00 Projekti/FrodX/Content Factory/aeo-teme.xlsx`.
+Lokacija: **Janijev OneDrive, mapa `Content Factory`, datoteka `aeo-themes.xlsx`.**
+Graph drive: `b!C6GvL-B8YUGFU1yFtNnX-srmZdzZI-ZJjHxZ5NKU8QtzFRkd4G3VRo_E5_L9PsI5`,
+item: `01LR5CWKD447UVA2VK3ZHJQPZGOSEP2VP5`. Do nje se pride prek Microsoft 365 konektorja.
 
-Datoteko polni ločena rutina `frodx-aeo-watch`. Ta skill jo samo bere in označuje izbrane vrstice.
+Prejšnji zapis je navajal `TEST473, Dokumenti/00 Projekti/FrodX/Content Factory/aeo-teme.xlsx`.
+Ta pot ne obstaja - preverjeno 14. 8. 2026: knjižnica na TEST473 se imenuje `Dokumenti v skupni rabi`,
+mapa je `00 Projekti/Frodx` (mali x) in podmape `Content Factory` v njej ni. Jani je datoteko ustvaril
+v svojem OneDrive; zgornja pot je dejansko stanje.
+
+Datoteko naj bi polnila ločena rutina `frodx-aeo-watch`, ki še ne obstaja. Do takrat se polni ročno
+iz HubSpot AEO (Marketing -> AEO -> Recommendations -> zavihek "Owned content", vrstice s CHANNEL = Blog).
+Ta skill jo samo bere in označuje izbrane vrstice.
+
+## OPOZORILO: pisanje prek konektorja ni nujno mogoče
+
+Preverjeno 14. 8. 2026: v Claude Code sta `sharepoint_update_file` in `sharepoint_upload_file` vrnila
+`permission_error: This tool is not available` - konektor je bil na voljo samo za branje. Korak
+"Pisanje" spodaj (nastavi `status = picked`) bo ob isti omejitvi padel. Če se to zgodi, povej Igorju,
+naj vrstico označi ročno, in NE tiho preskoči označevanja - sicer bo ista tema izbrana še enkrat.
 
 | Stolpec | Tip | Opis |
 |---|---|---|
