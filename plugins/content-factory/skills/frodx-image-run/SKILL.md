@@ -59,7 +59,13 @@ Stanje preverjeno 17. 8. 2026 neposredno v workflowu `lHc3NdejxehMyc9O`, ugotovi
 2. Prosi ga, naj ju položi v mapo teka kot `images/openai.png` in `images/gemini.png`.
 3. Šele ko datoteki obstajata, ju odpri in nadaljuj s točko 5. **Preden sliki vidiš, ne izbiraj in ne piši alt teksta.**
 
-**Trajna rešitev je odprta točka:** workflow naj sliko naloži in vrne URL (npr. na SharePoint prek Graph API), ki ga pobereš z enim ukazom. Takrat ni base64, ni stroška v kontekstu in ni tveganja prepisa. Dokler tega ni, velja vmesni postopek zgoraj.
+**Trajna rešitev, ko bo workflow dopolnjen.** Preverjeno 17. 8. 2026: Microsoft 365 konektor prek `read_resource` na URI `file:///{driveId}/{itemId}` vrne **sliko, ki jo res vidiš** - ne besedilnega izvlečka. Ko bo workflow sliko nalagal na SharePoint in vračal `driveId` in `itemId`, bo postopek tak:
+
+```
+read_resource("file:///{driveId}/{itemId}")
+```
+
+in slika je pred tabo, brez base64 in brez datoteke na disku. Takrat točke 1-3 vmesnega postopka odpadejo. Dokler workflow tega ne vrača, velja vmesni postopek zgoraj - sam nalaganja ne izvajaj in `driveId`/`itemId` si ne izmišljaj.
 
 ## Kaj ne delaš
 

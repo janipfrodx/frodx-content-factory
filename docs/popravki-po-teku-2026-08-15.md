@@ -62,8 +62,37 @@ Base64 veja v workflowu obstaja in deluje, a prepis ~45.000 znakov skozi konteks
 preizkušen 15. 8. in **ni** deloval (17 kB namesto ~35 kB, `OSError: broken data stream`).
 Ponovni poskus je ista operacija z istim razlogom za odpoved.
 
-**Rešitev:** workflow naj sliko naloži in vrne URL, ki ga dirigent pobere z enim ukazom.
-Do takrat velja vmesni postopek: človek prenese sliki iz n8n UI v mapo teka
+**Pot je zdaj znana, ne ugibana.** Preverjeno 17. 8. 2026: Microsoft 365 konektor prek
+`read_resource` na URI `file:///{driveId}/{itemId}` vrne **sliko, ki jo Claude res vidi** - ne
+besedilnega izvlečka in ne imena datoteke. Preizkušeno na obstoječi datoteki
+`key-visual lasten-crm 1200x630.png` v Igorjevem OneDrive; vsebina slike je bila opisana iz
+same slike.
+
+Zasnova rešitve:
+
+```
+n8n generira sliko -> naloži jo prek Graph API na SharePoint -> vrne driveId + itemId
+   -> dirigent pokliče read_resource("file:///{driveId}/{itemId}") -> Claude vidi sliko
+```
+
+Brez base64, brez `curl`, brez javnih povezav, vse ostane v FrodX okolju (ISO 27001 neoporečno).
+`read_resource` je bil v Cowork seji na voljo že med tekom (poročilo, razdelek 3).
+
+**Kaj to blokira: v n8n ni credentiala za OneDrive ne za SharePoint.** Preverjeno 17. 8. 2026 prek
+`list_credentials` (78 credentialov): obstajajo `microsoftOutlookOAuth2Api`, `microsoftTeamsOAuth2Api`,
+`microsoftExcelOAuth2Api` in en generični `microsoftOAuth2Api` (»Microsoft Teams Jani P«), **nobenega
+za datoteke**. Preden se workflow gradi, mora Jani ustvariti OneDrive ali SharePoint OAuth2 credential
+(potrebni obsegi: pisanje datotek na ciljni drive). To je edini korak, ki ga ne more narediti nihče drug.
+
+**Dve stvari, ki ju je pri gradnji dobro vedeti:**
+
+- `read_resource` na **mapo** prek poti (`file:///{driveId}/{ime mape}`) vrne `invalidRequest` -
+  mapo je treba naslavljati z `itemId`, ki ga da `sharepoint_folder_search`. Za datoteke pot deluje.
+- SharePoint iskanje (`sharepoint_search`) rastrskih slik ne indeksira - `fileType: png` vrne nič.
+  Sliko se najde prek `sharepoint_folder_search` ali prek `itemId`, ki ga vrne workflow ob nalaganju.
+  Zato naj workflow `driveId` in `itemId` **vrne v odgovoru** in ne pričakuje, da jih bo dirigent iskal.
+
+Do izvedbe velja vmesni postopek: človek prenese sliki iz n8n UI v mapo teka
 (`frodx-image-run/SKILL.md`).
 
 ### 2. A4 - vrsta tem se ne premika
@@ -77,6 +106,17 @@ označi vrstico (`status = picked`, `run_slug`).
 cel nabor je `search_data_tables`, `create_data_table`, `rename_data_table`,
 `add/delete/rename_data_table_column`, `add_data_table_rows`. Branje vrste in posodobitev vrstice
 morata torej oba teči skozi workflow z Data Table vozliščem.
+
+**Krajša pot, odkrita 17. 8. 2026.** V n8n že obstaja credential **`Microsoft Excel Jani P`**
+(`microsoftExcelOAuth2Api`, ID `Mk9bvadCRqU8Oy2K`, domači projekt: Janijev osebni). Z n8n-ovim
+Microsoft Excel vozliščem je torej mogoče nastaviti celico `status = picked` **neposredno v
+`aeo-themes.xlsx`** - brez Data Table, brez migracije vrstic in brez novega credentiala. Excel ostane
+tam, kjer je, in se ureja naprej ročno. Edino opravilo: credential je treba deliti s timskim projektom
+`Content Factory`, kjer živijo ti workflowi.
+
+Odločitev za Data Table s tem ni razveljavljena - sta pa zdaj dve izvedljivi poti, in Excel pot je
+občutno krajša. Tehtati je treba, ali je vrsta tem dolgoročno Excel (ročno urejanje, osebni OneDrive)
+ali n8n Data Table (skupna, strojno berljiva, brez odvisnosti od osebnega diska).
 
 Do izvedbe velja ročno označevanje, izrecno zapisano v `frodx-topic-pick/SKILL.md`, točka 8, z zapisom
 v `_run.topic_source.writeback_status` in `_run.open_tasks`.
