@@ -81,18 +81,32 @@ morata torej oba teči skozi workflow z Data Table vozliščem.
 Do izvedbe velja ročno označevanje, izrecno zapisano v `frodx-topic-pick/SKILL.md`, točka 8, z zapisom
 v `_run.topic_source.writeback_status` in `_run.open_tasks`.
 
-### 3. Modela ocenjevalcev
+### 3. Modela ocenjevalcev - ZAPRTO 17. 8. 2026
 
 Kar je na teh dveh credentialih dejansko na voljo (preverjeno 17. 8. 2026 prek `explore_node_resources`,
 metoda `modelSearch`):
 
 - **OpenAI:** cela linija GPT-5, do `gpt-5.5-pro` (2026-04-23) in `gpt-5.6-luna` / `gpt-5.6-sol` /
-  `gpt-5.6-terra`. Trenutno nastavljen `gpt-4o`.
+  `gpt-5.6-terra` (te tri brez datuma in brez podatka, kaj so).
 - **Gemini:** najboljši *pro* je `models/gemini-3.1-pro-preview` - **novejšega pro modela na tem računu ni**.
   Obstajata še alias `models/gemini-pro-latest` in stabilna flash linija do `models/gemini-3.7-flash`.
 
-Odprto: kateri par se nastavi. Za Gemini je edina prava izbira med `3.1-pro-preview` (kar je zdaj)
-in aliasom `gemini-pro-latest`, ki ob upokojitvi preview modela ne vrne 404.
+**Izvedeno v `GZmnPGOcVANH2sfy`** (zadnja verzija »OpenAI ocenjevalec: gpt-5.5-pro -> gpt-5.6-sol«):
+
+- `OpenAI Critique.modelId` = **`gpt-5.6-sol`** (bilo `gpt-4o`, vmes kratko `gpt-5.5-pro`).
+  Izbira Janija, 17. 8. 2026: najnovejši model na tem credentialu.
+
+  **Preveri ob prvi živi kritiki.** O `gpt-5.6-sol` ni znanega nič razen imena v seznamu modelov -
+  ni datuma, ni podatka, ali je reasoning ali chat varianta. Ob prvem krogu poglej troje: ali vrne
+  sodbo v pričakovani obliki (`OBJAVLJIVO` / `ZA POPRAVEK` v prvi vrstici), ali se drži meje petih
+  pripomb, in ali pripombe merijo na vsebino, ne na slog. Če katerokoli od tega odpove, je popravek
+  en parameter: `gpt-5.5-pro` je znana varna izbira.
+- `Gemini Critique.modelId` **ostaja** `models/gemini-3.1-pro-preview`. Nadgraditi ga ni kam.
+  Alias `gemini-pro-latest` bi tveganje 404 zamenjal s tveganjem, da se model tiho zamenja; ker skill
+  zdaj odpoved ocenjevalca obravnava (glej A2), je 404 obvladljiv, tiha zamenjava pa ne bi bila.
+
+Nič drugega v workflowu ni spremenjeno. Oba modela imata presek znanja pred današnjim datumom, zato
+popravek prompta z datumom (C2) ostane nujen - nadgradnja modela ga ne nadomesti.
 
 ### 4. Obstojnost mape teka (D1, trajna rešitev)
 
