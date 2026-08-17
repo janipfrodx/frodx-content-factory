@@ -196,8 +196,11 @@ Graph vzorca kot A3.
 ### 5. Preostalo iz poročila, kar ni bilo popravljeno namenoma
 
 - **`frodx-aeo-watch`** (polnjenje `target_prompt`) ima svoj načrt in ni del tega popravka.
-- **Podpis se v produkciji doda dvakrat** - zahteva poseg v aktiven `3lK6pjOfOAa0BxDm`, ostaja odprto
-  iz prejšnje seje.
+- **Dvojni avtorski podpis ni odprta točka.** Popravljen je bil 13. 8. 2026, znova preverjen v živem
+  workflowu 17. 8.: `Convert Markdown to HTML` pripne `AUTHOR_SIGNATURE` samo, če
+  `igor.pauletic@frodx.com` v izrisanem HTML-ju še ni. HMAC podpis se v celem workflowu računa na enem
+  samem mestu (`Verify HMAC Signature`) in ga noben `httpRequest` node ne pošilja naprej. Ta postavka
+  je bila v prejšnjih različicah tega dokumenta napačno navedena kot odprta; ne uvrščaj je več.
 - **Živo pošiljanje na `/api/ingest`** ostaja zaklenjeno, dokler ga Jani ne odklene.
 - **Opozorilo validacijske sheme MCP orodja** pri vozlišču `Gemini Image`
   (`Invalid value for "parameters.resource"`) - označeno kot `preExisting`, workflow deluje.
@@ -280,8 +283,9 @@ API ključa aplikacije - ta je v n8n credentialu.
 - *Vse v Coworku brez aplikacije.* Vrže stran izbirnik datumov, mapiranje kampanj in tagov ter
   `dispatchToN8n`, ki že podpisuje pravilno, in Igorju vzame vizualni pregled pred objavo.
 
-**`PROD 2` ostane v produkciji, dokler nov ni pripravljen za produkcijo** (Janijeva odločitev). Nič v
-njem se ne spreminja, tudi dvojni podpis ne, dokler se ga ne loti posebej.
+**`PROD 2` ostane v produkciji, dokler nov ni pripravljen za produkcijo** (Janijeva odločitev). V njem
+se ne spreminja nič; spremembe gredo v kopijo, ki se po dokončanju promovira. Glej
+`docs/spec-app-strojni-vhod.md`, razdelek »Kopija `PROD 2` namesto poseganja v produkcijo«.
 
 ### Kaj je treba zgraditi
 

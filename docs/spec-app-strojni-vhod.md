@@ -42,7 +42,7 @@ napake.
 | dopolnitev `cf-generate-image` in nov `cf-deliver-draft` | Claude prek n8n MCP | glej razdelek »Kaj mora narediti n8n« |
 | popravek `frodx-image-run` in `frodx-publish-send` | Claude | šele ko je pot do slik odločena |
 | RLS Supabase projekta aplikacije | ni preverjeno | do projekta ni dostopa prek Supabase konektorja, ker ga upravlja Lovable |
-| podpis se v `PROD 2` doda dvakrat | odprto od prej | popravi se **v kopiji**, ne v produkciji |
+| ~~dvojni avtorski podpis v `PROD 2`~~ | - | **ni odprto.** Popravljeno 13. 8., znova preverjeno 17. 8. 2026: `Convert Markdown to HTML` pripne podpis samo, če `igor.pauletic@frodx.com` še ni v HTML-ju. Ne uvrščaj več na sezname odprtih zadev |
 
 ## Zakaj
 
@@ -291,9 +291,6 @@ Neizogibno ostane, da test ustvari **resnične osnutke v HubSpotu**. So osnutki 
 3. v kopiji se pot webhooka nastavi na `frodx-publish`
 4. v aplikaciji se v koraku 4 prilepi nov URL
 
-Ker se v produkcijo ne posega, se v kopiji lahko **končno popravi tudi dvojni podpis**, ki je odprt iz
-prejšnje seje.
-
 ## Vrstni red gradnje
 
 Prve tri točke so neodvisne od tega, kako Claude sliki vidi, zato jih odgovor Andreja ne blokira.
@@ -307,8 +304,7 @@ Prve tri točke so neodvisne od tega, kako Claude sliki vidi, zato jih odgovor A
    bo naslednja seja poskusila po nepotrebnem.
 6. podvojitev `PROD 2` v n8n UI in štirje popravki v kopiji, preden se aktivira
 7. dry-run celotne verige proti kopiji, nato prvi živi tek
-8. popravek dvojnega podpisa v kopiji
-9. promocija kopije na produkcijsko pot, `PROD 2` se deaktivira in ohrani
+8. promocija kopije na produkcijsko pot, `PROD 2` se deaktivira in ohrani
 
 Točke 1 do 5 niso odvisne od odgovora Andreja. Točka 6 lahko teče vzporedno s 1 do 3, ker se kopija ne
 dotika ničesar, kar gradimo v aplikaciji.
