@@ -22,7 +22,8 @@ napake.
 
 - `PROD 2 - FrodX Content Publishing Pipeline` (`3lK6pjOfOAa0BxDm`) je že celotna dostavna pot do
   HubSpota, Telegrama in socialnih omrežij. **Ostane v produkciji nedotaknjen**, dokler nov ni
-  pripravljen za produkcijo (Janijeva odločitev).
+  pripravljen za produkcijo (Janijeva odločitev). Spremembe gredo v **kopijo**, ki jo po dokončanju
+  postavimo na njegovo mesto; glej razdelek »Kopija `PROD 2` namesto poseganja v produkcijo«.
 - Slike ne sprejema kot datoteko, ampak kot **`featured_image_url`**. Base64 v `frodx-publish-send`
   je bil rešitev za problem, ki ga dostavna pot nikoli ni imela.
 - Aplikacija že zna naložiti sliko in narediti javni URL, validirati paket, in podpisati ter oddati
@@ -34,13 +35,14 @@ napake.
 
 | kaj | na kom | stanje |
 | --- | --- | --- |
-| `git push` + *Update* na marketplaceu | Jani | čaka njegovo dovoljenje |
+| `git push` + *Update* na marketplaceu | Jani | **push opravljen 17. 8. 2026** (`7afdda6..4bd1436`, 8 commitov); *Update* na marketplaceu še ni kliknjen |
 | host `umvjwjzdrtamfrcqhopa.supabase.co` na egress allowlist | Andrej (lastnik organizacije) | **prošnja poslana 17. 8. 2026**, čaka odgovor |
-| gradnja dveh poti in tabele v aplikaciji | ni dodeljeno | specifikacija je ta dokument, gradnja še ni začeta |
-| dopolnitev `cf-generate-image` in nov `cf-deliver-draft` | ni dodeljeno | glej razdelek »Kaj mora narediti n8n« |
-| popravek `frodx-image-run` in `frodx-publish-send` | ni dodeljeno | šele ko je pot do slik odločena |
+| podvojitev `PROD 2` v n8n UI | Jani | ni še narejena; MCP tega ne zmore, glej razdelek o kopiji |
+| gradnja dveh poti in tabele v aplikaciji | Claude prek Lovable MCP, po skupnem načrtu | specifikacija je ta dokument, gradnja še ni začeta |
+| dopolnitev `cf-generate-image` in nov `cf-deliver-draft` | Claude prek n8n MCP | glej razdelek »Kaj mora narediti n8n« |
+| popravek `frodx-image-run` in `frodx-publish-send` | Claude | šele ko je pot do slik odločena |
 | RLS Supabase projekta aplikacije | ni preverjeno | do projekta ni dostopa prek Supabase konektorja, ker ga upravlja Lovable |
-| podpis se v `PROD 2` doda dvakrat | odprto od prej | ne dotikamo se, ker je workflow v produkciji |
+| podpis se v `PROD 2` doda dvakrat | odprto od prej | popravi se **v kopiji**, ne v produkciji |
 
 ## Zakaj
 
@@ -233,6 +235,65 @@ pokliče `POST /api/drafts` in vrne `draft_id` ter `edit_url`. Namen ni tehničn
 Claude v celotni verigi nosi **samo nize**: URL slike, besedilo, presojo. Nikoli bajtov, nikoli
 skrivnosti.
 
+## Kopija `PROD 2` namesto poseganja v produkcijo
+
+Odločitev Janija, 17. 8. 2026: **v `PROD 2` se ne posega.** Naredi se kopija, spremembe gredo vanjo, in
+ko kopija deluje, jo postavimo na mesto produkcijske. Tako se za naprej nič ne uniči.
+
+Aplikacija to podpira **brez ene vrstice kode.** URL webhooka je navadno vnosno polje v koraku 4
+(`src/components/wizard/Step4Schedule.tsx`), shranjeno v `localStorage` pod ključem
+`frodx-n8n-webhook`. Za test se prilepi URL kopije, za promocijo URL produkcije. Nič se ne prevaja in
+nič ne deploya.
+
+### Kopijo naredi človek v n8n UI
+
+n8n MCP nima orodja za podvojitev workflowa. Edina pot prek MCP bi bila prepis vseh 100+ nodeov
+(216 kB JSON) v SDK kodo in ustvarjanje novega workflowa, pri čemer se tiho izgubi kakšen parameter in
+kopija ni več kopija. V UI je *Duplicate* pet sekund in je natančna, skupaj s credentiali. Kopijo nato
+spreminja Claude prek MCP.
+
+### Štiri stvari, ki jih je treba v kopiji urediti, preden se aktivira
+
+Kopija si s produkcijo deli vse. Brez teh popravkov dela škodo produkciji.
+
+**1. Pot webhooka.** Dva aktivna workflowa ne moreta imeti iste poti. `frodx-publish` →
+`frodx-publish-v2`.
+
+**2. Urnik onemogoči.** V kopiji je tudi `Daily 7:30 Publish Check` (`30 5 * * *`, torej 7:30 po
+srednjeevropskem času). Če se kopija aktivira z vklopljenim urnikom, **tečeta dva cron joba, ki bereta
+isto tabelo** in objavljata na LinkedIn ter Facebook, torej dvojne objave. Node ostane onemogočen,
+dokler kopija ni produkcijska.
+
+**3. Data Tables so skupne.** Preverjeno v `PROD 2`, kopija bi pisala v produkcijske:
+
+| tabela | koliko nodeov jo uporablja |
+| --- | --- |
+| `FrodX-Pipeline` | 19 |
+| `TBzDVg7ktxYnD4AD` | 4 |
+| `FrodX-Idempotency` | 2 |
+| `FrodX-Social-Posts` | 1 |
+| `B4gKhoK0XqMhnxTD` | 1 |
+
+Vsaj `FrodX-Pipeline` in `FrodX-Social-Posts` naj dobita testni dvojnici in kopija naj se preveže
+nanju; to sta tisti, ki dejansko poganjata objavljanje. Idempotenčna tabela lahko ostane skupna, ker jo
+test samo napolni.
+
+**4. Telegram je ena skupina** (`chatId` `-5299932503`). Testna sporočila padejo v pravo skupino. Bodisi
+se to sprejme in Igorja opozori, bodisi se kopija preveže na testni chat.
+
+Neizogibno ostane, da test ustvari **resnične osnutke v HubSpotu**. So osnutki in se dajo pobrisati;
+`PROD 2` ima za to lastne nodee (`Delete HubSpot Drafts (SL/EN/HR)`).
+
+### Promocija, ko kopija deluje
+
+1. v kopiji se vklopi `Daily 7:30 Publish Check` in se preveže na produkcijske tabele
+2. `PROD 2` se **deaktivira, ne briše** - ostane povratna pot, poleg tega ima n8n zgodovino verzij
+3. v kopiji se pot webhooka nastavi na `frodx-publish`
+4. v aplikaciji se v koraku 4 prilepi nov URL
+
+Ker se v produkcijo ne posega, se v kopiji lahko **končno popravi tudi dvojni podpis**, ki je odprt iz
+prejšnje seje.
+
 ## Vrstni red gradnje
 
 Prve tri točke so neodvisne od tega, kako Claude sliki vidi, zato jih odgovor Andreja ne blokira.
@@ -244,13 +305,19 @@ Prve tri točke so neodvisne od tega, kako Claude sliki vidi, zato jih odgovor A
 5. `frodx-image-run`: zapiše dejansko pot do slik, ko je odločena. Danes ta skill kot trajno rešitev
    navaja SharePoint, kar bo treba popraviti, in ne opozarja, da `web_fetch` slik ne podpira, zato ga
    bo naslednja seja poskusila po nepotrebnem.
-6. dry-run celotne verige, nato prvi živi tek
-7. šele ko nova pot dela: pregled, ali `PROD 2` še potrebuje kaj, in dvojni podpis v njem
+6. podvojitev `PROD 2` v n8n UI in štirje popravki v kopiji, preden se aktivira
+7. dry-run celotne verige proti kopiji, nato prvi živi tek
+8. popravek dvojnega podpisa v kopiji
+9. promocija kopije na produkcijsko pot, `PROD 2` se deaktivira in ohrani
+
+Točke 1 do 5 niso odvisne od odgovora Andreja. Točka 6 lahko teče vzporedno s 1 do 3, ker se kopija ne
+dotika ničesar, kar gradimo v aplikaciji.
 
 ## Kaj namenoma ni v tem obsegu
 
 - brisanje zavrženih slik iz bucketa
-- kakršnokoli spreminjanje `dispatchToN8n` ali `PROD 2`
+- kakršnokoli spreminjanje `dispatchToN8n`
+- kakršenkoli poseg v `PROD 2`; spremembe gredo izključno v kopijo
 - MCP strežnik za aplikacijo - Claudu ne bi nič olajšal, sliko bi bilo še vedno treba prenesti kot
   base64 skozi kontekst, kar je dokazano pokvarjeno, dal pa bi mu pisalni dostop do cele aplikacije
 - avtomatsko izbiranje datuma objave; datum ostane Igorjeva odločitev
