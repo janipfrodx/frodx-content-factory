@@ -36,6 +36,9 @@ def test_stanje_ima_run_blok_na_koraku_ena():
     assert stanje["_run"]["slug"] == "test-tema"
     assert stanje["_run"]["critique_rounds"] == 0
     assert stanje["_run"]["approvals"] == {}
+    # open_tasks mora obstajati ze od zacetka - koraka 1 in 4 vanj piseta,
+    # korak 7 ga bere. Ce ga init ne ustvari, ga korak, ki pise, tiho izpusti.
+    assert stanje["_run"]["open_tasks"] == []
 
 
 def test_stanje_ima_verzijo_1_1():

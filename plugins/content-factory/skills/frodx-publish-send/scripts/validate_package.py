@@ -42,6 +42,31 @@ def _podpis_je_povezava(vsebina: str) -> bool:
     return any(re.search(v, vsebina, re.I | re.S) for v in vzorci)
 
 
+def opozorila(run: dict) -> list:
+    """Neblokirna opozorila iz bloka _run.
+
+    Odprte zadolžitve (`_run.open_tasks`) so zavestno odložene stvari, ne kršitve
+    kontrakta - izpišejo se, a na exit code ne vplivajo. Odločitev Janija,
+    17. 8. 2026: opozori, ne blokiraj.
+    """
+    naloge = (run or {}).get("open_tasks") or []
+    if not isinstance(naloge, list):
+        return ["_run.open_tasks ni seznam - preveri state.json"]
+
+    vrstice = []
+    for naloga in naloge:
+        if not isinstance(naloga, dict):
+            vrstice.append(str(naloga))
+            continue
+        kaj = str(naloga.get("what", "")).strip() or "(zadolžitev brez opisa)"
+        kdo = str(naloga.get("who", "")).strip()
+        korak = naloga.get("step")
+        predpona = f"korak {korak}: " if korak not in (None, "") else ""
+        pripis = f" (odgovoren: {kdo})" if kdo else ""
+        vrstice.append(f"{predpona}{kaj}{pripis}")
+    return vrstice
+
+
 def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
     napake = []
 
@@ -170,8 +195,14 @@ def main() -> int:
     from taxonomy import load_campaigns, load_tags
 
     pkg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    pkg.pop("_run", None)
+    run = pkg.pop("_run", None)
     napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+
+    odprte = opozorila(run)
+    if odprte:
+        print(f"Opozorilo: odprte zadolžitve ({len(odprte)}) - oddaja ni blokirana:")
+        for vrstica in odprte:
+            print(f"  ! {vrstica}")
 
     if napake:
         print(f"Paket ni pripravljen. {len(napake)} kršitev:")

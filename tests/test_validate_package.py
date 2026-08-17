@@ -282,3 +282,90 @@ def test_gate_dela_iz_samostojno_kopiranega_plugina(tmp_path):
         text=True,
     )
     assert r.returncode == 0, r.stdout + r.stderr
+
+
+# --- Popravki po teku 14.-15. 8. 2026: _run.open_tasks opozori, ne blokira ---
+
+ZADOLZITEV = {
+    "what": "hrvaška različica ni šla skozi native pregled",
+    "who": "native govorec hrvaščine",
+    "created_at": "2026-08-15T12:00:00.000Z",
+    "step": 4,
+}
+
+
+def _s_zadolzitvami(tmp_path, naloge):
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["_run"] = {"step": 6, "open_tasks": naloge}
+    pot = tmp_path / "state.json"
+    pot.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
+    return pot
+
+
+def test_opozorila_prazen_seznam_je_tiho():
+    from validate_package import opozorila
+    assert opozorila({"open_tasks": []}) == []
+    assert opozorila({}) == []
+    assert opozorila(None) == []
+
+
+def test_opozorila_izpisejo_kaj_kdo_in_korak():
+    from validate_package import opozorila
+    vrstice = opozorila({"open_tasks": [ZADOLZITEV]})
+    assert len(vrstice) == 1
+    assert "native pregled" in vrstice[0]
+    assert "korak 4" in vrstice[0]
+    assert "native govorec" in vrstice[0]
+
+
+def test_opozorila_prenesejo_nepopolno_zadolzitev():
+    """Zadolžitev brez who/step se izpiše, ne sesuje in ne izgine."""
+    from validate_package import opozorila
+    vrstice = opozorila({"open_tasks": [{"what": "vrstica v vrsti tem ni označena"}, "gol niz"]})
+    assert any("ni označena" in v for v in vrstice)
+    assert any("gol niz" in v for v in vrstice)
+
+
+def test_opozorila_ob_napacnem_tipu_ne_padejo():
+    from validate_package import opozorila
+    vrstice = opozorila({"open_tasks": "ni seznam"})
+    assert len(vrstice) == 1
+    assert "ni seznam" in vrstice[0]
+
+
+def test_odprte_zadolzitve_ne_spremenijo_izida_validacije():
+    """open_tasks je v _run, ki ga validate() ne vidi - paket ostane veljaven."""
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["_run"] = {"open_tasks": [ZADOLZITEV]}
+    assert validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY)) == []
+
+
+def test_cli_z_odprto_zadolzitvijo_opozori_a_vrne_0(tmp_path):
+    pot = _s_zadolzitvami(tmp_path, [ZADOLZITEV])
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "odprte zadolžitve (1)" in r.stdout
+    assert "native pregled" in r.stdout
+    assert "Paket je pripravljen" in r.stdout
+
+
+def test_cli_izpise_opozorilo_tudi_ko_paket_pade(tmp_path):
+    """Opozorilo se ne sme izgubiti zato, ker so v paketu tudi kršitve."""
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["featured_image_alt"] = ""
+    pkg["_run"] = {"open_tasks": [ZADOLZITEV]}
+    pot = tmp_path / "state.json"
+    pot.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
+
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
+    assert r.returncode == 1
+    assert "odprte zadolžitve (1)" in r.stdout
+    assert "featured_image_alt" in r.stdout
+
+
+def test_cli_brez_odprtih_zadolzitev_ne_izpise_opozorila(tmp_path):
+    pot = _s_zadolzitvami(tmp_path, [])
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert "zadolžitve" not in r.stdout

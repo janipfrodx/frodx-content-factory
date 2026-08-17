@@ -70,6 +70,7 @@ def zgradi_stanje(tema: str, slug: str, cas: str) -> dict:
             "brief": {},
             "approvals": {},
             "critique_rounds": 0,
+            "open_tasks": [],
             "skill_versions": {},
         },
     }

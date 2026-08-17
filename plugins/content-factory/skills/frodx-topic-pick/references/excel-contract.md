@@ -13,12 +13,35 @@ Datoteko naj bi polnila ločena rutina `frodx-aeo-watch`, ki še ne obstaja. Do 
 iz HubSpot AEO (Marketing -> AEO -> Recommendations -> zavihek "Owned content", vrstice s CHANNEL = Blog).
 Ta skill jo samo bere in označuje izbrane vrstice.
 
-## OPOZORILO: pisanje prek konektorja ni nujno mogoče
+## Pisanje prek konektorja NI mogoče - potrjeno v živem teku
 
 Preverjeno 14. 8. 2026: v Claude Code sta `sharepoint_update_file` in `sharepoint_upload_file` vrnila
-`permission_error: This tool is not available` - konektor je bil na voljo samo za branje. Korak
-"Pisanje" spodaj (nastavi `status = picked`) bo ob isti omejitvi padel. Če se to zgodi, povej Igorju,
-naj vrstico označi ročno, in NE tiho preskoči označevanja - sicer bo ista tema izbrana še enkrat.
+`permission_error: This tool is not available` - konektor je bil na voljo samo za branje.
+
+Potrjeno v živem teku 14.-15. 8. 2026 v Cowork seji: Microsoft 365 konektor tam ponuja samo
+`sharepoint_search`, `sharepoint_folder_search`, `read_resource`, `outlook_*`, `teams_*`, `get_me`,
+`chat_message_search` - **nobenega orodja za pisanje.** Vrstica `aeo-001` je bila izbrana in obdelana
+skozi vso verigo, v datoteki pa je ostala `status = new`, `run_slug` prazen.
+
+**Zato velja do nadaljnjega:** korak "Pisanje" spodaj ni izvedljiv avtomatsko. Igorju (ali Janiju)
+povej, naj vrstico označi ročno, in v `_run.topic_source.writeback_status` zapiši, da označevanje ni
+bilo izvedeno, s kratkim razlogom. **Tega koraka nikoli ne preskoči tiho** - neoznačena vrstica pomeni,
+da bo ista tema predlagana ob vsakem naslednjem teku in da vrsta tem trajno stoji.
+
+### Dogovorjena rešitev (Janijeva odločitev 17. 8. 2026, izvedba še ni narejena)
+
+Vrsta se preseli iz Excela v **n8n Data Table**, z dvema kratkima workflowoma:
+
+1. **zapis priporočil** - ko Claude pobere priporočila iz HubSpot AEO, jih pošlje temu workflowu, ki jih shrani v Data Table (nadomesti ročno polnjenje Excela in bodočo rutino `frodx-aeo-watch`);
+2. **označitev izbrane teme** - ko je tema izbrana, klic v ta workflow nastavi `status = picked` in `run_slug`.
+
+Ob gradnji ne pozabi tretjega dela: **branje vrste**. n8n MCP zna v Data Table samo vstavljati vrstice
+(`add_data_table_rows`); orodja za branje ali posodabljanje vrstic **ni** (preverjeno 17. 8. 2026 - na
+voljo so le `search_data_tables`, `create_data_table`, `rename_data_table`,
+`add/delete/rename_data_table_column`, `add_data_table_rows`). Branje in posodobitev vrstice morata
+torej oba teči skozi workflow z Data Table vozliščem, ne prek MCP-ja neposredno.
+
+Dokler to ne stoji, ta datoteka in ročno označevanje ostaneta v veljavi.
 
 | Stolpec | Tip | Opis |
 |---|---|---|

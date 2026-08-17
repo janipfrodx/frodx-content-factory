@@ -13,6 +13,8 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 
 1. Preberi `state.json`. Vzemi `languages.sl.content`. Če je prazen, povej Igorju, da kolumne še ni, in končaj.
 2. Preberi `references/critique-prompt.md` v celoti. To je vsebina, ki jo pošlješ kot `critiquePrompt` - v vsakem krogu enaka, se med krogi ne spreminja.
+
+   **Pred pošiljanjem zamenjaj `{{DANES}}` z današnjim datumom** v obliki `17. 8. 2026`. Zamenjava se zgodi v nizu, ki ga pošlješ - datoteke ne spreminjaj. Če `{{DANES}}` v prompt ne vstaviš, ocenjevalec ne ve, kateri dan je, in bo pravilne letnice razglašal za halucinacije: to se je zgodilo 15. 8. 2026, ko je Gemini kot napako navedel Gartnerjevo raziskavo iz leta 2025, ker jo je bral kot prihodnost. Ocenjevalca sta modela s presekom znanja pred današnjim datumom - oba, ne samo eden.
 3. Nastavi delovno spremenljivko `besedilo` = `languages.sl.content` iz `state.json`. To je vhod v **krog 1**.
 4. Za `krog` = 1, 2, 3 (največ trikrat), ponavljaj:
 
@@ -45,11 +47,17 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 
    b. Preberi izhod prek `get_execution` iz vozlišč `OpenAI Critique` in `Gemini Critique`.
 
+   **Če je vozlišče padlo** (npr. HTTP 404, ker model ni več na voljo - to se je zgodilo 15. 8. 2026 z `models/gemini-3-pro-preview`), to **ni sodba `ZA POPRAVEK`**. Odpoved ocenjevalca ne sme šteti kot pripomba in ne sme tiho porabiti kroga:
+
+   - Zapiši napako dobesedno v `round-<krog>.json` kot `openai_error` oz. `gemini_error` in v tisto polje kritike (`openai` / `gemini`) daj `null`, ne prazen niz.
+   - **Če je padel eden:** nadaljuj s tistim, ki je odgovoril. V zapisu kroga in Igorju izrecno povej, da je polovica presoje manjkala - da ni videti, kot da sta se ocenjevalca strinjala.
+   - **Če sta padla oba:** zanko ustavi takoj. Ne popravljaj besedila po nobeni pripombi (nobene ni) in kroga ne štej v `_run.critique_rounds`. Povej Igorju in Janiju, katero vozlišče je padlo in s katero napako. Popravek je v n8n, ne v besedilu - Jani ga naredi, potem se korak ponovi.
+
    c. Presodi obe kritiki. Nista enakovredni glasovi - ti si urednik. Pripombo, ki je napačna ali gre proti Igorjevemu glasu, zavrni in to zapiši (v `changes` ali v pogovoru z Igorjem, ne v `state.json` kot uradno spremembo).
 
-   d. Ugotovi `verdict` za ta krog:
-      - **Če oba ocenjevalca rečeta `OBJAVLJIVO`:** `verdict` = `"ok"`, `changes` = `[]`. Besedilo se ne spremeni.
-      - **Sicer** (vsaj eden ocenjevalec reče `ZA POPRAVEK`): `verdict` = `"revise"`. Popravi tisto, kar bi ustavilo objavo, ne vsega, kar je kdo omenil. Rezultat popravka je novo besedilo - imenuj ga `popravljeno`, in zapiši, kaj si spremenil, v `changes`.
+   d. Ugotovi `verdict` za ta krog. Šteje samo tisti ocenjevalec, ki je **odgovoril** - padlo vozlišče ni glas:
+      - **Če vsi ocenjevalci, ki so odgovorili, rečejo `OBJAVLJIVO`:** `verdict` = `"ok"`, `changes` = `[]`. Besedilo se ne spremeni. Če je odgovoril samo eden, je `verdict` `"ok"`, a v zapisu kroga in Igorju povej, da je sodba enoglasna zato, ker je drugi ocenjevalec padel - ne ker sta se strinjala.
+      - **Sicer** (vsaj eden od tistih, ki so odgovorili, reče `ZA POPRAVEK`): `verdict` = `"revise"`. Popravi tisto, kar bi ustavilo objavo, ne vsega, kar je kdo omenil. Rezultat popravka je novo besedilo - imenuj ga `popravljeno`, in zapiši, kaj si spremenil, v `changes`.
 
    e. Zapiši `critique/round-<krog>.json`:
 
@@ -59,10 +67,15 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
      "input": "<besedilo, kot je bilo POSLANO v ta krog v točki a, pred morebitnim popravkom>",
      "openai": "<kritika>",
      "gemini": "<kritika>",
+     "openai_error": null,
+     "gemini_error": null,
      "changes": ["skrajšal hook na en prizor", "zamenjal splošno trditev s številko iz vira"],
+     "rejected": ["<pripomba, ki si jo zavrnil> - <zakaj>"],
      "verdict": "revise"
    }
    ```
+
+   `openai_error` in `gemini_error` sta `null`, kadar je vozlišče odgovorilo. Če je padlo, gre vanj dobesedno sporočilo napake, pripadajoča kritika pa je `null` (glej točko b). `rejected` je seznam pripomb, ki jih kot urednik zavrneš, vsaka s kratko utemeljitvijo - to je zapis presoje, ne opravičilo.
 
    `input` je vedno besedilo, ki je šlo v n8n v točki a tega kroga - **ne** popravljena verzija. Če je `verdict` `"ok"`, je `changes` `[]` in `input` ostane veljavno besedilo (nespremenjeno).
 
@@ -78,8 +91,9 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 ## Ustavitev
 
 Ustavi se, ko:
-- **oba** ocenjevalca rečeta `OBJAVLJIVO` (v katerem koli krogu), ali
-- si opravil **tri kroge**.
+- **vsi ocenjevalci, ki so odgovorili**, rečejo `OBJAVLJIVO` (v katerem koli krogu), ali
+- si opravil **tri kroge**, ali
+- sta **oba ocenjevalca padla** v istem krogu (glej postopek, točka b - takrat ni presoje, ki bi jo bilo mogoče uporabiti).
 
 Po treh krogih ne padeš z napako. Igorju pokaži zadnjo verzijo (`languages.sl.content`), odprte pripombe iz zadnjega kroga in kaj si zavrnil ter zakaj. Odloči on.
 
@@ -100,3 +114,5 @@ Dirigent (`frodx-content-factory`) po tem vpraša Igorja, ali je popravljena ver
 - Ne dodajaš številk, ki jih v izvirniku ni, da bi zadovoljil pripombo o dokazih. Če manjka dokaz, to povej Igorju.
 - Ne pošiljaš v krog 2 ali 3 izvirnega besedila iz state.json - pošiljaš zadnjo popravljeno verzijo (glej postopek, točka 4.a).
 - Ne kličeš četrtega kroga, tudi če bi Igor rekel »samo še enkrat« - to je njegova odločitev po tem, ko mu pokažeš zadnjo verzijo, ne del te zanke.
+- **Ne popraviš pravilnega podatka, ker ocenjevalec trdi, da je časovno nemogoč.** Ocenjevalec ima starejši presek znanja kot ti. Preden se dotakneš letnice, datuma ali številke z navedenim virom, jo preveri pri viru (`WebFetch` na navedeno povezavo). Če vir potrdi podatek, pripombo zavrni in to zapiši v `rejected`. Kolumno drži pokonci prav preverljivost številk - popravek v napačno smer je hujši od neupoštevane pripombe.
+- Ne obravnavaš padlega vozlišča kot sodbo. Napaka ocenjevalca ni »ZA POPRAVEK« in ni »OBJAVLJIVO« (glej postopek, točka b).

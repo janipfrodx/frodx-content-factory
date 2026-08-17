@@ -18,7 +18,9 @@ Zadnji korak. Validira in preda.
 python3 scripts/validate_package.py <pot-do-state.json>
 ```
 
-Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-publish-send/`); enako velja za `outbox/` v koraku 5 spodaj - nastane relativno na CWD ob zagonu ukaza. Cowork-ovo dejansko CWD ob zagonu skilla ni preverjeno v tej seji - Jani to preveri ob prvi živi namestitvi (Task 12) in po potrebi popravi na absolutno pot.
+Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-publish-send/`); enako velja za `outbox/` v koraku 5 spodaj - nastane relativno na CWD ob zagonu ukaza.
+
+**`outbox/` ne preživi seje - preverjeno 14.-15. 8. 2026.** V Cowork seji je CWD `/home/claude`, efemerni vsebnik. Zato ob dry-runu telo zahtevka **izpiši tudi v pogovor** (vsaj `package` brez slike, ki je velika), ne samo v `outbox/<slug>.json`. Datoteka, ki umre s sejo, ni predaja.
 
 3. **Če gate pade (exit 1):** ne pošiljaj. Pokaži Igorju seznam kršitev in za vsako povej, kateri korak jo popravi:
 
@@ -31,6 +33,15 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    | dolgi pomišljaj, prepovedana fraza, manjkajoč podpis | 2 (sl), 4 (en, hr) |
 
    Ne popravljaj polj sam. Vrni Igorja na pristojni korak.
+
+   **Opozorilo o odprtih zadolžitvah - ne blokira, a ga ne preslišiš.** Gate poleg kršitev izpiše tudi vrstice `Opozorilo: odprte zadolžitve (N) - oddaja ni blokirana:` iz `_run.open_tasks`. Te ne vplivajo na exit code (Janijeva odločitev 17. 8. 2026: opozori, ne blokiraj), ampak:
+
+   - vsako odprto zadolžitev **preberi Igorju na glas** - kaj je odprto, kdo je odgovoren, iz katerega koraka je;
+   - vprašaj ga izrecno, ali paket kljub temu odda. Šele njegov »oddaj« je gate za korak 7;
+   - če reče, naj počaka, ne pošiljaj in ne piši v `outbox/` - tek ostane na koraku 6;
+   - zadolžitev iz `state.json` **ne brisi**, da bi bil izpis čist. Odstrani jo samo, ko človek potrdi, da je opravljena.
+
+   Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena) in brez tega opozorila gre nepregledana v objavo.
 
 4. **Če gate gre skozi (exit 0):** sestavi telo zahtevka.
    - `package` = `state.json` brez ključa `_run`
