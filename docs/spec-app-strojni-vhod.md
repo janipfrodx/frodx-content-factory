@@ -5,6 +5,43 @@ Stanje 17. 8. 2026. Namenjeno izvedbi v Lovableu. Nič od tega še ni zgrajeno.
 Aplikacija: `frodx-content-app`, Lovable projekt `90b43584-6783-4de3-aca2-e95435c76de7`,
 Supabase projekt `umvjwjzdrtamfrcqhopa`.
 
+## Stanje 17. 8. 2026
+
+Kje smo, da se ta specifikacija bere v pravem kontekstu.
+
+**Veriga skillov stoji.** Naloge 1 do 11 iz načrta so zaključene. Po prvem živem teku 14. do 15. 8.
+so popravljene napake iz poročila (kritika, izbira teme, `open_tasks` kot opozorilo, terminologija).
+63 testov prehaja.
+
+**Sedem commitov ni pushanih.** Dokler ne gre `git push` in klik *Update* na marketplaceu, Cowork
+teče po stari sinhronizirani kopiji plugina. To je v prvem teku že enkrat povzročilo lažno prijavo
+napake.
+
+**Dostavna pot je razjasnjena in odločena.** Aplikacija ostane v verigi. Podrobno v
+`docs/popravki-po-teku-2026-08-15.md`, razdelek »Dopolnitev 17. 8. 2026«. Na kratko:
+
+- `PROD 2 - FrodX Content Publishing Pipeline` (`3lK6pjOfOAa0BxDm`) je že celotna dostavna pot do
+  HubSpota, Telegrama in socialnih omrežij. **Ostane v produkciji nedotaknjen**, dokler nov ni
+  pripravljen za produkcijo (Janijeva odločitev).
+- Slike ne sprejema kot datoteko, ampak kot **`featured_image_url`**. Base64 v `frodx-publish-send`
+  je bil rešitev za problem, ki ga dostavna pot nikoli ni imela.
+- Aplikacija že zna naložiti sliko in narediti javni URL, validirati paket, in podpisati ter oddati
+  na webhook. Manjka samo strojni vhod, kar je predmet tega dokumenta.
+- Aplikacija se ne podvaja s Telegramom: aplikacija je **pred** `frodx-publish`, Telegram potrjuje
+  osnutke **za njim**.
+
+**Odprto in na kom je.**
+
+| kaj | na kom | stanje |
+| --- | --- | --- |
+| `git push` + *Update* na marketplaceu | Jani | čaka njegovo dovoljenje |
+| host `umvjwjzdrtamfrcqhopa.supabase.co` na egress allowlist | Andrej (lastnik organizacije) | **prošnja poslana 17. 8. 2026**, čaka odgovor |
+| gradnja dveh poti in tabele v aplikaciji | ni dodeljeno | specifikacija je ta dokument, gradnja še ni začeta |
+| dopolnitev `cf-generate-image` in nov `cf-deliver-draft` | ni dodeljeno | glej razdelek »Kaj mora narediti n8n« |
+| popravek `frodx-image-run` in `frodx-publish-send` | ni dodeljeno | šele ko je pot do slik odločena |
+| RLS Supabase projekta aplikacije | ni preverjeno | do projekta ni dostopa prek Supabase konektorja, ker ga upravlja Lovable |
+| podpis se v `PROD 2` doda dvakrat | odprto od prej | ne dotikamo se, ker je workflow v produkciji |
+
 ## Zakaj
 
 Aplikacija danes vse, kar potrebuje veriga, **že zna**: naloži sliko v `content-images` in vrne javni
@@ -177,6 +214,38 @@ Po **uspešnem** `dispatchToN8n` (rezultat `accepted`) se vrstica označi: `stat
 `dispatched_at = now()`, `dispatch_result` = vrnjeni rezultat. Tako se isti osnutek ne odda dvakrat.
 Pri `duplicate`, `rejected`, `missing_key` ali `error` vrstica ostane `new`, da je poskus mogoče
 ponoviti.
+
+## Kaj mora narediti n8n
+
+Ni predmet te specifikacije in še ni zgrajeno, a brez tega ti poti nimata klicalca. Zapisano tu, da se
+slika ne razgubi.
+
+**`cf-generate-image`** je obstoječi `lHc3NdejxehMyc9O` (`Generiraj sliko (Content Factory)`), webhook
+`generate-image`, trenutno `active: false`. Dopolniti ga je treba tako, da po generiranju obeh slik
+vsako pošlje na `POST /api/images` (credential tipa Header Auth z `INGEST_API_KEY`) in Claudu vrne oba
+javna URL-ja. Danes vrača `filesystem-v2` reference in pomanjšan base64, kar je oboje neuporabno.
+
+**`cf-deliver-draft`** je nov kratek workflow. Prejme od Clauda paket in izbrani `featured_image_url`,
+pokliče `POST /api/drafts` in vrne `draft_id` ter `edit_url`. Namen ni tehnični, ampak varnostni:
+`INGEST_API_KEY` ostane v n8n credentialu in nikoli ne pride v Claudov kontekst. Isto velja za
+`HMAC_SECRET`, ki ostane v aplikaciji.
+
+Claude v celotni verigi nosi **samo nize**: URL slike, besedilo, presojo. Nikoli bajtov, nikoli
+skrivnosti.
+
+## Vrstni red gradnje
+
+Prve tri točke so neodvisne od tega, kako Claude sliki vidi, zato jih odgovor Andreja ne blokira.
+
+1. dve poti in tabela osnutkov v aplikaciji (ta dokument)
+2. dopolnitev `cf-generate-image` z nalaganjem na `/api/images`
+3. nov `cf-deliver-draft`
+4. `frodx-publish-send`: neha sestavljati base64, pošilja `featured_image_url` prek `cf-deliver-draft`
+5. `frodx-image-run`: zapiše dejansko pot do slik, ko je odločena. Danes ta skill kot trajno rešitev
+   navaja SharePoint, kar bo treba popraviti, in ne opozarja, da `web_fetch` slik ne podpira, zato ga
+   bo naslednja seja poskusila po nepotrebnem.
+6. dry-run celotne verige, nato prvi živi tek
+7. šele ko nova pot dela: pregled, ali `PROD 2` še potrebuje kaj, in dvojni podpis v njem
 
 ## Kaj namenoma ni v tem obsegu
 
