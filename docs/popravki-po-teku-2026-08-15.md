@@ -202,3 +202,103 @@ Graph vzorca kot A3.
 - **Opozorilo validacijske sheme MCP orodja** pri vozlišču `Gemini Image`
   (`Invalid value for "parameters.resource"`) - označeno kot `preExisting`, workflow deluje.
   Ni preverjeno, ali je napaka v shemi orodja ali v workflowu.
+
+## Dopolnitev 17. 8. 2026: preverjena dostavna pot
+
+Ta razdelek **nadomešča** ugotovitve iz razdelka 3b tam, kjer si nasprotujeta. Prebrani so bili vsi
+nodei `PROD 2 - FrodX Content Publishing Pipeline` (`3lK6pjOfOAa0BxDm`) in strežniške funkcije
+Lovable aplikacije `frodx-content-app` (`90b43584-6783-4de3-aca2-e95435c76de7`).
+
+### Kaj `PROD 2` je in kaj zahteva
+
+Webhook `POST https://frodxai.app.n8n.cloud/webhook/frodx-publish`, aktiven, v produkciji.
+Zaporedje: HMAC preverba (`x-signature`, `$vars.HMAC_SECRET`, podpis nad `JSON.stringify(body)`) ->
+zahteva `body.meta.idempotency_key` (sicer 400) -> pogled v idempotenčno tabelo (409 ob ponovitvi) ->
+202 -> validacija -> markdown v HTML -> prenos slike z URL-ja in nalaganje v HubSpot files ->
+SL osnutek + EN/HR variaciji -> Telegram potrditve po jezikih -> HubSpot razporejanje ->
+socialne objave (LinkedIn Co/Pe, Facebook) -> dnevni preverjalnik ob 7:30.
+
+Obvezna polja, ki jih validacija zahteva (drugače vrže `Validation failed`):
+
+- `publish_at` ali `meta.publish_date`, **vsaj 10 minut v prihodnosti**, brano kot ura po Europe/Ljubljana
+- `featured_image_url` - **mora biti anonimno dosegljiv `http(s)` URL**
+- `meta`, slug, HubSpot author id (ima privzetega), `social_posts[0]`
+- kampanja: `campaign.name` ali `campaign.utm.campaign` ali `topic_cluster` (dovolj eno)
+- tagi: `hubspot_tag_ids` ali `languages.<jezik>.tag_id`; pogoj je `some`, ne `every`, zato
+  **nepopolna tag-taksonomija dostave ne blokira**
+- za vse tri jezike: `content`, `seo_title`, `meta_description`
+
+Posledica za sliko: vozlišče `Download Featured Image` je navaden HTTP klic **brez avtentikacije**.
+SharePoint zato ne more biti vir slike za objavo. Slika potrebuje javni URL.
+
+### Kaj aplikacija že zna
+
+Strežniške funkcije v `src/lib/content.functions.ts`, vse z `requireSupabaseAuth`:
+
+- `extractContent(docxBase64)` - docx v `ContentJson`, SEO in kampanjo naredi Gemini prek Lovable
+  gatewaya, tage izpelje iz kampanje, prvo vdelano sliko naloži v `content-images` in vrne javni URL
+- `uploadFeaturedImage(imageBase64, filename, mimeType)` - naloži v `content-images`, vrne javni URL
+- `generateImageAlts(imageUrl, titles)` - alt teksti prek vision modela
+- `dispatchToN8n(content, publishDate, featuredImageUrl, idempotencyKey)` - **sam podpiše HMAC** in
+  pošlje na webhook, vrne 202 / 409 / 401 / 400 kot razumljivo sporočilo
+
+Čarovnik: `Step1Upload` -> `Step2Processing` -> `Step3EditForm` -> `Step4Schedule` -> `Step5Confirm`.
+
+**Zato `/api/ingest` ne obstaja:** vse to so `createServerFn`, ki jih kliče prijavljen brskalnik.
+Doslej ni bilo klicalca brez seje. Manjka torej strojni vhod, ne zmožnost.
+
+### Odločena zasnova (Jani, 17. 8. 2026)
+
+Aplikacija **ostane v verigi** in ostane taka, kot je. Igor v njej pregleda paket ter nastavi datum
+objave bloga in datume socialnih objav. To se ne podvaja s Telegramom: aplikacija je **pred**
+`frodx-publish`, Telegram potrjuje osnutke **za njim**.
+
+Zato tudi velja naprej pravilo v `frodx-publishing-meta` in `frodx-publish-send`, da veriga
+`publish_at` ne nastavlja - datum doda `dispatchToN8n` iz Igorjevega izbirnika.
+
+```
+Claude -> n8n cf-generate-image {oba prompta, run_slug}
+            OpenAI Image + Gemini Image
+            obe POST -> aplikacija /api/images (x-api-key) -> dva javna URL-ja
+            (opcijsko) obe na SharePoint za arhiv
+          <- {openai: {url, ...}, gemini: {url, ...}}
+Claude    pogleda obe, izbere, napise alt tekste
+          -> n8n cf-deliver-draft {paket, featured_image_url, run_slug}
+               POST -> aplikacija /api/drafts (x-api-key)
+Igor      odpre osnutek v carovniku na koraku 3, pregleda, nastavi datume, potrdi
+          -> dispatchToN8n (nedotaknjen) -> PROD 2 -> HubSpot + Telegram + social
+```
+
+Claude nosi samo nize: URL slike, besedilo, presojo. Nikoli bajtov, nikoli HMAC skrivnosti, nikoli
+API ključa aplikacije - ta je v n8n credentialu.
+
+**Zavrnjeni možnosti in zakaj:**
+
+- *MCP strežnik za aplikacijo, da Claude piše neposredno.* Ne reši ničesar: sliko bi še vedno bilo
+  treba prenesti skozi kontekst kot base64, kar je dokazano pokvarjeno. Poleg tega da Claudu pisalni
+  dostop do cele aplikacije, medtem ko dve ozki poti data točno toliko, kolikor je treba.
+- *Vse v Coworku brez aplikacije.* Vrže stran izbirnik datumov, mapiranje kampanj in tagov ter
+  `dispatchToN8n`, ki že podpisuje pravilno, in Igorju vzame vizualni pregled pred objavo.
+
+**`PROD 2` ostane v produkciji, dokler nov ni pripravljen za produkcijo** (Janijeva odločitev). Nič v
+njem se ne spreminja, tudi dvojni podpis ne, dokler se ga ne loti posebej.
+
+### Kaj je treba zgraditi
+
+| kdo | delo |
+| --- | --- |
+| aplikacija | `POST /api/images` (base64 -> javni URL, obstoječa logika `uploadFeaturedImage`, `x-api-key`) |
+| aplikacija | `POST /api/drafts` (`{content, featured_image_url, run_slug}` -> vrstica osnutka, vrne `draft_id`) |
+| aplikacija | tabela osnutkov in pot, ki osnutek odpre v čarovniku na koraku 3 |
+| n8n | `cf-generate-image` dopolniti z nalaganjem obeh slik na `/api/images` |
+| n8n | nov kratek `cf-deliver-draft` |
+| skilli | `frodx-publish-send` neha delati base64, pošilja `featured_image_url` |
+| skilli | `frodx-image-run` dobi pravo pot do slik |
+
+Nedotaknjeno: `PROD 2`, `dispatchToN8n`, čarovnikovi koraki 3-5.
+
+### Edina odprta neznanka
+
+Ali Claude v Coworku sliko **vidi** z javnega `https` URL-ja. Dokazano je le `read_resource` na
+Microsoft 365. Če javni URL zadošča, SharePoint v tej verigi ni potreben in OneDrive credential ni
+več blokada - potreben je le, če hočemo arhiv. Preveri se v Coworku z eno sliko iz `content-images`.
