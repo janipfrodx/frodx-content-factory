@@ -17,6 +17,13 @@ To ni teoretično. V teku 14.-15. 8. 2026 je Cowork iskal Excel s temami na poti
 
 Urejanje datotek v `synced/` ne spremeni ničesar trajno - naslednji *Update* jih povozi.
 
+### Pri vsaki spremembi: dvigni verzijo
+
+Cowork gumb *Update* je omogočen samo, če se `version` v `.claude-plugin/marketplace.json` in
+`plugins/content-factory/.claude-plugin/plugin.json` razlikuje od nameščene. Če ostane enaka, je
+gumb siv, čeprav je v repu novejša koda. Pri vsakem commitu, ki spremeni kaj v `plugins/`, dvigni
+obe verziji za isto številko.
+
 ## Uporaba
 
 V Coworku napiši `/frodx-content-factory` ali »nova kolumna«. Skill te vodi skozi sedem korakov in med njimi čaka na tvojo potrditev.
