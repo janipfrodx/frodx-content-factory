@@ -216,10 +216,28 @@ obliki, ki jo veriga izdela.
 
 ## Pogoj zunaj aplikacije
 
-Da Claude v Coworku kandidatki **vidi** z javnega URL-ja, mora biti domena
-`umvjwjzdrtamfrcqhopa.supabase.co` na seznamu dovoljenih domen za Coworkovo orodje `bash_tool`.
-Preverjeno 17. 8. 2026: klic na `frodx.com` je zavrnil egress proxy z 96-bajtnim besedilnim
-sporočilom, ne s sliko. Če dovoljenja ni mogoče dobiti, ostane dokazana pot prek Microsoft 365
-(`read_resource` na `file:///{driveId}/{itemId}`), ki pa zahteva OneDrive/SharePoint credential v n8n.
-Ta izbira ne vpliva na nič v tej specifikaciji: javni URL slike je potreben v vsakem primeru, ker ga
-zahteva vozlišče `Download Featured Image` v `PROD 2`.
+Ta izbira **ne vpliva na nič v tej specifikaciji**: javni URL slike je potreben v vsakem primeru, ker
+ga zahteva vozlišče `Download Featured Image` v `PROD 2`. Gre le za to, kako Claude kandidatki
+**vidi**, preden izbere.
+
+Preverjeno v Coworku 17. 8. 2026:
+
+| pot | izid |
+| --- | --- |
+| `web_fetch` na slikovni URL | **ne deluje.** Orodje vrne `Image content is not supported`; podpira le besedilne in HTML vsebine |
+| `bash_tool` + `curl` na javni URL | **blokirano.** Egress allowlist za `bash_tool` obsega samo pakirne vire (npm, pypi, crates, GitHub, Ubuntu). `frodx.com` in `*.supabase.co` sta zunaj njega. Vrnjeni 403 je proxyjev, ne Supabaseov |
+| `read_resource` na `file:///{driveId}/{itemId}` (Microsoft 365) | **deluje.** MCP konektorji niso omejeni z istim allowlistom |
+
+Ostaneta torej dve trajni poti:
+
+1. **Lastnik organizacije doda host `umvjwjzdrtamfrcqhopa.supabase.co`** v nastavitve network egressa.
+   Nato Cowork sliko prenese s `curl` in jo prebere z `Read`. Manj dela: n8n nalaga samo v aplikacijo.
+   Prosi za ta en host, **ne za `*.supabase.co`**.
+2. **Microsoft 365.** n8n naloži obe sliki tudi na SharePoint in vrne `driveId` in `itemId`. Edina že
+   dokazana pot, a zahteva OneDrive/SharePoint credential v n8n (verjetno tudi registracijo aplikacije
+   v Azure, torej najbrž prav tako administratorja) in dodatna vozlišča v workflowu.
+
+**Vmesna pot, ki ne potrebuje nikogar:** ko `/api/images` obstaja, dobi človek dva javna URL-ja. Sliki
+odpre v brskalniku in ju povleče v Coworkov pogovor - naložena slika je Claudu vidna. To je bistveno
+manj dela od današnjega obhoda, kjer je treba sliki iskati v n8n izvedbi. Veriga je s tem uporabna
+takoj, trajna rešitev pa lahko pride pozneje.

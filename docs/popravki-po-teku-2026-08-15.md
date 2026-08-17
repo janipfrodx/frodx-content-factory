@@ -297,8 +297,23 @@ njem se ne spreminja, tudi dvojni podpis ne, dokler se ga ne loti posebej.
 
 Nedotaknjeno: `PROD 2`, `dispatchToN8n`, čarovnikovi koraki 3-5.
 
-### Edina odprta neznanka
+### Kako Claude sliki vidi - preverjeno 17. 8. 2026 v Coworku
 
-Ali Claude v Coworku sliko **vidi** z javnega `https` URL-ja. Dokazano je le `read_resource` na
-Microsoft 365. Če javni URL zadošča, SharePoint v tej verigi ni potreben in OneDrive credential ni
-več blokada - potreben je le, če hočemo arhiv. Preveri se v Coworku z eno sliko iz `content-images`.
+Vprašanje »ali zadošča javni URL« je zdaj zaprto. **Ne zadošča.**
+
+- `web_fetch` na slikovni URL vrne `Image content is not supported` - orodje podpira samo besedilne
+  in HTML vsebine.
+- `bash_tool` + `curl` je blokiran na omrežni ravni. Egress allowlist obsega samo pakirne vire
+  (`api.anthropic.com`, npm, pypi, crates, GitHub, Ubuntu). `frodx.com` in `*.supabase.co` sta zunaj
+  njega. Vrnjeni 403 je proxyjev status za »blokirano«, ne odgovor Supabase - iz njega se o bucketu
+  ne sme sklepati nič.
+- `read_resource` na `file:///{driveId}/{itemId}` **deluje**. MCP konektorji niso omejeni z istim
+  allowlistom kot `bash_tool`.
+
+Trajni poti sta zato dve, obe najbrž zahtevata administratorja: lastnik organizacije doda host
+`umvjwjzdrtamfrcqhopa.supabase.co` v nastavitve network egressa (manj dela, n8n nalaga samo v
+aplikacijo), ali pa gremo prek Microsoft 365 (dokazano, a nov credential v n8n in dodatna vozlišča).
+
+Vmesna pot, ki ne potrebuje nikogar: ko `/api/images` obstaja, človek odpre dva javna URL-ja in sliki
+povleče v Coworkov pogovor. Podrobneje v `docs/spec-app-strojni-vhod.md`, razdelek
+»Pogoj zunaj aplikacije«.
