@@ -148,6 +148,46 @@ metoda `modelSearch`):
 Nič drugega v workflowu ni spremenjeno. Oba modela imata presek znanja pred današnjim datumom, zato
 popravek prompta z datumom (C2) ostane nujen - nadgradnja modela ga ne nadomesti.
 
+### 3b. Predaja paketa aplikaciji - preverjeno 17. 8. 2026
+
+Pregledan je bil Lovable projekt **`frodx-content-app`** (`90b43584-6783-4de3-aca2-e95435c76de7`,
+https://frodx-content-app.lovable.app), cel seznam 101 datoteke.
+
+**Ingest API ne obstaja.** V `src/routes/` sta samo `auth.tsx` in `_authenticated/index.tsx`; API poti
+ni, v `supabase/` so samo migracije, brez edge funkcij. `/api/ingest`, na katerega cilja
+`frodx-publish-send`, torej nima ničesar na drugi strani. Dry-run ostaja edino možno vedenje - ne po
+odločitvi, ampak ker endpointa ni.
+
+**Kar aplikacija že ima in olajša gradnjo:**
+
+- `src/lib/content-schema.ts` → `contentJsonSchema` je **identičen našemu paketu**: `meta` (title,
+  exported_at, version), `universal.slug`, `social_posts[{text, publish_date}]`, `languages.{sl,en,hr}`
+  z vsemi polji, vključno s `featured_image_alt`, `topic_cluster`, `campaign_name`, `tag_id/name/slug`.
+  Gate torej že proizvaja obliko, ki jo aplikacija razume - preslikave ne bo treba pisati.
+- Javni Supabase bucket **`content-images`** (migracija 28. 5. 2026), z branjem za vse in pisanjem
+  samo prek `service_role` (migracija 3. 6. 2026 je permisivne politike odstranila). Slike se
+  nalagajo strežniško prek `supabaseAdmin`.
+
+**Predlagana delitev vlog v verigi:**
+
+| Kdo | Kaj nosi |
+|---|---|
+| n8n | vse bajte: generira sliki, naloži na SharePoint, ob predaji sliko prenese in odda aplikaciji |
+| Claude | samo besedilo in presojo: pogleda sliki prek `read_resource`, izbere, napiše alt tekste in meta podatke, pošlje paket kot JSON |
+| aplikacija | ingest: validira po `contentJsonSchema`, sliko da v `content-images`, ustvari osnutek, vrne 202 / 409 / 422 |
+
+Ključno načelo: **Claude nikoli ne prenaša binarnih podatkov.** `read_resource` mu sliko pokaže, ne da
+mu bajtov - kodiranja v base64 zato ne more opraviti, in vsak poskus tega je isti razred napake, ki je
+ubil korak 5. Posledica za `frodx-publish-send`: neha sestavljati base64 in namesto tega kliče dostavni
+workflow z `{package, image: {driveId, itemId}, run_slug, idempotency_key}`. Stranski dobitek je, da
+API ključ aplikacije ostane v n8n credentialu in nikoli ne pride v Claudov kontekst.
+
+**Opomba o nasprotju v zapisih:** obstaja opomba, da ingest endpoint že obstaja. Koda aplikacije to
+zavrača. Najverjetnejša razlaga je, da je opomba merila na n8n webhook `frodx-publish` v
+`PROD 2 - FrodX Content Publishing Pipeline` (`3lK6pjOfOAa0BxDm`), ne na Lovable aplikacijo. Preden se
+gradi dostava, je treba razmejiti, kaj dela tisti pipeline in kaj naj dela nov ingest, da se predaja
+ne podvoji.
+
 ### 4. Obstojnost mape teka (D1, trajna rešitev)
 
 Zdaj samo dokumentirano. Trajna rešitev je sinhronizacija mape teka na SharePoint prek istega
