@@ -9,7 +9,7 @@
     {
       "name": "content-factory",
       "source": "./plugins/content-factory",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Veriga skillov za produkcijo FrodX kolumn in socialnih objav: izbira teme, pisanje, kritika, transkreacija, slika, meta podatki, predaja v objavo."
     }
   ]
