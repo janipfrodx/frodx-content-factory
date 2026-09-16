@@ -29,7 +29,7 @@ Ta blok se pred pošiljanjem odstrani.
 | `slug` | ime teka |
 | `step` | zadnji dokončan korak, 1-7 |
 | `status` | `awaiting_topic`, `awaiting_approval`, `in_progress`, `ready`, `sent` |
-| `topic_source` | `{excel_row_id, picked_at}` iz koraka 1 |
+| `topic_source` | `{hubspot_prompt_id, hubspot_recommendation_id, visibility, citation_count, picked_at}` iz koraka 1; `hubspot_recommendation_id` je `null`, kadar priporočila ni |
 | `brief` | `{topic, target_prompt, format, rationale}` iz koraka 1 |
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |

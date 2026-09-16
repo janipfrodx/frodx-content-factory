@@ -21,3 +21,11 @@ def test_pogodba_nosi_projekt_in_tabelo():
     vsebina = (SKILL / "references" / "aeo-source.md").read_text(encoding="utf-8")
     assert "FucXmQlDiWLVsRHW" in vsebina
     assert "AEO-Picks" in vsebina
+
+
+def test_dirigent_ne_govori_vec_o_excelu():
+    dirigent = REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
+    for pot in dirigent.rglob("*.md"):
+        vsebina = pot.read_text(encoding="utf-8")
+        assert "Excel" not in vsebina, f"{pot.name} se sklicuje na Excel"
+        assert "excel_row_id" not in vsebina, f"{pot.name} nosi staro obliko topic_source"

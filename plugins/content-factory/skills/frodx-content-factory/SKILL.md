@@ -17,7 +17,7 @@ Ti si dirigent, ne pisec. Vsebino delajo podskilli. Tvoja naloga je: pripravi st
 
 ## Zagon
 
-1. Če Igor ni povedal teme, pokliči `frodx-topic-pick`. Ta prebere Excel in predlaga teme.
+1. Če Igor ni povedal teme, pokliči `frodx-topic-pick`. Ta prebere HubSpot AEO portal in predlaga teme.
 2. Ko je tema izbrana, ustvari tek:
 
 ```bash
@@ -88,6 +88,6 @@ Vendoriranega `terminology.md` zaradi tega ne spreminjaj (`tests/test_vendor_int
 
 ## Kdaj se ustaviš
 
-- Excel nima novih tem - povej in končaj. Ne izmišljaj tem.
+- HubSpot nima nobenega prompta, ki ne bi bil že obdelan - povej in končaj. Ne izmišljaj tem.
 - Podskill vrne napako, ki je ne znaš popraviti - povej, kaj je vrnil, in vprašaj.
 - Korak 7 javi kršitve - povej, katera polja manjkajo, in ponudi vrnitev na pristojni korak. Ne popravljaj paketa mimo skilla, ki je za polje odgovoren.
