@@ -13,7 +13,7 @@ Cowork plugin z verigo skillov za produkcijo kolumn in socialnih objav.
 
 Cowork dela s **sinhronizirano kopijo** plugina (`/root/.claude/plugins/synced/content-factory/…`), ne s tem repom. Popravek v repu pride v Cowork šele po `git push` **in** kliku *Update*.
 
-To ni teoretično. V teku 14.-15. 8. 2026 je Cowork iskal Excel s temami na poti `TEST473 → Dokumenti/00 Projekti/FrodX/Content Factory/aeo-teme.xlsx` in ga ni našel - pot je bila v repu **že popravljena** (commit `7afdda6`, 14. 8.), a sinhronizirana kopija je bila starejša. Napaka je bila zato prijavljena kot vrzel v skillu, čeprav je bila v resnici zastarela kopija.
+To ni teoretično. V teku 14.-15. 8. 2026 je Cowork iskal vir tem na poti, ki je bila v repu **že popravljena** (commit `7afdda6`, 14. 8.), a sinhronizirana kopija je bila starejša. Napaka je bila zato prijavljena kot vrzel v skillu, čeprav je bila v resnici zastarela kopija. Vir tem je od 16. 9. 2026 HubSpot AEO in ne datoteka, a pouk o zastareli kopiji velja naprej.
 
 Urejanje datotek v `synced/` ne spremeni ničesar trajno - naslednji *Update* jih povozi.
 
