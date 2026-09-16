@@ -296,9 +296,12 @@ ZADOLZITEV = {
 
 def _s_zadolzitvami(tmp_path, naloge):
     pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
-    pkg["_run"] = {"step": 6, "open_tasks": naloge}
+    pkg["_run"] = {"step": 6, "open_tasks": naloge, "image": {"chosen": "openai"}}
     pot = tmp_path / "state.json"
     pot.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
+    slike = tmp_path / "images"
+    slike.mkdir()
+    (slike / "izbrana.png").write_bytes(_png(1536, 1024))
     return pot
 
 
@@ -369,3 +372,56 @@ def test_cli_brez_odprtih_zadolzitev_ne_izpise_opozorila(tmp_path):
     r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout + r.stderr
     assert "zadolžitve" not in r.stdout
+
+
+# --- Slikovna pot: gate zavrne premajhno naslovno sliko ---
+
+import struct
+
+PNG_PODPIS = b"\x89PNG\r\n\x1a\n"
+
+
+def _png(sirina: int, visina: int) -> bytes:
+    return (
+        PNG_PODPIS
+        + struct.pack(">I", 13)
+        + b"IHDR"
+        + struct.pack(">II", sirina, visina)
+        + b"\x08\x06\x00\x00\x00"
+    )
+
+
+def _tek(tmp_path, sirina=None, visina=None, ime="izbrana.png"):
+    """Zgradi mapo teka s state.json in po želji z naslovno sliko."""
+    state = tmp_path / "state.json"
+    state.write_text("{}", encoding="utf-8")
+    if sirina is not None:
+        slike = tmp_path / "images"
+        slike.mkdir()
+        (slike / ime).write_bytes(_png(sirina, visina))
+    return state
+
+
+def test_preveri_sliko_brez_run_bloka_vrne_prazno(tmp_path):
+    from validate_package import preveri_sliko
+    assert preveri_sliko(None, _tek(tmp_path)) == []
+
+
+def test_premajhna_slika_pade(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 784, 522)
+    napake = preveri_sliko({"image": {"chosen": "openai"}}, state)
+    assert any("784x522" in n for n in napake)
+
+
+def test_ustrezna_slika_gre_skozi(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    assert preveri_sliko({"image": {"chosen": "gemini"}}, state) == []
+
+
+def test_manjkajoca_slika_pade(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path)
+    napake = preveri_sliko({"image": {"chosen": "openai"}}, state)
+    assert any("izbrana" in n for n in napake)

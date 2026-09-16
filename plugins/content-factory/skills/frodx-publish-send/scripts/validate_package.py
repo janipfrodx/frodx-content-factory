@@ -22,6 +22,12 @@ SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREPOVEDANE = ("tu je trik", "here's the trick", "ovdje je trik")
 PODPIS_SAM_VRSTICA = re.compile(rf"[*_>\s]*{re.escape(PODPIS)}[*_\s]*", re.I)
 
+# 1200x630 ni izmišljeno: frodx-key-visual/references/prompt-recipes.md za og:image
+# navaja crop na 1200x630.
+SLIKA_MIN_SIRINA = 1200
+SLIKA_MIN_VISINA = 630
+SLIKA_PRIPONE = (".png", ".jpg", ".jpeg")
+
 _TU = Path(__file__).resolve()
 _PLUGIN = _TU.parents[3]
 TAXONOMY = _PLUGIN / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
@@ -65,6 +71,49 @@ def opozorila(run: dict) -> list:
         pripis = f" (odgovoren: {kdo})" if kdo else ""
         vrstice.append(f"{predpona}{kaj}{pripis}")
     return vrstice
+
+
+def preveri_sliko(run, state_pot: Path) -> list:
+    """Trde napake o naslovni sliki.
+
+    Paket slike ne nosi (shema pozna samo featured_image_alt), zato se meri
+    datoteka v mapi teka. Kadar `_run` manjka, datoteka ni tek in preverba
+    odpade - skripta se poganja tudi nad samostojnimi paketi.
+    """
+    if not isinstance(run, dict):
+        return []
+
+    slika = run.get("image")
+    if not isinstance(slika, dict):
+        return ["_run.image manjka - korak 5 ni zapisal izbire slike"]
+
+    napake = []
+    if slika.get("chosen") not in ("openai", "gemini"):
+        napake.append(
+            f"_run.image.chosen je {slika.get('chosen')!r}, pričakovano 'openai' ali 'gemini'"
+        )
+
+    mapa = Path(state_pot).parent / "images"
+    datoteke = [p for p in sorted(mapa.glob("izbrana.*")) if p.suffix.lower() in SLIKA_PRIPONE]
+    if not datoteke:
+        napake.append("images/izbrana.png ne obstaja - izbrana slika ni v mapi teka")
+        return napake
+
+    sys.path.insert(0, str(_TU.parent))
+    from dimenzije import dimenzije
+
+    try:
+        sirina, visina = dimenzije(datoteke[0])
+    except (ValueError, OSError) as e:
+        napake.append(f"izbrane slike ni mogoče izmeriti: {e}")
+        return napake
+
+    if sirina < SLIKA_MIN_SIRINA or visina < SLIKA_MIN_VISINA:
+        napake.append(
+            f"izbrana slika je {sirina}x{visina}, zahtevano najmanj "
+            f"{SLIKA_MIN_SIRINA}x{SLIKA_MIN_VISINA}"
+        )
+    return napake
 
 
 def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
@@ -197,6 +246,7 @@ def main() -> int:
     pkg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     run = pkg.pop("_run", None)
     napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    napake += preveri_sliko(run, Path(sys.argv[1]))
 
     odprte = opozorila(run)
     if odprte:
