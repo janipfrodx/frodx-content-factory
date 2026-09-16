@@ -19,3 +19,10 @@ def test_skill_in_shema_poznata_rubriko():
     for kljuc in ("dimensions", "rubric", "koncept", "anti_slop", "brand_fit"):
         assert kljuc in vsebina, kljuc
     assert "rubric" in SHEMA.read_text(encoding="utf-8")
+
+
+def test_izbrana_slika_je_ena_sama_datoteka():
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "izbrana.png" in vsebina
+    assert "izbrana.jpg" not in vsebina
+    assert "znova prekopiraj izbrano sliko" in vsebina

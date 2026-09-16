@@ -48,7 +48,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
 6. Preberi `references/image-decision.md` in `frodx-key-visual/references/visual-style.md`. Poglej obe sliki in odloči.
 7. Če zavrneš obe: popravi oba prompta v isti smeri in ponovi od točke 3. Največ dve ponovitvi.
-8. Izbrano sliko kopiraj v `images/izbrana.png` (če je izvorna datoteka JPEG, ohrani pripono: `images/izbrana.jpg`).
+8. Izbrano sliko kopiraj v `images/izbrana.png`. Ena sama datoteka in ena sama pripona: korak 7 pošlje `images/izbrana.png` z `mime_type` `image/png` in te poti ne izpeljuje iz tega, kaj je v mapi.
 9. Napiši alt tekst za vse tri jezike. Opiši, **kar je na sliki**, ne o čem je članek. Naslov uporabi samo za razdvoumljenje. En stavek, do 160 znakov, ciljno okoli 125. Ne začenjaj z »Slika prikazuje«, »Image of«, »Fotografija«.
 10. Zapiši v `state.json`:
     - `languages.sl.featured_image_alt`, `languages.en.featured_image_alt`, `languages.hr.featured_image_alt`
@@ -73,7 +73,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
     Šest polj `rubric` je šest meril iz rubrike v `frodx-key-visual/SKILL.md`. Sedmega, »Kakovost prompta«, tu ni: ocenjuje prompt, ne slike, in je bil opravljen že v točki 2. Piši poved o **izbrani** sliki, ne oceno v številkah - številčna rubrika velja za koncept pred generiranjem.
     - `_run.step` = 5, `_run.status` = `awaiting_approval`
-11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to in popravi `_run.image` v celoti, tudi `rubric` in `reason`.
+11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri samo dimenzije in razlike med njima ne vidi.
 
 ## Kako sliki dejansko prideta do tebe
 
