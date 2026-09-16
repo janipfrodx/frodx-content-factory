@@ -36,6 +36,9 @@ def dimenzije(pot) -> tuple:
                 i += 1
                 continue
             marker = bajti[i + 1]
+            if marker == 0xFF:  # polnilni bajt; standard dovoli poljubno mnogo pred markerjem
+                i += 1
+                continue
             if marker in SOF_MARKERJI:
                 visina, sirina = struct.unpack(">HH", bajti[i + 5:i + 9])
                 return sirina, visina

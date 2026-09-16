@@ -24,11 +24,16 @@ def _png(sirina: int, visina: int) -> bytes:
     )
 
 
-def _jpeg(sirina: int, visina: int) -> bytes:
-    """JPEG s segmentom APP0 pred SOF0, da test dokaže, da parser preskakuje segmente."""
+def _jpeg(sirina: int, visina: int, polnila: int = 0) -> bytes:
+    """JPEG s segmentom APP0 pred SOF0, da test dokaže, da parser preskakuje segmente.
+
+    `polnila` je število polnilnih bajtov 0xFF pred markerjem SOF0. Standard jih
+    dovoli poljubno mnogo; parser jih mora preskočiti, ne pa jih brati kot marker.
+    """
     app0 = b"\xff\xe0" + struct.pack(">H", 16) + b"JFIF\x00" + b"\x00" * 9
     sof0 = (
-        b"\xff\xc0"
+        b"\xff" * polnila
+        + b"\xff\xc0"
         + struct.pack(">H", 17)
         + b"\x08"
         + struct.pack(">HH", visina, sirina)
@@ -66,3 +71,12 @@ def test_cli_izpise_dimenzije(tmp_path):
     r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
     assert r.returncode == 0
     assert "1200x630" in r.stdout
+
+
+def test_jpeg_s_polnilnimi_bajti(tmp_path):
+    """Veljavna slika ne sme pasti zaradi polnil - iz nje nastane trdi gate."""
+    from dimenzije import dimenzije
+    for polnila in (1, 3):
+        pot = tmp_path / f"a{polnila}.jpg"
+        pot.write_bytes(_jpeg(1536, 864, polnila))
+        assert dimenzije(pot) == (1536, 864)
