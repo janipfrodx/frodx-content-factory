@@ -50,10 +50,32 @@ Preizkušeno prek `execute_workflow` (executionMode `manual`) na živi produkcij
 **Opomba glede vsebine testa:** `tests/fixtures/package_valid.json` ima
 `meta.version` = `"1.1"`, medtem ko aplikacija po specifikaciji privzema `"1.2"`.
 To ni napaka te naloge - fixture datoteka ni bila spremenjena. Za spodnja dva
-preizkusa je bila v **telesu klica** (ne v fixture datoteki) vrednost
-`meta.version` dvignjena na `"1.2"`, preostala vsebina fixtura pa je ostala
-nespremenjena in v celoti (brez krajšanja). Popravek fixture datoteke na `"1.2"`
-je predmet naloge 3.
+preizkusa (koraka 6 in 7) je bila v **telesu klica** (ne v fixture datoteki)
+vrednost `meta.version` dvignjena na `"1.2"`, preostala vsebina fixtura pa je
+ostala nespremenjena in v celoti (brez krajšanja).
+
+**Izmerjeno dejstvo (dodaten preizkus, 16. 9. 2026):** aplikacija je bila nato
+preizkušena tudi z `meta.version` = `"1.1"` - dobesedno tako, kot je v
+`tests/fixtures/package_valid.json` - z enako preostalo vsebino in svežim
+`run_slug` = `test-verzija-11-2026-09-16` (execution 203624). Odgovor:
+
+```json
+{
+  "status": "created",
+  "http_status": 201,
+  "draft_id": "373be62f-8f8c-40ff-9e25-9d7c57d9fbf4",
+  "edit_url": "https://frodx-content-app.lovable.app/draft/373be62f-8f8c-40ff-9e25-9d7c57d9fbf4",
+  "detail": null,
+  "error": null
+}
+```
+
+Aplikacija je torej `"1.1"` sprejela (`created`/`201`), ne zavrnila. Zod shema na
+strani aplikacije `meta.version` = `"1.1"` ne zavrača - dvig verige na `"1.2"` ni
+nujen zaradi tega polja. Testna vrstica (`run_slug = 'test-verzija-11-2026-09-16'`)
+je bila zbrisana takoj po preizkusu; `select count(*) from content_drafts;` je
+vrnil `0`. Ta ugotovitev je vhod za nalogo 3, korak 7 (odločitev o dvigu sheme
+verige na `1.2`).
 
 ### Korak 6 - prvi klic, pričakovan `created`
 
