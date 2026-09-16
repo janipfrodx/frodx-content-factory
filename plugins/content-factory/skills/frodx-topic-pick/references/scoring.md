@@ -61,8 +61,9 @@ vodnik z definicijskim odgovorom v prvem stavku; kolumna to doseže slabše. Zat
 - Med enako močnimi kandidati daj prednost tistemu, ki kot kolumna izgubi najmanj.
 - Ne prekvalificiraj teme v `kolumna`, da bi bila neskladnost videti manjša, in je ne izpusti tiho.
 
-Isto velja za kanal: če ima prompt priporočilo za YouTube, LinkedIn ali Reddit, to povej. Veriga zna
-samo kolumno in socialne objave ob njej.
+Isto velja za kanal: če ima prompt priporočilo za katerikoli kanal, ki ni `OWNED_CONTENT`, to povej.
+Kateri so, je v `references/aeo-source.md`, razdelek »Kontekst: priporočila« - tam je seznam, ki
+velja, in se ne prepisuje sem. Veriga zna samo kolumno in socialne objave ob njej.
 
 ## Rangiranje
 
