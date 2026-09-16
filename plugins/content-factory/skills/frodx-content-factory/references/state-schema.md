@@ -33,6 +33,7 @@ Ta blok se pred pošiljanjem odstrani.
 | `brief` | `{topic, target_prompt, format, rationale}` iz koraka 1 |
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |
+| `image` | `{chosen, attempts, dimensions, rubric, reason}` iz koraka 5 - glej `frodx-image-run/SKILL.md` |
 | `open_tasks` | odprte zadolžitve, ki jih veriga ni opravila - glej spodaj |
 | `skill_versions` | verzije skillov, ki so tek obdelali |
 
@@ -66,4 +67,4 @@ Pravila:
 - Vsak korak prebere celoten `state.json`, spremeni samo svojo rezino in zapiše nazaj.
 - Korak nikoli ne zapolni polj, ki pripadajo poznejšemu koraku, tudi če bi jih znal.
 - Ob prekinitvi je `state.json` edini vir resnice. Kar ni v njem, se ni zgodilo.
-- Slike ostanejo binarne v `images/`. V `state.json` gre samo alt tekst.
+- Slike ostanejo binarne v `images/`. V `state.json` gredo samo alt tekst, izmerjene dimenzije in rubrična utemeljitev izbire.

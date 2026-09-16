@@ -34,15 +34,46 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 ```
 
 4. Pridobi sliki. **Preberi najprej razdelek »Kako sliki dejansko prideta do tebe« spodaj** - `get_execution` binarnih bajtov na tej n8n instanci ne vrne in poskus prepisa base64 na disk je bil preizkušen in ni deloval. Brez tega razdelka ta korak porabi dva plačljiva klica in obstane.
-5. Preberi `references/image-decision.md` in `frodx-key-visual/references/visual-style.md`. Poglej obe sliki in odloči.
-6. Če zavrneš obe: popravi oba prompta v isti smeri in ponovi od točke 3. Največ dve ponovitvi.
-7. Izbrano sliko kopiraj v `images/izbrana.png`.
-8. Napiši alt tekst za vse tri jezike. Opiši, **kar je na sliki**, ne o čem je članek. Naslov uporabi samo za razdvoumljenje. En stavek, do 160 znakov, ciljno okoli 125. Ne začenjaj z »Slika prikazuje«, »Image of«, »Fotografija«.
-9. Zapiši v `state.json`:
-   - `languages.sl.featured_image_alt`, `languages.en.featured_image_alt`, `languages.hr.featured_image_alt`
-   - `_run.image` = `{"chosen": "openai" | "gemini", "attempts": N, "reason": "<en stavek>"}`
-   - `_run.step` = 5, `_run.status` = `awaiting_approval`
-10. Pokaži Igorju obe sliki, svojo izbiro in razlog. Če izbere drugo, spoštuj to in popravi `_run.image`.
+5. **Izmeri obe sliki, preden ju gledaš.** Tek 14. 9. 2026 je kot naslovno sliko oddal datoteko 784x522, ker tega ni nihče izmeril.
+
+   ```bash
+   python3 <plugin>/skills/frodx-publish-send/scripts/dimenzije.py \
+     runs/<slug>/images/openai.png runs/<slug>/images/gemini.png
+   ```
+
+   `<plugin>` je `plugins/content-factory/`, torej ista mapa, iz katere teče ta skill. Poti do slik
+   sta relativni na CWD, kjer je `init_run.py` ustvaril `runs/` - enako kot pri dirigentu.
+
+   Kandidatka mora biti široka vsaj **1200 px** in visoka vsaj **630 px** (`frodx-key-visual/references/prompt-recipes.md`: og:image potrebuje crop na 1200x630). Slika, ki je ožja, ni kandidatka, tudi če je lepša. Če nobena ne doseže praga, ne izbiraj - to ni vprašanje okusa, ampak znak, da si dobil pomanjšan predogled namesto polne slike. Preveri, ali sta datoteki res iz vozlišč `OpenAI Image` in `Gemini Image`, in šele potem ponovi generacijo po točki 7.
+
+6. Preberi `references/image-decision.md` in `frodx-key-visual/references/visual-style.md`. Poglej obe sliki in odloči.
+7. Če zavrneš obe: popravi oba prompta v isti smeri in ponovi od točke 3. Največ dve ponovitvi.
+8. Izbrano sliko kopiraj v `images/izbrana.png` (če je izvorna datoteka JPEG, ohrani pripono: `images/izbrana.jpg`).
+9. Napiši alt tekst za vse tri jezike. Opiši, **kar je na sliki**, ne o čem je članek. Naslov uporabi samo za razdvoumljenje. En stavek, do 160 znakov, ciljno okoli 125. Ne začenjaj z »Slika prikazuje«, »Image of«, »Fotografija«.
+10. Zapiši v `state.json`:
+    - `languages.sl.featured_image_alt`, `languages.en.featured_image_alt`, `languages.hr.featured_image_alt`
+    - `_run.image`:
+
+    ```json
+    {
+      "chosen": "openai",
+      "attempts": 1,
+      "dimensions": {"openai": [1536, 1024], "gemini": [1536, 864]},
+      "rubric": {
+        "koncept": "<ena poved>",
+        "robustnost": "<ena poved>",
+        "thumbnail": "<ena poved>",
+        "anti_slop": "<ena poved>",
+        "kompozicija": "<ena poved>",
+        "brand_fit": "<ena poved>"
+      },
+      "reason": "<en stavek>"
+    }
+    ```
+
+    Šest polj `rubric` je šest meril iz rubrike v `frodx-key-visual/SKILL.md`. Sedmega, »Kakovost prompta«, tu ni: ocenjuje prompt, ne slike, in je bil opravljen že v točki 2. Piši poved o **izbrani** sliki, ne oceno v številkah - številčna rubrika velja za koncept pred generiranjem.
+    - `_run.step` = 5, `_run.status` = `awaiting_approval`
+11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to in popravi `_run.image` v celoti, tudi `rubric` in `reason`.
 
 ## Kako sliki dejansko prideta do tebe
 
