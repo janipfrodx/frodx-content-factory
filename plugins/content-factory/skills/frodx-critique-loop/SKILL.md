@@ -65,6 +65,7 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
    {
      "round": 1,
      "input": "<besedilo, kot je bilo POSLANO v ta krog v točki a, pred morebitnim popravkom>",
+     "critique_prompt": "<critiquePrompt, kot je bil POSLAN v točki a, z že vstavljenim datumom namesto {{DANES}}>",
      "openai": "<kritika>",
      "gemini": "<kritika>",
      "openai_error": null,
@@ -78,6 +79,8 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
    `openai_error` in `gemini_error` sta `null`, kadar je vozlišče odgovorilo. Če je padlo, gre vanj dobesedno sporočilo napake, pripadajoča kritika pa je `null` (glej točko b). `rejected` je seznam pripomb, ki jih kot urednik zavrneš, vsaka s kratko utemeljitvijo - to je zapis presoje, ne opravičilo.
 
    `input` je vedno besedilo, ki je šlo v n8n v točki a tega kroga - **ne** popravljena verzija. Če je `verdict` `"ok"`, je `changes` `[]` in `input` ostane veljavno besedilo (nespremenjeno).
+
+   `critique_prompt` je niz, ki je dejansko šel v `body.critiquePrompt` - torej z vstavljenim datumom, ne z `{{DANES}}`. Brez tega zapisa ni mogoče za nazaj ugotoviti, ali je ocenjevalec vedel, kateri dan je; audit teka 14. 9. 2026 je prav to označil za slepo pego. Prompt je v vseh krogih enak, zato ga smeš v krogih 2 in 3 zapisati enako kot v krogu 1, če ga nisi spreminjal.
 
    f. Če je `verdict` za ta krog `"revise"`: nastavi delovno spremenljivko `besedilo` = `popravljeno`, in **takoj** (preden zanka gre na naslednji krog ali se konča) zapiši `languages.sl.content` = `popravljeno` v `state.json`. To zapišeš po vsakem krogu, ne šele na koncu - če se tek prekine sredi zanke, `state.json` ne sme izgubiti zadnjega popravka.
 
