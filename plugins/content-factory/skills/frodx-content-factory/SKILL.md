@@ -41,7 +41,9 @@ Skripta izpiše pot do `state.json`. Če pove, da tek že obstaja, vprašaj Igor
 
 ## Koraki
 
-Za korake 2-7 velja: po vsakem koraku zapiši rezultat v `state.json`, dvigni `_run.step`, nastavi `_run.status` na `awaiting_approval`, pokaži Igorju rezultat in vprašaj za potrditev. Ob potrditvi zapiši čas v `_run.approvals`.
+Za korake 2-7 velja: rezultat koraka zapiši v `state.json` **takoj ob nastanku**, ne šele ob Igorjevi potrditvi. Šele nato dvigni `_run.step`, nastavi `_run.status` na `awaiting_approval`, pokaži Igorju rezultat in vprašaj za potrditev. Ob potrditvi zapiši čas v `_run.approvals`.
+
+Vrstni red ni kozmetičen. V teku 14. 9. 2026 so se `social_posts[]` izgubili, ker jih je korak držal v pogovoru do potrditve, seja pa se je prej končala. Če je zapisano pred vprašanjem, prekinitev vzame kvečjemu potrditev, ne vsebine.
 
 **Korak 1 (`frodx-topic-pick`) v to generično pravilo ni zajet.** Gate koraka 1 je Igorjeva izbira teme, ki se zgodi znotraj `frodx-topic-pick` samega - ta skill Igorja vpraša »katero temo pišemo« sam, in šele po njegovi izbiri zapiše `_run.status = in_progress` (ne `awaiting_approval`). Ko se `frodx-topic-pick` vrne z izbrano temo, ne vprašaj Igorja znova in ne prepiši `_run.status` nazaj na `awaiting_approval` - pojdi naravnost naprej, kot je opisano spodaj.
 

@@ -65,6 +65,7 @@ Pravila:
 ## Pravila
 
 - Vsak korak prebere celoten `state.json`, spremeni samo svojo rezino in zapiše nazaj.
+- Rezultat koraka se zapiše **takoj ob nastanku**, ne ob potrditvi. Potrditev je gate, ne pogoj za zapis.
 - Korak nikoli ne zapolni polj, ki pripadajo poznejšemu koraku, tudi če bi jih znal.
 - Ob prekinitvi je `state.json` edini vir resnice. Kar ni v njem, se ni zgodilo.
 - Slike ostanejo binarne v `images/`. V `state.json` gredo samo alt tekst, izmerjene dimenzije in rubrična utemeljitev izbire.
