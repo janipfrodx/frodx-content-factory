@@ -38,7 +38,8 @@ napake.
 | `git push` + *Update* na marketplaceu | Jani | **push opravljen 17. 8. 2026** (`7afdda6..4bd1436`, 8 commitov); *Update* na marketplaceu še ni kliknjen |
 | host `umvjwjzdrtamfrcqhopa.supabase.co` na egress allowlist | Andrej (lastnik organizacije) | **prošnja poslana 17. 8. 2026**, čaka odgovor |
 | podvojitev `PROD 2` v n8n UI | Jani | ni še narejena; MCP tega ne zmore, glej razdelek o kopiji |
-| gradnja dveh poti in tabele v aplikaciji | Claude prek Lovable MCP, po skupnem načrtu | specifikacija je ta dokument, gradnja še ni začeta |
+| gradnja dveh poti in tabele v aplikaciji | Claude prek Lovable MCP, po skupnem načrtu | **zgrajeno 17. 8. 2026** (commita `3f7ab06`, `c9fe407`); preverjeno v Lovable dev okolju, glej »Stanje gradnje« |
+| objava aplikacije (*Publish* v Lovableu) | Jani | čaka; do objave nove poti na `frodx-content-app.lovable.app` vračajo 404 |
 | dopolnitev `cf-generate-image` in nov `cf-deliver-draft` | Claude prek n8n MCP | glej razdelek »Kaj mora narediti n8n« |
 | popravek `frodx-image-run` in `frodx-publish-send` | Claude | šele ko je pot do slik odločena |
 | RLS Supabase projekta aplikacije | ni preverjeno | do projekta ni dostopa prek Supabase konektorja, ker ga upravlja Lovable |
@@ -345,6 +346,46 @@ sprejme datume, korak 5 odda in vrstica dobi `status = 'dispatched'`.
 
 Za korak 3 se lahko uporabi `tests/fixtures/package_valid.json` iz tega repa - je resničen paket v
 obliki, ki jo veriga izdela.
+
+## Stanje gradnje, 17. 8. 2026
+
+Zgrajeno v Lovableu, commita `3f7ab06` in `c9fe407`. Datoteke:
+
+| datoteka | kaj |
+| --- | --- |
+| `src/lib/api-key.server.ts` | preverba `x-api-key`, konstantnočasovna, `503` ob nenastavljeni skrivnosti |
+| `src/lib/storage.server.ts` | `uploadImageToBucket`, skupna logika nalaganja |
+| `src/routes/api/images.ts` | `POST /api/images` |
+| `src/routes/api/drafts.ts` | `POST /api/drafts` |
+| `src/routes/_authenticated/draft/$draftId.tsx` | osnutek se odpre na koraku 3 |
+| `src/components/DraftList.tsx` | seznam osnutkov s statusom `new` na domači strani |
+| `supabase/migrations/20260817154855_*.sql` | tabela `content_drafts`, uveljavljena v bazi |
+
+Mehanizem poti: `createFileRoute("/api/...")({ server: { handlers: { POST } } })`. Poti sta v drevesu
+priključeni na koren, ne pod `_authenticated`, torej nista za prijavo. `uploadFeaturedImage` je ostal
+z isto signaturo, le telo kliče skupni `uploadImageToBucket`. `dispatchToN8n` in koraki 3 do 5 so
+nedotaknjeni.
+
+Shema v bazi je preverjena neposredno: vseh devet stolpcev z privzetki po specifikaciji, `unique` na
+`run_slug`, `CHECK` na `status`, indeks `(status, created_at DESC)`, RLS vklopljen, politiki samo za
+`authenticated` (`select`, `update`); za `anon` ni nobene politike, vstavljanje samo prek
+`service_role`.
+
+Izvedbeno preverjenih deset primerov v Lovable dev okolju (brez ključa `401`, napačen ključ s
+pokvarjenim telesom `401` in ne `400`, PNG `200`, `application/pdf` `400`, osnutek `201`, ponovitev
+`409` z **istim** `draft_id`, tuj host slike `400`, napačen `run_slug` `400`, vrstica s
+`status = 'new'`). Testni vrstici sta pobrisani, tabela je prazna.
+
+**Kaj še ni preverjeno na objavljeni aplikaciji.** Dokler Jani ne klikne *Publish*,
+`https://frodx-content-app.lovable.app/api/*` vrača `404`. Preverjanje iz razdelka »Kako se preveri«
+je pripravljeno kot skript `tools/preveri_strojni_vhod.sh`, ki ključ prebere iz okolja in ga nikamor
+ne izpiše; požene se šele po objavi:
+
+```bash
+INGEST_API_KEY='<ključ>' bash tools/preveri_strojni_vhod.sh
+```
+
+`edit_url` se izpelje iz gostitelja zahteve, zato bo po objavi pravilen sam po sebi.
 
 ## Pogoj zunaj aplikacije
 
