@@ -54,8 +54,39 @@ Odgovor navzgor (na `Respond to Webhook`) vedno vsebuje:
 - `Upload OpenAI` in `Upload Gemini` uporabljata predefiniran credential tipa
   Header Auth `FrodX Content App Ingest` (id `vS1Vj3wTuQUKF5WI`); v parametrih
   vozlišč ni nobene vrednosti ključa - avtentikacija gre izključno prek
-  credentiala. Telo klica: `image_base64`, `filename` (`openai.png` /
-  `gemini.png`), `mime_type` (`image/png`).
+  credentiala. Telo klica: `image_base64`, `filename`, `mime_type`. Na OpenAI
+  veji sta `filename` in `mime_type` trdo zapisana (`openai.png` /
+  `image/png` - preverjeno pravilno, glej spodaj). Na Gemini veji sta od
+  popravnega kroga 1 (17. 9. 2026) **izpeljana**, ne trdo zapisana - glej
+  razdelek "Gemini vrne JPEG, ne PNG" spodaj.
+
+### Gemini vrne JPEG, ne PNG - popravek napačne oznake tipa datoteke (popravni krog 1, 17. 9. 2026)
+
+Pregled je na datoteki iz izvedbe 204104 ugotovil, da vozlišče `Gemini Image`
+dejansko vrača JPEG (magic bytes `ff d8 ff e0`, `file` ga prepozna kot
+"JPEG image data, JFIF standard 1.01"), ne PNG. Brif naloge 2, korak 3, je za
+Gemini vejo predpisal `filename = "gemini.png"` in `mime_type = "image/png"` -
+to je bila napaka brifa, ne izvedbe: trdo zapisana vrednost, ki ni ustrezala
+dejanski vsebini. OpenAI veja je bila preverjena in je pravilna - tam
+`OpenAI Image` res vrača PNG (magic bytes `89 50 4e 47`).
+
+Popravek: `Upload Gemini` zdaj `filename` in `mime_type` **izpelje iz dejanskih
+metapodatkov binarnega polja `geminiImage`**, ne iz trdo zapisane vrednosti:
+
+- `mime_type`: `={{ $("Gemini Image").item.binary.geminiImage.mimeType }}`
+- `filename`: `={{ $("Gemini Image").item.binary.geminiImage.fileExtension ? ("gemini." + $("Gemini Image").item.binary.geminiImage.fileExtension) : ("gemini." + $("Gemini Image").item.binary.geminiImage.mimeType.split("/")[1]) }}`
+  (če `fileExtension` ni nastavljen, se pripona izpelje iz podtipa `mimeType`)
+
+To drži ne glede na to, kateri format Gemini v prihodnje vrne - vrednost sledi
+dejanski vsebini, ne predpostavki. OpenAI veja ni bila spremenjena.
+
+Popravek je bil preverjen **statično** (`get_workflow_details` po spremembi) -
+nov plačljiv tek za to ni bil izveden in zanj ni bilo privolitve. Datoteka iz
+izvedbe 204104 (`39c91efe-b7ed-4b26-872f-0fd62cb38e7d.png`) je v shrambi
+aplikacije **ostala z napačno oznako** (`.png` ime in domnevno `image/png`
+content-type, dejansko JPEG vsebina), ker je nastala pred tem popravkom -
+popravek velja samo za bodoče teke, obstoječe datoteke se ne popravlja
+retroaktivno.
 
 ### Oblika odgovora webhooka `generate-image`
 
