@@ -41,10 +41,10 @@ def test_stanje_ima_run_blok_na_koraku_ena():
     assert stanje["_run"]["open_tasks"] == []
 
 
-def test_stanje_ima_verzijo_1_1():
+def test_stanje_ima_verzijo_1_2():
     from init_run import zgradi_stanje
     stanje = zgradi_stanje("Test tema", "test-tema", "2026-08-10T09:00:00.000Z")
-    assert stanje["meta"]["version"] == "1.1"
+    assert stanje["meta"]["version"] == "1.2"
     assert stanje["meta"]["title"] == "Test tema"
     assert stanje["universal"]["slug"] == "test-tema"
 

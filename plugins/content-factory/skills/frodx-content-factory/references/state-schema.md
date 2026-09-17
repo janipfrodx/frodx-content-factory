@@ -8,7 +8,7 @@
 |---|---|
 | `meta.title` | korak 2 (naslov, ki ga Igor izbere) |
 | `meta.exported_at` | korak 1 (ustvarjanje), korak 7 (osveži) |
-| `meta.version` | vedno `"1.1"` |
+| `meta.version` | vedno `"1.2"` |
 | `universal.slug` | korak 6 |
 | `social_posts[]` | korak 2 |
 | `languages.<jezik>.content` | korak 2 (sl), korak 3 (popravki sl), korak 4 (en, hr) |

@@ -31,6 +31,7 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    | `_run.image.url` | 5 |
    | `slug`, `seo_title`, `meta_description`, `topic_cluster`, `campaign_name`, `tag_*` | 6 |
    | `social_posts` | 2 |
+   | `meta.version` | 1 - `init_run.py` jo zapiše; če ni `1.2`, je tek nastal s staro verzijo skilla |
    | dolgi pomišljaj, prepovedana fraza, manjkajoč podpis | 2 (sl), 4 (en, hr) |
 
    Ne popravljaj polj sam. Vrni Igorja na pristojni korak.

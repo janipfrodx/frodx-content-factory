@@ -58,7 +58,7 @@ def _prazen_jezik(koda: str) -> dict:
 
 def zgradi_stanje(tema: str, slug: str, cas: str) -> dict:
     return {
-        "meta": {"title": tema, "exported_at": cas, "version": "1.1"},
+        "meta": {"title": tema, "exported_at": cas, "version": "1.2"},
         "universal": {"slug": slug},
         "social_posts": [],
         "languages": {koda: _prazen_jezik(koda) for koda in JEZIKI},
