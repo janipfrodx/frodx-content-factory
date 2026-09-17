@@ -27,6 +27,7 @@ PODPIS_SAM_VRSTICA = re.compile(rf"[*_>\s]*{re.escape(PODPIS)}[*_\s]*", re.I)
 SLIKA_MIN_SIRINA = 1200
 SLIKA_MIN_VISINA = 630
 SLIKA_PRIPONE = (".png", ".jpg", ".jpeg")
+SLIKA_HOST = "umvjwjzdrtamfrcqhopa.supabase.co"
 
 _TU = Path(__file__).resolve()
 _PLUGIN = _TU.parents[3]
@@ -92,6 +93,19 @@ def preveri_sliko(run, state_pot: Path) -> list:
         napake.append(
             f"_run.image.chosen je {slika.get('chosen')!r}, pričakovano 'openai' ali 'gemini'"
         )
+
+    url = slika.get("url")
+    if not isinstance(url, str) or not url.strip():
+        napake.append("_run.image.url manjka - aplikacija brez URL-ja slike osnutka ne sprejme")
+    else:
+        if not url.startswith("https://"):
+            napake.append(f"_run.image.url ni https: {url}")
+        else:
+            gostitelj = url[len("https://"):].split("/", 1)[0]
+            if gostitelj != SLIKA_HOST:
+                napake.append(
+                    f"_run.image.url je na tujem gostitelju {gostitelj}, pričakovan {SLIKA_HOST}"
+                )
 
     mapa = Path(state_pot).parent / "images"
     datoteke = [p for p in sorted(mapa.glob("izbrana.*")) if p.suffix.lower() in SLIKA_PRIPONE]

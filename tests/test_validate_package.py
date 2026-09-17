@@ -296,7 +296,7 @@ ZADOLZITEV = {
 
 def _s_zadolzitvami(tmp_path, naloge):
     pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
-    pkg["_run"] = {"step": 6, "open_tasks": naloge, "image": {"chosen": "openai"}}
+    pkg["_run"] = {"step": 6, "open_tasks": naloge, "image": {"chosen": "openai", "url": SHRAMBA}}
     pot = tmp_path / "state.json"
     pot.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
     slike = tmp_path / "images"
@@ -410,18 +410,53 @@ def test_preveri_sliko_brez_run_bloka_vrne_prazno(tmp_path):
 def test_premajhna_slika_pade(tmp_path):
     from validate_package import preveri_sliko
     state = _tek(tmp_path, 784, 522)
-    napake = preveri_sliko({"image": {"chosen": "openai"}}, state)
+    napake = preveri_sliko({"image": {"chosen": "openai", "url": SHRAMBA}}, state)
     assert any("784x522" in n for n in napake)
 
 
 def test_ustrezna_slika_gre_skozi(tmp_path):
     from validate_package import preveri_sliko
     state = _tek(tmp_path, 1536, 1024)
-    assert preveri_sliko({"image": {"chosen": "gemini"}}, state) == []
+    assert preveri_sliko({"image": {"chosen": "gemini", "url": SHRAMBA}}, state) == []
 
 
 def test_manjkajoca_slika_pade(tmp_path):
     from validate_package import preveri_sliko
     state = _tek(tmp_path)
-    napake = preveri_sliko({"image": {"chosen": "openai"}}, state)
+    napake = preveri_sliko({"image": {"chosen": "openai", "url": SHRAMBA}}, state)
     assert any("izbrana" in n for n in napake)
+
+
+SHRAMBA = "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/a.png"
+
+
+def test_manjkajoc_url_pade(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    napake = preveri_sliko({"image": {"chosen": "openai"}}, state)
+    assert any("url" in n for n in napake)
+
+
+def test_url_na_tujem_gostitelju_pade(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    napake = preveri_sliko(
+        {"image": {"chosen": "openai", "url": "https://example.com/a.png"}}, state
+    )
+    assert any("example.com" in n for n in napake)
+
+
+def test_url_brez_https_pade(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    napake = preveri_sliko(
+        {"image": {"chosen": "openai", "url": SHRAMBA.replace("https://", "http://")}},
+        state,
+    )
+    assert any("https" in n for n in napake)
+
+
+def test_veljaven_url_in_dovolj_velika_slika_gresta_skozi(tmp_path):
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    assert preveri_sliko({"image": {"chosen": "openai", "url": SHRAMBA}}, state) == []
