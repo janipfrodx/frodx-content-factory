@@ -1,8 +1,8 @@
 ---
 name: frodx-publish-send
-description: Validate a finished FrodX content package and hand it to the publishing app. Runs the binary contract check, then either posts the package and image to the app ingest endpoint or, while that endpoint does not exist yet, writes the request body to outbox for review. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish date - Igor picks that in the app.
+description: Validate a finished FrodX content package and hand it to the publishing app. Runs the binary contract check, then delivers the package through the n8n workflow cf-deliver-draft, which creates a draft in the app and returns an edit link for Igor. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish date - Igor picks that in the app.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Predaja paketa
@@ -28,6 +28,7 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    |---|---|
    | `languages.*.content` | 2 (sl), 4 (en, hr) |
    | `languages.*.featured_image_alt` | 5 |
+   | `_run.image.url` | 5 |
    | `slug`, `seo_title`, `meta_description`, `topic_cluster`, `campaign_name`, `tag_*` | 6 |
    | `social_posts` | 2 |
    | dolgi pomišljaj, prepovedana fraza, manjkajoč podpis | 2 (sl), 4 (en, hr) |
@@ -43,38 +44,56 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
 
    Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena) in brez tega opozorila gre nepregledana v objavo.
 
-4. **Če gate gre skozi (exit 0):** sestavi telo zahtevka.
-   - `package` = `state.json` brez ključa `_run`
-   - `featured_image` = `images/izbrana.png`, kodiran v base64, `mime_type` `image/png`, `filename` `<slug>.png`
-   - `source` = `{run_slug, generated_at, author: "igor"}`
+4. **Če gate gre skozi (exit 0):** sestavi telo predaje.
 
-5. **Dry-run (trenutno stanje):** zapiši telo v `outbox/<slug>.json` in povej Igorju, da endpointa v aplikaciji še ni. Nastavi `_run.status` = `ready` in `_run.step` = `7`.
+   - `content` = `state.json` **brez ključa `_run`**
+   - `featured_image_url` = `_run.image.url`, ki ga je zapisal korak 5
+   - `run_slug` = `_run.slug`
 
-6. **Živo pošiljanje (ko endpoint obstaja):** pošlji
+   Slike ne kodiraš in ne pošiljaš. Naložil jo je slikovni workflow; ti nosiš samo njen URL.
 
-```
-POST <URL aplikacije>/api/ingest
-X-API-Key: <iz okoljske spremenljivke FRODX_APP_API_KEY>
-Idempotency-Key: <UUID, enak za vse ponovne poskuse istega teka>
-Content-Type: application/json
-```
+5. **Predaj prek `cf-deliver-draft`.** Ključa do aplikacije nimaš in ga ne potrebuješ; nosi ga n8n credential. Kliči `execute_workflow` z gnezdenim telesom:
 
-   Odgovori:
+   ```json
+   {
+     "workflowId": "9jbBZ832E6NquY4I",
+     "executionMode": "manual",
+     "triggerNodeName": "Trigger",
+     "inputs": {
+       "webhookData": {
+         "method": "POST",
+         "body": {
+           "content": {},
+           "featured_image_url": "",
+           "run_slug": ""
+         }
+       }
+     }
+   }
+   ```
 
-   | Status | Kaj narediš |
+   Odgovor ima vedno isto obliko, ne glede na izid:
+
+   | `status` | Kaj narediš |
    |---|---|
-   | 202 | povej Igorju, naj odpre aplikacijo in potrdi osnutek; `_run.status` = `sent`, `_run.step` = `7` |
-   | 401 | napačen API ključ - povej Janiju, ne poskušaj znova |
-   | 409 | ta tek je že poslan; ne pošiljaj znova |
-   | 422 | aplikacija je zavrnila paket - pokaži njen seznam napak |
+   | `created` | zapiši `draft_id` in `edit_url`; povej Igorju, naj odpre povezavo, preveri sliko in nastavi datume |
+   | `duplicate` | ta tek je že predan. To **ni napaka.** Povej Igorju isti `edit_url` in ne pošiljaj znova |
+   | `rejected` | aplikacija je paket zavrnila. Izpiši `detail` - to so zod očitki po polju. Popravi, kar očitek imenuje, in poskusi znova |
+   | `misconfigured` | ključ ali skrivnost v aplikaciji nista v redu. Ustavi se in povej Janiju. Ne poskušaj znova in ne obhajaj poti |
+   | `retry` | en sam ponovni poskus. Če tudi ta ne uspe, se ustavi in povej, kaj je vrnil |
 
-   Ob 409 nikoli ne generiraj novega `Idempotency-Key`, da bi »šlo skozi«. Podvojen ključ pomeni, da je paket že tam.
+6. **Zapiši izid.** V `state.json`:
 
-   **Znano stanje (preverjeno 2026-08-10):** produkcijski n8n workflow `PROD 2 - FrodX Content Publishing Pipeline` (`3lK6pjOfOAa0BxDm`) ima webhook `frodx-publish` z natanko tem kontraktom - HMAC podpis, `Idempotency-Key`, in vozlišče `Validate + Parse Content`, ki že bere obliko `{meta, universal, languages}`, kot jo sestavi ta skill. Kljub temu ta skill živega pošiljanja ne izvaja - to je Janijeva namerna odločitev, ne vrzel v znanju. Živo pošiljanje odklene Jani, ko preveri natančno ujemanje oblike paketa s `Validate + Parse Content`. Do takrat velja korak 5 (dry-run) kot edino dejansko vedenje tega skilla.
+   - `_run.delivery` = `{"status": "<created ali duplicate>", "draft_id": "<uuid>", "edit_url": "<povezava>", "delivered_at": "<ISO čas>"}`
+   - `_run.status` = `sent`, `_run.step` = `7`
+
+   Telo predaje zapiši tudi v `outbox/<slug>.json` in ga izpiši v pogovor. To ni več pot predaje, ampak zapis poslanega - edini, ki ga človek vidi, če predaja pade. Velja še naprej, da `outbox/` seje ne preživi.
 
 ## Kaj ne delaš
 
 - Ne nastavljaš `publish_at` ne `publish_date`. Datum in uro izbere Igor v aplikaciji.
 - Ne pošiljaš paketa, ki ni prestal gatea, tudi če Igor reče, da je vseeno. Če vztraja, povej, katera kršitev bo v HubSpotu vidna, in naj se odloči po tem.
 - Ne odstranjuješ polj, da bi paket prestal gate.
-- Ne pošiljaš v živo, dokler Jani tega izrecno ne odklene, tudi če endpoint videti deluje.
+- Ne sestavljaš base64 in ne pošiljaš bajtov slike. Aplikacija sprejme samo URL.
+- Ne generiraš novega `run_slug`, da bi `duplicate` »šel skozi«. Podvojen slug pomeni, da je osnutek že tam.
+- Ne kličeš `/api/drafts` neposredno in ne iščeš `INGEST_API_KEY`. Ključ je v n8n in tam ostane.

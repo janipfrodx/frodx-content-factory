@@ -34,6 +34,7 @@ Ta blok se pred pošiljanjem odstrani.
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |
 | `image` | `{chosen, url, attempts, dimensions, rubric, reason}` iz koraka 5 - `url` je javni URL izbrane slike v shrambi aplikacije, edino, kar aplikacija o sliki dobi; glej `frodx-image-run/SKILL.md` |
+| `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 7 - izid predaje v aplikacijo; `status` je `created` ali `duplicate` |
 | `open_tasks` | odprte zadolžitve, ki jih veriga ni opravila - glej spodaj |
 | `skill_versions` | verzije skillov, ki so tek obdelali |
 
