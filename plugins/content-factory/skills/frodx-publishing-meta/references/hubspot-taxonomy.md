@@ -64,4 +64,4 @@ Te kombinacije danes taga nimajo. Objava v tem jeziku bo brez taga.
 
 ## Izvor podatkov
 
-Kampanje in GUID-i: n8n `Extract Campaign GUID`. Tagi: `src/lib/tag-mapping.ts` v aplikaciji `frodx-content-app`, s popravkom predpone. Kampanje so bile v HubSpotu preimenovane iz `Blog -` v `Interest -`; `tag-mapping.ts` ima še stara imena, ta tabela nova.
+Kampanje in GUID-i: n8n `Extract Campaign GUID`. Tagi: `src/lib/tag-mapping.ts` v aplikaciji `frodx-content-app`. Kampanje so bile v HubSpotu preimenovane iz `Blog -` v `Interest -`; `campaign-mapping.ts` in `tag-mapping.ts` sta usklajena na `Interest -` 16. 9. 2026, potrjeno tudi na strani `PROD 2`: izvedba 191132 (27. 8. 2026) je vozlišče `Extract Campaign GUID` uspešno razrešilo GUID za `campaign_name` "Interest - Programi zvestobe" (bdeff9f6-7f4a-4f7d-8d54-b8590f94b203, ujema se s to tabelo).
