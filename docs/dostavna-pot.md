@@ -15,7 +15,7 @@
   in `neverError` sta vklopljena, `onError` na nodu je `continueRegularOutput` - `409` in `400`
   sta veljavna izida, ne napaka.
 
-### Tabela štirih izidov (razdelek 2 speca, kot ga implementira `Shape Response`)
+### Tabela petih izidov (razdelek 2 speca, kot ga implementira `Shape Response`)
 
 | http_status aplikacije | status  |
 |---|---|
@@ -87,6 +87,29 @@ aplikacije **ostala z napačno oznako** (`.png` ime in domnevno `image/png`
 content-type, dejansko JPEG vsebina), ker je nastala pred tem popravkom -
 popravek velja samo za bodoče teke, obstoječe datoteke se ne popravlja
 retroaktivno.
+
+### Trda rezerva na Gemini veji (popravni krog 2, 17. 9. 2026)
+
+Izraza iz kroga 1 sta bila pravilna, a brez rezerve: če `geminiImage.mimeType`
+ob teku ne bi bil nastavljen, bi se `mime_type` izpisal kot dobeseden niz
+`"undefined"`, `filename` pa bi vrgel `TypeError` na `.split("/")` in podrl
+Gemini vejo - huje od napake, ki jo je krog 1 odpravljal. Končna izraza:
+
+- `mime_type`: `={{ ($("Gemini Image").item.binary.geminiImage || {}).mimeType || "image/jpeg" }}`
+- `filename`: `={{ "gemini." + (($("Gemini Image").item.binary.geminiImage || {}).fileExtension || (($("Gemini Image").item.binary.geminiImage || {}).mimeType || "image/jpeg").split("/")[1]) }}`
+
+Izpeljava ostaja prednostna; rezerva se uporabi samo, kadar izpeljava manjka.
+Štirje primeri, prehojeni pri pregledu: `geminiImage` manjka -> `image/jpeg` /
+`gemini.jpeg`; polji manjkata -> `image/jpeg` / `gemini.jpeg`; samo `mimeType`
+(`image/png`) -> `image/png` / `gemini.png`; oboje -> `image/png` /
+`gemini.png`. Nobeden ne vrže napake in nobeden ne da niza `"undefined"`.
+
+Sintaksa `||` je potrjena posredno: `Normalize Input` v istem workflowu že
+uporablja `?.` in `??`.
+
+Tudi ta krog je preverjen **samo statično**. Prvi dovoljen plačljiv tek naj
+potrdi, da Gemini datoteka pride v shrambo kot `gemini.jpg` ali `gemini.jpeg`
+z `image/jpeg`.
 
 ### Oblika odgovora webhooka `generate-image`
 

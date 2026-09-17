@@ -18,9 +18,9 @@ Zadnji korak. Validira in preda.
 python3 scripts/validate_package.py <pot-do-state.json>
 ```
 
-Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-publish-send/`); enako velja za `outbox/` v koraku 5 spodaj - nastane relativno na CWD ob zagonu ukaza.
+Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-publish-send/`); enako velja za `outbox/` v koraku 6 spodaj - nastane relativno na CWD ob zagonu ukaza.
 
-**`outbox/` ne preživi seje - preverjeno 14.-15. 8. 2026.** V Cowork seji je CWD `/home/claude`, efemerni vsebnik. Zato ob dry-runu telo zahtevka **izpiši tudi v pogovor** (vsaj `package` brez slike, ki je velika), ne samo v `outbox/<slug>.json`. Datoteka, ki umre s sejo, ni predaja.
+**`outbox/` ne preživi seje - preverjeno 14.-15. 8. 2026.** V Cowork seji je CWD `/home/claude`, efemerni vsebnik. Zato telo predaje **izpiši tudi v pogovor** (vsaj `content` brez slike, ki je velika), ne samo v `outbox/<slug>.json`. Datoteka, ki umre s sejo, ni predaja; predaja gre prek `cf-deliver-draft` v koraku 5.
 
 3. **Če gate pade (exit 1):** ne pošiljaj. Pokaži Igorju seznam kršitev in za vsako povej, kateri korak jo popravi:
 
