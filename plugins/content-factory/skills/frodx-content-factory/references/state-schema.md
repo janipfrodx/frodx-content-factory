@@ -69,4 +69,4 @@ Pravila:
 - Rezultat koraka se zapiše **takoj ob nastanku**, ne ob potrditvi. Potrditev je gate, ne pogoj za zapis.
 - Korak nikoli ne zapolni polj, ki pripadajo poznejšemu koraku, tudi če bi jih znal.
 - Ob prekinitvi je `state.json` edini vir resnice. Kar ni v njem, se ni zgodilo.
-- Slike ostanejo binarne v `images/`. V `state.json` gredo samo alt tekst, izmerjene dimenzije in rubrična utemeljitev izbire.
+- Slike ostanejo binarne v `images/`. V `state.json` gredo alt tekst, izmerjene dimenzije, rubrična utemeljitev izbire in javni URL izbrane slike (`_run.image.url`), ki ga aplikacija potrebuje.

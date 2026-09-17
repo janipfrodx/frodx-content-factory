@@ -47,7 +47,7 @@ Vrstni red ni kozmetičen. V teku 14. 9. 2026 so se `social_posts[]` izgubili, k
 
 **Korak 1 (`frodx-topic-pick`) v to generično pravilo ni zajet.** Gate koraka 1 je Igorjeva izbira teme, ki se zgodi znotraj `frodx-topic-pick` samega - ta skill Igorja vpraša »katero temo pišemo« sam, in šele po njegovi izbiri zapiše `_run.status = in_progress` (ne `awaiting_approval`). Ko se `frodx-topic-pick` vrne z izbrano temo, ne vprašaj Igorja znova in ne prepiši `_run.status` nazaj na `awaiting_approval` - pojdi naravnost naprej, kot je opisano spodaj.
 
-**Tudi korak 7 (`frodx-publish-send`) ni v celoti zajet v generično pravilo.** Ne vprašuje za potrditev po sebi - to je zadnji korak, ki samo validira in preda paket. Nastavi `_run.status` na `ready` (dry-run) ali `sent` (živo pošiljanje), NE na `awaiting_approval`.
+**Tudi korak 7 (`frodx-publish-send`) ni v celoti zajet v generično pravilo.** Ne vprašuje za potrditev po sebi - to je zadnji korak, ki samo validira in preda paket. Nastavi `_run.status` na `sent`, NE na `awaiting_approval`. Dry-run ne obstaja več - korak 7 preda prek `cf-deliver-draft`.
 
 Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` teče **pred** `init_run.py` (»Zagon« zgoraj, točka 1 pred točko 2), ker je naslov teme, ki jo Igor izbere, vhod za slug, ki ga `init_run.py` ustvari. `state.json` ob teku `frodx-topic-pick` torej **še ne obstaja** - ustvari ga dirigent (ti) takoj po Igorjevi izbiri, s `python3 scripts/init_run.py "<izbrana tema>" runs`, preden `frodx-topic-pick` vanj zapiše `_run.brief` in `_run.topic_source`. Vsi ostali koraki (2-7) tečejo **po** `init_run.py` in pišejo v že obstoječ `state.json`.
 

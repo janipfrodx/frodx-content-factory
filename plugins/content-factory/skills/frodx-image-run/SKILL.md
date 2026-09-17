@@ -19,8 +19,8 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 {
   "workflowId": "lHc3NdejxehMyc9O",
   "executionMode": "manual",
+  "triggerNodeName": "Trigger",
   "inputs": {
-    "type": "webhook",
     "webhookData": {
       "method": "POST",
       "body": {
@@ -64,7 +64,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
 6. Preberi `references/image-decision.md` in `frodx-key-visual/references/visual-style.md`. Poglej obe sliki in odloči.
 7. Če zavrneš obe: popravi oba prompta v isti smeri in ponovi od točke 3. Največ dve ponovitvi.
-8. Izbrano sliko kopiraj v `images/izbrana.png`. Ena sama datoteka in ena sama pripona: korak 7 pošlje `images/izbrana.png` z `mime_type` `image/png` in te poti ne izpeljuje iz tega, kaj je v mapi.
+8. Izbrano sliko kopiraj v `images/izbrana.png`. Ena sama datoteka in ena sama pripona, da je jasno, katero sliko si izbral. Korak 7 te datoteke ne pošilja - aplikaciji preda `_run.image.url`; datoteka na disku je le tvoj delovni izvod, ki ga meri gate.
 9. Napiši alt tekst za vse tri jezike. Opiši, **kar je na sliki**, ne o čem je članek. Naslov uporabi samo za razdvoumljenje. En stavek, do 160 znakov, ciljno okoli 125. Ne začenjaj z »Slika prikazuje«, »Image of«, »Fotografija«.
 10. Zapiši v `state.json`:
     - `languages.sl.featured_image_alt`, `languages.en.featured_image_alt`, `languages.hr.featured_image_alt`
@@ -92,7 +92,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
     `url` je javni URL **izbrane** kandidatke, prepisan iz odgovora workflowa v točki 4. Aplikacija drugega o sliki ne dobi, zato mora biti tu in mora biti tisti, ki ustreza `chosen`. Zavržena kandidatka ostane v shrambi; to ni napaka, ampak zapis, med čim se je izbiralo.
     - `_run.step` = 5, `_run.status` = `awaiting_approval`
-11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `chosen`, `url`, `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri samo dimenzije in razlike med njima ne vidi.
+11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `chosen`, `url`, `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri dimenzije datoteke in `_run.image.url` ločeno, da sta neusklajena, pa ne vidi.
 
 ## Kako sliki dejansko prideta do tebe
 
@@ -120,4 +120,4 @@ z `dimenzije.py`, poglej ju in izberi.
 
 Vsak zagon porabi plačljiv OpenAI in Gemini klic za sliko. Pred tretjim poskusom vprašaj Igorja, ali naj nadaljuješ.
 
-Ne zaganjaj workflowa znova zato, da bi »morda tokrat« prišel binarni izhod. V teku 14.-15. 8. 2026 sta bila zaradi tega porabljena **dva para** slik (izvedbi 183698 in 183742). Če sliki obstajata v prejšnji izvedbi, jih vzemi od tam - popravek workflowa velja šele za nove izvedbe, sliki iz stare izvedbe pa sta še vedno v n8n.
+Ne zaganjaj workflowa znova zato, da bi »morda tokrat« prišel binarni izhod. V teku 14.-15. 8. 2026 sta bila zaradi tega porabljena **dva para** slik (izvedbi 183698 in 183742). Če sta URL-ja iz prejšnje izvedbe še pri roki, ju uporabi - sliki v shrambi ostaneta in nov zagon zanju ni potreben.
