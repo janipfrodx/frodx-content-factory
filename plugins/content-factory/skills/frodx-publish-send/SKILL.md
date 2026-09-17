@@ -2,7 +2,7 @@
 name: frodx-publish-send
 description: Validate a finished FrodX content package and hand it to the publishing app. Runs the binary contract check, then delivers the package through the n8n workflow cf-deliver-draft, which creates a draft in the app and returns an edit link for Igor. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish date - Igor picks that in the app.
 metadata:
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # Predaja paketa

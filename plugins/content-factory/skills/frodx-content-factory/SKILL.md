@@ -2,7 +2,7 @@
 name: frodx-content-factory
 description: Run the FrodX content production chain end to end - pick an AEO topic, write the column, run the critique loop, transcreate to EN and HR, generate the key visual, enrich publishing metadata and hand the package to the publishing app. Use whenever Igor wants to start a new column, blog post or content run for frodx.com, including when he only says "nova kolumna", "nova vsebina", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # FrodX Content Factory - dirigent

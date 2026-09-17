@@ -2,7 +2,7 @@
 name: frodx-critique-loop
 description: Run the FrodX critique loop on a draft column - send the text to GPT and Gemini through the n8n critique workflow, apply the feedback, and repeat until both approve or three rounds are spent. Use after a column draft exists and before transcreation, or whenever Igor asks to "daj v kritiko", "preveri kolumno", "kaj pravita GPT in Gemini". Writes the revised text back into the run state and logs every round.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Kritika loop

@@ -2,7 +2,7 @@
 name: frodx-publishing-meta
 description: Fill in all publishing metadata for a finished FrodX column - slugs, SEO titles, meta descriptions, topic clusters, the HubSpot campaign and the per-language tags. Use after the text and image are final and before the package is sent, or when Igor asks for "meta podatki", "SEO", "kampanja", "tagi". Picks the campaign from a fixed list of ten and never invents HubSpot tag ids.
 metadata:
-  version: 0.1.0
+  version: 0.1.1
 ---
 
 # Meta podatki za objavo

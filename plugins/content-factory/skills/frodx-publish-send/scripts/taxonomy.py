@@ -3,33 +3,34 @@
 import re
 from pathlib import Path
 
-VRSTICA = re.compile(r"^\|\s*(Interest - [^|]+?)\s*\|(.+)$")
+PREDPONA = "Interest - "
+GUID = re.compile(r"[0-9a-f-]{36}")
+JEZIKI = ("sl", "en", "hr")
 
 
-def _celice(vrstica: str) -> list:
-    return [c.strip() for c in vrstica.strip().strip("|").split("|")]
+def _vrstice(path: Path):
+    """Celice vsake tabelne vrstice, ki se začne s kampanjo `Interest - `."""
+    for vrstica in Path(path).read_text(encoding="utf-8").splitlines():
+        if not vrstica.startswith("|"):
+            continue
+        celice = [c.strip() for c in vrstica.strip().strip("|").split("|")]
+        if len(celice) > 1 and celice[0].startswith(PREDPONA):
+            yield celice
 
 
 def load_campaigns(path: Path) -> dict:
     """Ime kampanje -> GUID. Bere samo vrstice z natanko dvema stolpcema."""
-    rezultat = {}
-    for vrstica in Path(path).read_text(encoding="utf-8").splitlines():
-        if not VRSTICA.match(vrstica):
-            continue
-        celice = _celice(vrstica)
-        if len(celice) == 2 and re.fullmatch(r"[0-9a-f-]{36}", celice[1]):
-            rezultat[celice[0]] = celice[1]
-    return rezultat
+    return {
+        celice[0]: celice[1]
+        for celice in _vrstice(path)
+        if len(celice) == 2 and GUID.fullmatch(celice[1])
+    }
 
 
 def load_tags(path: Path) -> dict:
     """(ime kampanje, jezik) -> {'id', 'name', 'slug'}. Bere vrstice s petimi stolpci."""
-    rezultat = {}
-    for vrstica in Path(path).read_text(encoding="utf-8").splitlines():
-        if not VRSTICA.match(vrstica):
-            continue
-        celice = _celice(vrstica)
-        if len(celice) == 5 and celice[1] in ("sl", "en", "hr"):
-            kampanja, jezik, tag_id, ime, slug = celice
-            rezultat[(kampanja, jezik)] = {"id": tag_id, "name": ime, "slug": slug}
-    return rezultat
+    return {
+        (celice[0], celice[1]): {"id": celice[2], "name": celice[3], "slug": celice[4]}
+        for celice in _vrstice(path)
+        if len(celice) == 5 and celice[1] in JEZIKI
+    }

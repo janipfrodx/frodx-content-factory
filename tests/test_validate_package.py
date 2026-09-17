@@ -456,6 +456,15 @@ def test_url_brez_https_pade(tmp_path):
     assert any("https" in n for n in napake)
 
 
+def test_url_samo_z_gostiteljem_brez_poti_pade(tmp_path):
+    """Gol gostitelj ni slika. Brez te preverbe gate spusti `https://<host>` naprej."""
+    from validate_package import preveri_sliko
+    state = _tek(tmp_path, 1536, 1024)
+    for url in ("https://umvjwjzdrtamfrcqhopa.supabase.co", "https://umvjwjzdrtamfrcqhopa.supabase.co/"):
+        napake = preveri_sliko({"image": {"chosen": "openai", "url": url}}, state)
+        assert any("nima poti" in n for n in napake), url
+
+
 def test_veljaven_url_in_dovolj_velika_slika_gresta_skozi(tmp_path):
     from validate_package import preveri_sliko
     state = _tek(tmp_path, 1536, 1024)

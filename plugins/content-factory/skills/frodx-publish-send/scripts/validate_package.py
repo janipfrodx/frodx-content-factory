@@ -101,10 +101,14 @@ def preveri_sliko(run, state_pot: Path) -> list:
         if not url.startswith("https://"):
             napake.append(f"_run.image.url ni https: {url}")
         else:
-            gostitelj = url[len("https://"):].split("/", 1)[0]
+            gostitelj, _, pot = url[len("https://"):].partition("/")
             if gostitelj != SLIKA_HOST:
                 napake.append(
                     f"_run.image.url je na tujem gostitelju {gostitelj}, pričakovan {SLIKA_HOST}"
+                )
+            elif not pot.strip("/"):
+                napake.append(
+                    f"_run.image.url nima poti do datoteke, samo gostitelja: {url}"
                 )
 
     mapa = Path(state_pot).parent / "images"

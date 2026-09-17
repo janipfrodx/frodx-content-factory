@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -50,5 +51,23 @@ def test_skill_bere_url_iz_odgovora_workflowa():
     assert "filesystem-v2" not in vsebina, "opis mrtve poti prek get_execution je odstranjen"
 
 
+def _vrstica_sheme(kljuc: str) -> str:
+    """Tabelna vrstica sheme za dani ključ `_run`. Prazen niz, če je ni."""
+    for vrstica in SHEMA.read_text(encoding="utf-8").splitlines():
+        if vrstica.startswith(f"| `{kljuc}` |"):
+            return vrstica
+    return ""
+
+
 def test_shema_pozna_url_izbrane_slike():
-    assert "url" in SHEMA.read_text(encoding="utf-8")
+    """`assert "url" in SHEMA` bi prehajal zaradi `edit_url` v vrstici `delivery`.
+
+    Zato se trdi o vrstici `image` in o polni poti `_run.image.url`.
+    """
+    vrstica = _vrstica_sheme("image")
+    assert vrstica, "shema nima vrstice za `image`"
+    zadetek = re.search(r"\{([^}]+)\}", vrstica)
+    assert zadetek, "vrstica `image` ne našteva polj v zavitih oklepajih"
+    polja = {p.strip() for p in zadetek.group(1).split(",")}
+    assert polja == {"chosen", "url", "attempts", "dimensions", "rubric", "reason"}, polja
+    assert "_run.image.url" in SHEMA.read_text(encoding="utf-8")

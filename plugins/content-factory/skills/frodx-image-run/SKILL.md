@@ -2,7 +2,7 @@
 name: frodx-image-run
 description: Produce the key visual for a FrodX column - get the two image prompts from frodx-key-visual, run them through the n8n image workflow, judge the two results and write alt text in all three languages. Use after the column text is final, or when Igor asks for "naslovna slika", "key visual", "generiraj sliko". Stores the chosen image in the run folder and the alt texts in the run state.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Naslovna slika
