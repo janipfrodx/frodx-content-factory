@@ -111,6 +111,32 @@ Tudi ta krog je preverjen **samo statično**. Prvi dovoljen plačljiv tek naj
 potrdi, da Gemini datoteka pride v shrambo kot `gemini.jpg` ali `gemini.jpeg`
 z `image/jpeg`.
 
+### Rezerva za podtip brez poševnice (popravni krog 3, 17. 9. 2026)
+
+Krog 2 je pokril manjkajoč `mimeType`, ne pa pokvarjenega. Če bi `mimeType` bil
+nastavljen, a brez poševnice (na primer `imagejpeg`), bi `.split("/")[1]` vrnil
+`undefined` in ime datoteke bi bilo `gemini.undefined`. Dodan je zadnji člen
+verige, drugih sprememb ni:
+
+- `filename`: `={{ "gemini." + (($("Gemini Image").item.binary.geminiImage || {}).fileExtension || (($("Gemini Image").item.binary.geminiImage || {}).mimeType || "image/jpeg").split("/")[1] || "jpeg") }}`
+
+`mime_type` se **namenoma ne spreminja**. Pokvarjenega tipa ne smemo nadomestiti
+z ugibanjem: aplikacija ga zavrne po svoji shemi (`^image/(png|jpe?g|webp|gif|avif)$`)
+in napaka je glasna. Tiho popravljena vrednost bi pomenila datoteko, označeno
+drugače, kot je njena vsebina - natanko napaka, ki jo je krog 1 odpravljal.
+
+Sedem primerov, pognanih v `node` pred uveljavitvijo: `geminiImage` manjka,
+prazen objekt, `fileExtension` `png`, samo `mimeType` `image/png`, `mimeType`
+brez poševnice, `mimeType` `image/`, `mimeType` prazen niz. Izidi po vrsti:
+`gemini.jpeg`, `gemini.jpeg`, `gemini.png`, `gemini.png`, `gemini.jpeg`,
+`gemini.jpeg`, `gemini.jpeg`. Nikjer `undefined`, izpeljava ostaja prednostna.
+
+Uveljavljeno prek `update_workflow` in preverjeno s ponovnim branjem workflowa:
+`versionId` `b3b49843-03d3-41e6-bb14-232e9c54642d`, 11 vozlišč, `Upload OpenAI`
+nedotaknjen (`openai.png` / `image/png`), credential `vS1Vj3wTuQUKF5WI` na mestu,
+`active: false` nespremenjen. Tudi ta krog je preverjen **samo statično** - plačljiv
+tek ni bil izveden.
+
 ### Oblika odgovora webhooka `generate-image`
 
 ```json
