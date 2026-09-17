@@ -34,6 +34,104 @@ Odgovor navzgor (na `Respond to Webhook`) vedno vsebuje:
 
 - workflowId: `lHc3NdejxehMyc9O`
 - webhook pot: `generate-image`
+  - produkcijski URL: `https://frodxai.app.n8n.cloud/webhook/generate-image`
+  - testni URL: `https://frodxai.app.n8n.cloud/webhook-test/generate-image`
+- `Trigger.responseMode` = `responseNode` (prej `lastNode`) - potrebno, ker imata
+  dve vzporedni veji (OpenAI, Gemini) vsaka svoj rezultat; `lastNode` bi tiho
+  vrnil samo enega.
+- vozlišča (zaporedno): `Trigger` -> `Normalize Input` -> razveji na `OpenAI Image`
+  in `Gemini Image` -> `Extract OpenAI b64` / `Extract Gemini b64`
+  (`extractFromFile`, `operation: binaryToPropery`) -> `Upload OpenAI` /
+  `Upload Gemini` (httpRequest, POST na `https://frodx-content-app.lovable.app/api/images`)
+  -> `Merge` (`mode: append`, dva vhoda) -> `Shape URLs` (code) ->
+  `Respond to Webhook`.
+- obvod, ki je pomanjševal sliki (`Shrink OpenAI`, `Shrink Gemini`, `B64 OpenAI`,
+  `B64 Gemini` - 640x640 `maximumArea`, JPEG q60), je odstranjen. Prav ta obvod je
+  14. 9. 2026 povzročil oddajo predogleda 784x522 namesto polne slike.
+- `binaryPropertyName` se med vejama razlikuje in se ne poenoti: `data` na OpenAI
+  veji, `geminiImage` na Gemini veji (OpenAI Image piše v `data`, Gemini Image ima
+  `options.binaryPropertyOutput = "geminiImage"`).
+- `Upload OpenAI` in `Upload Gemini` uporabljata predefiniran credential tipa
+  Header Auth `FrodX Content App Ingest` (id `vS1Vj3wTuQUKF5WI`); v parametrih
+  vozlišč ni nobene vrednosti ključa - avtentikacija gre izključno prek
+  credentiala. Telo klica: `image_base64`, `filename` (`openai.png` /
+  `gemini.png`), `mime_type` (`image/png`).
+
+### Oblika odgovora webhooka `generate-image`
+
+```json
+{"openai": {"url": "<https URL>"}, "gemini": {"url": "<https URL>"}}
+```
+
+### Vrstni red vhodov v `Merge` (pomembno za `Shape URLs`)
+
+Veja **OpenAI je vezana na prvi vhod** vozlišča `Merge` (`index 0`), veja
+**Gemini na drugega** (`index 1`). To je bilo potrjeno tudi z dejanskim tekom:
+`Upload OpenAI` je vrnil prvi URL, `Upload Gemini` drugega. `Shape URLs` bere
+`items[0]` kot OpenAI in `items[1]` kot Gemini - to je pravilno, dokler ta
+vrstni red vhodov ostane nespremenjen.
+
+### Razmerje stranic pri `Gemini Image`
+
+Shema vozlišča `@n8n/n8n-nodes-langchain.googleGemini` (`resource: image`,
+`operation: generate`) parametra za razmerje stranic ne pozna - `options` ima
+samo `sampleCount` (samo za Imagen modele) in `binaryPropertyOutput`. Edino
+sredstvo za vplivanje na razmerje je besedilo prompta (`prompt_gemini`).
+
+V teku, opisanem spodaj, je Gemini vrnil razmerje 2,36:1 (1584x672) namesto
+pričakovanega ~1,9:1 - to pojasnjuje, zakaj je izmerjena širina precej večja od
+zahtevane pri enaki (dovolj visoki) višini. Merilo koraka 8 (vsaj 1200x630) je
+kljub temu doseženo.
+
+### Preizkus 17. 9. 2026 - execution 204104
+
+`execute_workflow`, `executionMode: manual`, vhod (webhook body) natanko po
+brifu: `prompt_openai`, `prompt_gemini` (enak opisni prompt konferenčne sobe
+brez besedila in logotipov), `size: "1536x1024"`.
+
+- status: `success`
+- čas: 2026-09-17 08:47:42 -> 08:48:53 UTC (71 s)
+
+Dobesedni odgovor vozlišča `Respond to Webhook`:
+
+```json
+{"openai": {"url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/0618294a-bda8-48a6-8626-0c87b695bfc2.png"},
+ "gemini": {"url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/39c91efe-b7ed-4b26-872f-0fd62cb38e7d.png"}}
+```
+
+Preneseni sliki (`curl` v `/tmp`, ne v repozitorij) in dobesedni izhod
+`plugins/content-factory/skills/frodx-publish-send/scripts/dimenzije.py`:
+
+```
+/tmp/openai.png: 1536x1024
+/tmp/gemini.png: 1584x672
+exit: 0
+```
+
+Velikosti datotek: openai 3 263 566 bajtov, gemini 915 132 bajtov. Obe sliki sta
+vsaj 1200x630; OpenAI je vrnil točno zahtevanih 1536x1024.
+
+### Ugotovitve za naslednje naloge
+
+- `update_workflow` samodejnega dodeljevanja credentialov za vozlišča tipa
+  `httpRequest` ne opravi (vrne opozorilo "skipped during credential
+  auto-assignment"). Credential je treba pripeti z ločenim klicem
+  (`setNodeCredential`) in nato preveriti z `get_workflow_details`, da je res
+  pripet.
+- veja `Upload OpenAI` je na prvem vhodu `Merge` (`index 0`), veja
+  `Upload Gemini` na drugem (`index 1`) - glej razdelek zgoraj.
+
+### Popravek brifa (netočnost F10)
+
+Brif naloge 2, korak 7, predpisuje vhod oblike
+`inputs: {"type": "webhook", "webhookData": {...}}`. Shema orodja
+`execute_workflow` polja `type` ne pozna in poleg tega zahteva `triggerNodeName`,
+kadar so `inputs` podani. Delujoča oblika je:
+
+```
+triggerNodeName: "Trigger"
+inputs: { "webhookData": { "method": "POST", "body": { ... } } }
+```
 
 ## Skrivnost
 
