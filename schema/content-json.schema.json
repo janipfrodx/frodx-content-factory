@@ -13,7 +13,7 @@
       "properties": {
         "title": { "type": "string", "minLength": 1 },
         "exported_at": { "type": "string", "minLength": 1 },
-        "version": { "type": "string", "const": "1.1" }
+        "version": { "type": "string", "const": "1.2" }
       }
     },
     "universal": {

@@ -122,8 +122,8 @@ def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
     meta = pkg.get("meta") or {}
     if not str(meta.get("title", "")).strip():
         napake.append("meta.title je prazen")
-    if meta.get("version") != "1.1":
-        napake.append(f"meta.version mora biti '1.1', je '{meta.get('version')}'")
+    if meta.get("version") != "1.2":
+        napake.append(f"meta.version mora biti '1.2', je '{meta.get('version')}'")
     if not str(meta.get("exported_at", "")).strip():
         napake.append("meta.exported_at je prazen")
 
