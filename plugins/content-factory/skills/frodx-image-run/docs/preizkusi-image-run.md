@@ -32,16 +32,20 @@ curl -X POST https://frodxai.app.n8n.cloud/webhook-test/generate-image \
 
 ## Kako sliki prideta do skilla - preberi, preden očitaš napako
 
-**`get_execution` binarnih bajtov ne vrne.** Instanca teče v načinu `filesystem-v2` in vrne referenco na pot na disku, ne slike. Prepis base64 skozi kontekst je bil preizkušen 15. 8. 2026 in ne deluje (17 kB namesto ~35 kB, `broken data stream`, uporabnih okoli 2 % slike).
+Stanje preverjeno 16. 9. 2026. Workflow obe sliki naloži v shrambo aplikacije (gostitelj
+`umvjwjzdrtamfrcqhopa.supabase.co`) in v odgovoru vrne javna URL-ja:
 
-Dokler nalaganje slik ni rešeno, ta korak edini v verigi ne more do konca brez človeka, in ta človek si ti:
+```json
+{"openai": {"url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/<uuid>.png"},
+ "gemini": {"url": "..."}}
+```
 
-1. Skill ti da ID izvedbe.
-2. Odpri to izvedbo v n8n UI in prenesi sliki iz vozlišč `OpenAI Image` in `Gemini Image` - tam sta **polni** sliki, ne pomanjšani predogled.
-3. Položi ju v mapo teka kot `images/openai.png` in `images/gemini.png`.
-4. Šele takrat skill nadaljuje.
+Skill oba URL-ja sam prenese s `curl` v `images/openai.png` in `images/gemini.png`. Ročni prenos prek n8n UI ni
+več potreben. `get_execution` binarnih bajtov ne vrne (instanca teče v načinu `filesystem-v2` in vrne referenco
+na pot na disku, ne slike) - to skillu ni več ovira, ker slik od tam ne potrebuje.
 
-Če skill poskuša sliki dobiti prek `get_execution` ali poroča, da »slike ni bilo mogoče generirati«, je to napaka skilla - zapiši jo. Generirani sta bili.
+Če skill poskuša sliki dobiti prek `get_execution`, te prosi, da ju ročno preneseš iz n8n UI, ali poroča, da
+»slike ni bilo mogoče generirati«, je to napaka skilla - zapiši jo. Generirani sta bili.
 
 Celoten razdelek je v `SKILL.md`, »Kako sliki dejansko prideta do tebe«.
 
@@ -50,15 +54,14 @@ Celoten razdelek je v `SKILL.md`, »Kako sliki dejansko prideta do tebe«.
 Vzemi `languages.sl.content` iz `tests/fixtures/package_valid.json` (repo `frodx-content-factory`). Naslov kolumne je `meta.title`: "Zakaj lojalnostni programi kaznujejo zveste kupce".
 
 1. Pokliči `frodx-key-visual` s tem naslovom in besedilom, da dobiš `prompt_openai` in `prompt_gemini`.
-2. Pusti skillu, da pokliče workflow prek `execute_workflow`.
-3. Prenesi sliki iz n8n UI po postopku zgoraj.
-4. Od tod naprej dela skill sam: izmeri, odloči, kopira, napiše alt tekste in zapiše `state.json`.
+2. Pusti skillu, da pokliče workflow prek `execute_workflow` in sam prenese sliki iz vrnjenih URL-jev.
+3. Od tod naprej dela skill sam: izmeri, odloči, kopira, napiše alt tekste in zapiše `state.json`.
 
 Preveri:
 
 - [ ] `frodx-key-visual` vrne dva ločena prompta
 - [ ] klic prek `execute_workflow` dejansko sproži izvedbo (če ne, poskusi z `triggerNodeName: "Trigger"` in to zapiši kot najdbo)
-- [ ] skill **ne** poskuša brati bajtov prek `get_execution` in te ne pusti čakati brez navodila
+- [ ] skill sliki prenese s `curl` iz URL-jev v odgovoru workflowa - **ne** poskuša brati bajtov prek `get_execution` in te ne prosi za ročni prenos iz n8n UI
 - [ ] skill **izmeri obe sliki, preden ju pokaže**, in izpiše dimenzije
 
   ```bash

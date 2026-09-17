@@ -33,7 +33,23 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 }
 ```
 
-4. Pridobi sliki. **Preberi najprej razdelek »Kako sliki dejansko prideta do tebe« spodaj** - `get_execution` binarnih bajtov na tej n8n instanci ne vrne in poskus prepisa base64 na disk je bil preizkušen in ni deloval. Brez tega razdelka ta korak porabi dva plačljiva klica in obstane.
+4. **Prenesi sliki na disk.** Workflow v odgovoru vrne javna URL-ja, ne bajtov:
+
+   ```json
+   {"openai": {"url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/<uuid>.png"},
+    "gemini": {"url": "..."}}
+   ```
+
+   Oba prenesi v mapo teka:
+
+   ```bash
+   curl -sS -o runs/<slug>/images/openai.png "<openai.url>"
+   curl -sS -o runs/<slug>/images/gemini.png "<gemini.url>"
+   ```
+
+   URL-ja si **zapiši**, ne samo datotek - URL izbrane slike gre v točki 10 v `_run.image.url` in je edino, kar aplikacija o sliki potrebuje.
+
+   Če `curl` vrne prazno ali napako, ne poskušaj brati bajtov iz izvedbe workflowa in ne kodiraj base64 skozi kontekst; oboje je bilo preizkušeno 15. 8. 2026 in ne deluje. Povej Janiju, da gostitelj shrambe ni dosegljiv, in počakaj.
 5. **Izmeri obe sliki, preden ju gledaš.** Tek 14. 9. 2026 je kot naslovno sliko oddal datoteko 784x522, ker tega ni nihče izmeril.
 
    ```bash
@@ -57,6 +73,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
     ```json
     {
       "chosen": "openai",
+      "url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/<uuid>.png",
       "attempts": 1,
       "dimensions": {"openai": [1536, 1024], "gemini": [1536, 864]},
       "rubric": {
@@ -72,31 +89,25 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
     ```
 
     Šest polj `rubric` je šest meril iz rubrike v `frodx-key-visual/SKILL.md`. Sedmega, »Kakovost prompta«, tu ni: ocenjuje prompt, ne slike, in je bil opravljen že v točki 2. Piši poved o **izbrani** sliki, ne oceno v številkah - številčna rubrika velja za koncept pred generiranjem.
+
+    `url` je javni URL **izbrane** kandidatke, prepisan iz odgovora workflowa v točki 4. Aplikacija drugega o sliki ne dobi, zato mora biti tu in mora biti tisti, ki ustreza `chosen`. Zavržena kandidatka ostane v shrambi; to ni napaka, ampak zapis, med čim se je izbiralo.
     - `_run.step` = 5, `_run.status` = `awaiting_approval`
-11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri samo dimenzije in razlike med njima ne vidi.
+11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `chosen`, `url`, `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri samo dimenzije in razlike med njima ne vidi.
 
 ## Kako sliki dejansko prideta do tebe
 
-Stanje preverjeno 17. 8. 2026 neposredno v workflowu `lHc3NdejxehMyc9O`, ugotovitve iz živega teka 14.-15. 8. 2026.
+Stanje preverjeno 16. 9. 2026. Workflow `lHc3NdejxehMyc9O` obe sliki naloži v shrambo aplikacije in
+vrne javna URL-ja. Nalaganje opravi n8n s svojim credentialom; ključ nikoli ne pride v tvoj kontekst.
 
-**Kar ne deluje in se ne poskuša znova:**
+Postopek je zato cel v točkah 3 do 5 zgoraj: pokliči workflow, prenesi obe sliki s `curl`, izmeri ju
+z `dimenzije.py`, poglej ju in izberi.
 
-- `get_execution` **ne vrne bajtov**. n8n Cloud instanca teče v načinu `filesystem-v2`, zato vrne referenco oblike `{"data": "filesystem-v2", "id": "filesystem-v2:workflows/…/binary_data/…"}`. To je pot na disku n8n instance, ne slika.
-- **Prepis base64 na disk skozi kontekst ne deluje.** Workflow ima veji `Shrink OpenAI → B64 OpenAI` in `Shrink Gemini → B64 Gemini` (640×640 `maximumArea`, JPEG q60), ki v polji `openai_b64` in `gemini_b64` vrneta base64 - ta res pride skozi. Poskus 15. 8. 2026, da se ta niz (~45.000 znakov) prepiše v datoteko in dekodira, je dal 17 kB namesto ~35 kB in `OSError: broken data stream when reading image file`; ob prisilnem izrisu je bilo uporabnih okoli 2 % slike. Ponovni poskus je ista operacija z istim razlogom za odpoved - ne ponavljaj ga in ne poročaj, da »slike ni bilo mogoče generirati« (generirana je bila).
+**Kar se ne poskuša več:**
 
-**Vmesni postopek, dokler nalaganje ni rešeno.** Ta korak edini v verigi ne more do konca brez človeka:
-
-1. Iz izvedbe si zapiši ID in povej Igorju (ali Janiju), naj v n8n UI odpre to izvedbo in prenese sliki iz vozlišč `OpenAI Image` in `Gemini Image` - tam sta **polni** sliki, ne pomanjšani predogled.
-2. Prosi ga, naj ju položi v mapo teka kot `images/openai.png` in `images/gemini.png`.
-3. Šele ko datoteki obstajata, ju odpri in nadaljuj s točko 5. **Preden sliki vidiš, ne izbiraj in ne piši alt teksta.**
-
-**Trajna rešitev, ko bo workflow dopolnjen.** Preverjeno 17. 8. 2026: Microsoft 365 konektor prek `read_resource` na URI `file:///{driveId}/{itemId}` vrne **sliko, ki jo res vidiš** - ne besedilnega izvlečka. Ko bo workflow sliko nalagal na SharePoint in vračal `driveId` in `itemId`, bo postopek tak:
-
-```
-read_resource("file:///{driveId}/{itemId}")
-```
-
-in slika je pred tabo, brez base64 in brez datoteke na disku. Takrat točke 1-3 vmesnega postopka odpadejo. Dokler workflow tega ne vrača, velja vmesni postopek zgoraj - sam nalaganja ne izvajaj in `driveId`/`itemId` si ne izmišljaj.
+- `get_execution` binarnih bajtov na tej instanci ne vrne, ampak referenco na pot na disku n8n instance, ne sliko.
+- Prepis base64 skozi kontekst na disk ne deluje. Poskus 15. 8. 2026 je dal 17 kB namesto 35 kB in
+  `OSError: broken data stream when reading image file`.
+- Ročni prenos datotek iz n8n UI. Bil je vmesna rešitev, dokler nalaganja ni bilo; zdaj je.
 
 ## Kaj ne delaš
 

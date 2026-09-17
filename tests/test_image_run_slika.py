@@ -40,3 +40,15 @@ def test_navodilo_za_preizkus_se_ujema_s_skillom():
     assert "1200x630" in vsebina
     assert "ena sama pripona" in vsebina
     assert "znova prekopira" in vsebina
+
+
+def test_skill_bere_url_iz_odgovora_workflowa():
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "openai" in vsebina and "url" in vsebina
+    assert "curl" in vsebina, "skill mora povedati, kako sliko prenese na disk"
+    assert "SharePoint" not in vsebina, "SharePoint pot je odstranjena"
+    assert "filesystem-v2" not in vsebina, "opis mrtve poti prek get_execution je odstranjen"
+
+
+def test_shema_pozna_url_izbrane_slike():
+    assert "url" in SHEMA.read_text(encoding="utf-8")
