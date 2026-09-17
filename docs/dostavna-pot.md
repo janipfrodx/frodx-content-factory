@@ -269,3 +269,42 @@ v bazi in da ponovitev ni ustvarila drugega osnutka.
 
 Testna vrstica (`run_slug = 'test-predaje-2026-09-16'`) je bila po preizkusu
 zbrisana; `select count(*) from content_drafts;` je po brisanju vrnil `0`.
+
+## Prevzemni tek, 17. 9. 2026
+
+Suhi tek naloge 8, korak 6. Brez plačljivih klicev; slika je bila vzeta iz
+izvedbe 204104 slikovnega workflowa.
+
+| Polje | Vrednost |
+|---|---|
+| `run_slug` | `2026-09-17-prevzemni-tek-predaje-17-9-2026` |
+| `draft_id` | `57a9251a-d8ce-4ca3-aa28-c12d5498e977` |
+| Izvedba `cf-deliver-draft` | 204313, `executionMode: manual` |
+| Odgovor | `status: created`, `http_status: 201` |
+
+Vsebina je bila `tests/fixtures/package_valid.json`, `_run` iz `init_run.py`.
+Rubrika v `_run.image` je označena kot neopravljena - tek preizkuša pot, ne presoje.
+`dimensions.gemini` nosi izmerjenih `1584x672` iz izvedbe 204104, ne vrednosti
+iz brifa.
+
+### Kaj je tek dokazal
+
+- Gate prehaja na paketu z `meta.version` 1.2 in `_run.image.url` na lastni shrambi
+  (`exit 0`).
+- `run_slug` nosi datum: `2026-09-17-prevzemni-tek-predaje-17-9-2026`. Popravek
+  `7f3aa08` je s tem preverjen v živo, ne le v testih.
+- Predaja teče prek `execute_workflow` z `executionMode: manual`. **Workflowa ni
+  treba aktivirati**; manualni klic ne gre skozi produkcijski webhook. Aktivacija
+  ostane potrebna šele, kadar bo kdo klical webhook URL neposredno.
+- Aplikacija je vrnila 201 in `edit_url`; vrstica je nastala s `status: new`.
+- Jani je 17. 9. 2026 odprl `edit_url` in potrdil, da je čarovnik v redu.
+
+### Kaj tek ni dokazal
+
+Ne pokriva Igorjeve oddaje v `PROD 2` in ne nastanka članka. Zaprto bo šele, ko
+en resničen tek pride od izbire teme do `edit_url`, Igor odda, in se vrstica
+obrne na `dispatched` - brez ročnega prenosa katerekoli datoteke.
+
+Testna vrstica je bila po preverjanju zbrisana;
+`select count(*) from content_drafts where run_slug like '%prevzemni-tek%'`
+je vrnil `0`.
