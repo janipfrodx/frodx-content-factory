@@ -72,7 +72,7 @@ Preveri:
 - [ ] kandidatka pod **1200x630** je zavrnjena, tudi če je lepša; če nobena ne doseže praga, skill ne izbira, ampak pove, da si najbrž dobil pomanjšan predogled
 - [ ] izbrana slika je v `images/izbrana.png` - **ena sama datoteka in ena sama pripona**, nobene `izbrana.jpg` poleg nje
 - [ ] alt teksti so trije, vsak en stavek do 160 znakov, noben se ne začne z »Slika prikazuje«, »Image of« ali »Fotografija«, in nobeden ni prevod slovenskega
-- [ ] `_run.image` ima vseh pet polj: `chosen`, `attempts`, `dimensions` (izmerjene, ne ugibane), `rubric` in `reason`
+- [ ] `_run.image` ima vseh šest polj: `chosen`, `url`, `attempts`, `dimensions` (izmerjene, ne ugibane), `rubric` in `reason`
 - [ ] `rubric` ima šest povedi: `koncept`, `robustnost`, `thumbnail`, `anti_slop`, `kompozicija`, `brand_fit` - povedi o **izbrani** sliki, ne ocene v številkah
 - [ ] `_run.step` = 5 in `_run.status` = `awaiting_approval`
 - [ ] zapis v `state.json` je nastal **takoj ob nastanku rezultata**, ne šele ko si potrdil - preveri datoteko, preden karkoli odgovoriš

@@ -111,7 +111,7 @@ z `dimenzije.py`, poglej ju in izberi.
 
 ## Kaj ne delaš
 
-- Ne nalagaš slike nikamor. URL naredi aplikacija ob sprejemu paketa.
+- Ne nalagaš slike nikamor. URL naredi workflow, ko sliko naloži v shrambo; ti ga samo prevzameš iz odgovora v točki 4.
 - Ne pišeš alt teksta iz naslova članka, če slike nisi pogledal.
 - Ne prevajaš slovenskega alt teksta v EN in HR. Vsak jezik opisuje sliko po svoje, naravno.
 - Ne izbiraš »manj slabe« slike, da bi se izognil ponovitvi.
