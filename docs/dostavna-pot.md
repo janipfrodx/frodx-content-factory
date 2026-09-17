@@ -308,3 +308,31 @@ obrne na `dispatched` - brez ročnega prenosa katerekoli datoteke.
 Testna vrstica je bila po preverjanju zbrisana;
 `select count(*) from content_drafts where run_slug like '%prevzemni-tek%'`
 je vrnil `0`.
+
+## Prvi resnični tek skozi Cowork, 17. 9. 2026
+
+Jani je pognal celotno verigo v Coworku, od teme do predaje, s pluginom 0.4.0
+in objavljeno aplikacijo (commit `6491619`).
+
+| Polje | Vrednost |
+|---|---|
+| `run_slug` | `2026-09-17-hubspot-ali-salesforce-za-srednje-veliko-b2b-podjetje-v-sloveniji-napacno` |
+| `draft_id` | `fea85c31-06f4-460b-aac6-38d777524edb` |
+| Izvedba `cf-deliver-draft` | 204412, `executionMode: manual`, 15:02:03-15:02:06 UTC |
+| Odgovor | `status: created`, `http_status: 201` |
+| Vrstica | `status: new`, `featured_image_url` na `umvjwjzdrtamfrcqhopa.supabase.co` |
+
+Preverjeno v vrstici, ne v paketu na disku:
+
+- `meta.version` je `1.2`.
+- Trije jeziki, trije socialni zapisi.
+- `campaign_name` je `Interest - Prodaja in lead management`; predpona `Blog - `
+  se ni pojavila nikjer.
+- Tag ID-ji se ujemajo s `hubspot-taxonomy.md` znak za znak: `sl` 209208755742,
+  `en` 110457313457, `hr` 109956645711.
+- SEO naslov je napisala veriga (`HubSpot ali Salesforce: prava primerjava za
+  B2B prodajo`), aplikacija ga ni generirala - to je pravilo v1.2 v praksi.
+
+S tem je zaprto vprašanje iz prevzemnega teka glede poti Cowork → aplikacija.
+Odprt ostane zadnji člen: Igorjeva oddaja iz čarovnika v `PROD 2` in nastanek
+članka. Vrstica danes stoji na `status: new`.
