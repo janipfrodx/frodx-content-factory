@@ -63,7 +63,10 @@ def zgradi_stanje(tema: str, slug: str, cas: str) -> dict:
         "social_posts": [],
         "languages": {koda: _prazen_jezik(koda) for koda in JEZIKI},
         "_run": {
-            "slug": slug,
+            # Tek nosi datum, ker je run_slug v aplikaciji unique in nosi
+            # idempotenco. Brez datuma bi ista tema drugi dan dobila 409
+            # in Igor povezavo na star osnutek.
+            "slug": f"{cas[:10]}-{slug}",
             "step": 1,
             "status": "awaiting_topic",
             "topic_source": {},
@@ -92,7 +95,8 @@ def main() -> int:
         return 1
     slug = _okrajsaj_slug(slug)
 
-    danes = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    zdaj = datetime.now(timezone.utc)
+    danes = zdaj.strftime("%Y-%m-%d")
     mapa = Path(sys.argv[2]) / f"{danes}-{slug}"
 
     # mapa.mkdir() brez exist_ok je atomaren zahtevek: hkrati preverba IN
@@ -113,7 +117,7 @@ def main() -> int:
         (mapa / "critique").mkdir()
         (mapa / "images").mkdir()
 
-        cas = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+        cas = zdaj.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         pot = mapa / "state.json"
         pot.write_text(
             json.dumps(zgradi_stanje(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",

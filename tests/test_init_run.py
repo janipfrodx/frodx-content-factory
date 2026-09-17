@@ -33,7 +33,8 @@ def test_stanje_ima_run_blok_na_koraku_ena():
     stanje = zgradi_stanje("Test tema", "test-tema", "2026-08-10T09:00:00.000Z")
     assert stanje["_run"]["step"] == 1
     assert stanje["_run"]["status"] == "awaiting_topic"
-    assert stanje["_run"]["slug"] == "test-tema"
+    assert stanje["_run"]["slug"] == "2026-08-10-test-tema"
+    assert stanje["universal"]["slug"] == "test-tema"
     assert stanje["_run"]["critique_rounds"] == 0
     assert stanje["_run"]["approvals"] == {}
     # open_tasks mora obstajati ze od zacetka - koraka 1 in 4 vanj piseta,
@@ -167,3 +168,11 @@ def test_cli_prazen_slug_vrne_1(tmp_path):
     )
     assert r.returncode == 1
     assert "sluga" in r.stdout.lower()
+
+
+def test_tek_slug_nosi_datum_clanek_pa_ne():
+    from init_run import zgradi_stanje
+    stanje = zgradi_stanje("Test tema", "test-tema", "2026-09-17T09:00:00.000Z")
+    assert stanje["_run"]["slug"] == "2026-09-17-test-tema"
+    assert stanje["universal"]["slug"] == "test-tema"
+    assert stanje["_run"]["slug"] != stanje["universal"]["slug"]
