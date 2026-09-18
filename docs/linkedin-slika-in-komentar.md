@@ -357,3 +357,229 @@ takrat na vrstici že zapisana, torej vrstica ne gre nazaj v čakalno vrsto) - t
 naloge, isti vzorec sklicevanja (`$("Route by Platform").item` prek `dataTable` vozlišč) že uporabljajo
 `Delete Published LI Co` in `Telegram LI Co Post Failure` iz Task 3. Če se v Task 6 pokaže ta napaka, je
 popravek zamenjava `.item` z `.first()` ali z eksplicitnim `itemMatching(0)`.
+
+## Igorjev osebni profil
+
+Urejeno 18. 9. 2026 (Task 5). Objava na `urn:li:person:EeNh9CVHnh` gre po **legacy UGC poti**
+(`/v2/ugcPosts`, `/v2/assets`), ne po REST poti, ki jo uporablja stran. Vseh deset novih vozlišč je
+`disabled: true`; `LI Setup - Create Post via HTTP` je bil predelan in ostaja `disabled: true`.
+
+### Tabela razlik med potema
+
+| | Stran (`urn:li:organization:1132284`) | Osebni (`urn:li:person:EeNh9CVHnh`) |
+|---|---|---|
+| API | REST `/rest/posts`, `LinkedIn-Version: 202606` | legacy UGC `/v2/ugcPosts`, brez verzijske glave |
+| nalaganje slike | `/rest/images?action=initializeUpload` | `/v2/assets?action=registerUpload` z `recipes: ["urn:li:digitalmediaRecipe:feedshare-image"]` |
+| kje je uploadUrl v odgovoru | `value.uploadUrl` | `value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl` |
+| URN sredstva | `value.image` (`urn:li:image:...`) | `value.asset` (`urn:li:digitalmediaAsset:...`) |
+| avtentikacija pri PUT bajtov | brez - podpisan URL | `Authorization: Bearer` **potreben** |
+| preverba obdelave | `GET /rest/images/{urn}`, polje `status` == `AVAILABLE` | `GET /v2/assets/{assetId}`, polje `recipes[].status` == `AVAILABLE` |
+| kje je URN objave | glava `x-restli-id` (zahteva `fullResponse`) | glava `x-restli-id` (zahteva `fullResponse`) - glej popravek spodaj |
+| komentar | `/rest/socialActions/{urn}/comments` | `/v2/socialActions/{urn}/comments` |
+| vrstni red slikovnih korakov | `Fetch -> Init -> Merge -> Upload` | `Register -> Fetch -> Upload` (brez Merge) |
+
+Poti nista zamenljivi. Prepisovanje ene v drugo je najverjetnejši vzrok tihe napake pri prihodnjem
+posegu.
+
+### Veriga vozlišč
+
+```
+Route by Platform (linkedin_personal)
+  → LI Pe - Register Upload        (POST /v2/assets?action=registerUpload)
+  → LI Pe - Fetch Image Bytes      (GET image_url, responseFormat: file, image_bytes)
+  → LI Pe - Upload Image Bytes     (PUT uploadUrl, binarni podatek, S credentialom)
+  → LI Pe - Wait Image Processing  (5 sekund)
+  → LI Pe - Check Asset Status     (GET /v2/assets/{assetId})
+  → LI Pe - Asset Status Gate      (IF: recipes[].status == AVAILABLE)
+      ├─ (da) → LI Setup - Create Post via HTTP   (POST /v2/ugcPosts, shareMediaCategory IMAGE)
+      │             ├─ (uspeh) → LI Pe - Store Post URN
+      │             │              (platform_post_id ali prazen niz, status=published, published_at)
+      │             │              → LI Pe - Add First Comment
+      │             │                   ├─ (uspeh) → Delete Published LI Pe
+      │             │                   └─ (napaka) → LI Pe - Comment Failed Alert
+      │             └─ (napaka) → Telegram LI Pe Post Failure   (nespremenjeno)
+      └─ (ne) → LI Pe - Image Not Available   (stopAndError - nič ni objavljeno)
+```
+
+Ni več neposredne povezave `Route by Platform → LI Setup` niti `LI Setup → Delete Published LI Pe`;
+`Delete Published LI Pe` ima natanko enega predhodnika, uspešni izhod `LI Pe - Add First Comment`.
+
+`Delete Published LI Pe` je bil poleg tega **onemogočen** (prej edino omogočeno vozlišče te veje),
+iz istega razloga kot `Delete Published LI Co` v Tasku 3: n8n iteme prepušča skozi onemogočena
+vozlišča, zato bi ročni tek pobrisal testne vrstice v `TEST-FrodX-Social-Posts`, ne da bi karkoli
+objavil. Task 6 ga za nadzorovani tek spet omogoči.
+
+### Telesa zahtevkov, kot so dejansko napisana
+
+`LI Pe - Register Upload` (statično telo, brez izraza):
+
+```json
+{"registerUploadRequest": {"recipes": ["urn:li:digitalmediaRecipe:feedshare-image"], "owner": "urn:li:person:EeNh9CVHnh", "serviceRelationships": [{"relationshipType": "OWNER", "identifier": "urn:li:userGeneratedContent"}]}}
+```
+
+`LI Setup - Create Post via HTTP` (`options.response.response.fullResponse: true`):
+
+```
+={{ JSON.stringify({
+  author: 'urn:li:person:EeNh9CVHnh',
+  lifecycleState: 'PUBLISHED',
+  specificContent: { 'com.linkedin.ugc.ShareContent': {
+    shareCommentary: { text: $("Route by Platform").item.json.post_text },
+    shareMediaCategory: 'IMAGE',
+    media: [{
+      status: 'READY',
+      media: $("LI Pe - Register Upload").item.json.value.asset,
+      description: { text: $("Route by Platform").item.json.image_alt }
+    }]
+  } },
+  visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' }
+}) }}
+```
+
+`LI Pe - Add First Comment` (URN v poti percent-kodiran, v telesu nekodiran):
+
+```
+url:  ={{ 'https://api.linkedin.com/v2/socialActions/' + encodeURIComponent(<URN>) + '/comments' }}
+body: ={{ ({ actor: "urn:li:person:EeNh9CVHnh", object: <URN>, message: { text: $("Route by Platform").item.json.post_url } }) }}
+```
+
+kjer je `<URN>`:
+
+```
+(() => { const r = $("LI Setup - Create Post via HTTP").item.json; const h = r.headers || {};
+  const b = r.body || {};
+  return h['x-restli-id'] || h['X-RestLi-Id'] || h['X-Restli-Id'] || b.id || r.id || ''; })()
+```
+
+### Popravek briefa: URN objave je v glavi, ne v telesu
+
+Brief je v Step 4 trdil, da pri legacy poti URN objave pride **v telesu odgovora (polje `id`)** in da
+`fullResponse` zato ni potreben. **Živa dokumentacija pravi nasprotno**, na dveh neodvisnih straneh:
+
+- UGC Post API (Legacy), `defaultMoniker: li-lms-2026-09`:
+  »The UGC Post is created with a `201 Created` response and the response header `x-restli-id`
+  contains the ugcPost ID.«
+  <https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/ugc-post-api>
+- Share on LinkedIn (potrošniška stran za `/v2/ugcPosts`), pri vseh treh primerih (tekst, članek,
+  slika): »A successful response will return `201 Created`, and the newly created post will be
+  identified by the `X-RestLi-Id` response header.«
+  <https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin>
+
+Torej je URN pri **obeh** poteh v glavi, ne samo pri REST poti. Na `LI Setup - Create Post via HTTP`
+je zato vklopljen `fullResponse: true`, izraz pa bere glavo v treh pisavah in **šele nato** pade
+nazaj na `body.id` in `id` - tako ostane pravilen tudi v primeru, da LinkedIn v praksi vrne `id`
+tudi v telesu. Ta rezerva je edini ostanek prvotne trditve briefa.
+
+Posledica: s `fullResponse: true` je izhod tega vozlišča `{body, headers, statusCode}`, zato
+`{{ $json.id }}` iz Step 5 briefa ne bi delal niti, če bi bila trditev pravilna.
+
+### Popravek briefa: `GET /v2/assets/{assetId}` hoče ID, ne URN
+
+Dokumentacija: »Retrieve asset information using the Asset ID from the `digitalmediaAsset` URN«, s
+primerom `GET https://api.linkedin.com/rest/assets/C5400AQHpR1ANqMWqNA`.
+<https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/vector-asset-api>
+
+`value.asset` vrne poln URN (`urn:li:digitalmediaAsset:C5622AQHdBDflPp0pEg`), zato
+`LI Pe - Check Asset Status` odreže predpono:
+`String(...value.asset || '').split(':').pop()`. Vstavljanje polnega URN-a v pot bi vrnilo 404.
+
+To je razlika proti REST poti, kjer `LI Co - Check Image Status` v pot vstavi **poln** URN
+(`urn:li:image:...`). Še ena točka, kjer prepisovanje ene poti v drugo tiho odpove.
+
+### Preverba obdelave slike: polje je `recipes[].status`, ne `status`
+
+Ista stran navaja dve različni polji s tem imenom:
+
+- `recipes[*].status`: `NEW`, `PROCESSING`, `AVAILABLE`, `INCOMPLETE`, `WAITING_UPLOAD`,
+  `CLIENT_ERROR`, `SERVER_ERROR`, `MUTATING` - to je stanje **obdelave**.
+- `status` (na vrhu odgovora): `ALLOWED`, `BLOCKED`, `ABANDONED`, `DELETED`, `SCHEDULED_DELETION` -
+  to je stanje **strežljivosti**, in je `ALLOWED` že dolgo preden je obdelava končana.
+
+`LI Pe - Asset Status Gate` zato preverja `recipes[].status == AVAILABLE` (vzame vnos za recept
+`feedshare-image`, sicer prvega). Branje vrhnjega `status` bi bila tiha napaka: `ALLOWED` bi
+prepustil objavo z neobdelano sliko, kar je natanko okvara, ki jo ta vrata preprečujejo.
+
+Utemeljitev vrat je ista kot pri strani in izhaja iz iste dokumentacije: »It's required that image
+upload completes successfully before creating a UGC Post or Share. If the post is created before
+confirming image upload success and the image upload fails to process, the post won't be visible to
+members.«
+
+**Znano odstopanje od priporočila:** dokumentacija za slike priporoča sinhroni način
+(`"supportedUploadMechanism": ["SYNCHRONOUS_UPLOAD"]` v telesu `registerUpload`), ki bi vrata
+naredil nepotrebna. Implementirano je asinhrono telo iz briefa z vrati, kar isti dokument izrecno
+dopušča: »If you opt to use asynchronous upload, it's crucial you confirm the upload succeeded
+before using the asset in a UGC Post or Share. Use the Check Status of Upload endpoint to validate
+success.« Če se v Task 6 pokaže, da 5 sekund ne zadošča, sta na izbiro daljše čakanje ali prehod na
+`SYNCHRONOUS_UPLOAD`.
+
+### PUT bajtov pri legacy poti **potrebuje** `Authorization: Bearer`
+
+To je obratno od REST poti. Dokumentacija (ista stran, razdelek »Upload the Image«): »The upload
+call requires a valid OAuth token in the 'Authorization' header. This is different than the upload
+video call which doesn't accept an OAuth token.«
+
+`LI Pe - Upload Image Bytes` ima zato credential `LinkedIn Igor P` (`c4dfONautfLbEVYn`), isti kot
+`LI Setup - Create Post via HTTP`. `LI Co - Upload Image Bytes` na REST poti ga nima.
+
+Metoda je `PUT`. Potrošniška stran »Share on LinkedIn« v besedilu omenja `POST`, a njen lastni curl
+primer uporablja `--upload-file`, kar je PUT; marketinška stran to pove nedvoumno: »Use a PUT method
+to upload the image.«
+
+### Komentar: percent-kodiran URN v poti, nekodiran v telesu
+
+Preverjeno na `network-update-social-actions` (`defaultMoniker: li-lms-2026-09`, posodobljeno
+30. 4. 2026) - **konkretni primer, ne opis parametra**:
+
+```
+POST https://api.linkedin.com/rest/socialActions/urn%3Ali%3AugcPost%3A7096760097833439232/comments
+{ "actor": "urn:li:organization:{{organization_id}}", "object": "urn:li:activity:7096760097833439232",
+  "message": { "text": "commentV2 with image entity" } }
+```
+
+<https://learn.microsoft.com/en-us/linkedin/marketing/community-management/shares/network-update-social-actions>
+
+Kodirani so vsi konkretni primeri s share/ugcPost URN-om (Retrieve Summary, Batch_GET, Retrieve
+Likes, Retrieve Comments, Get a Comment, Create Comment, Delete Comment). Nekodirana sta samo primera
+z ugnezdenim `commentUrn` oblike `urn:li:comment:(urn:li:activity:...,...)`, kar je druga uporaba.
+Enako kot pri strani: pot kodirana, polje `object` v telesu navaden URN.
+
+Odgovor: glava `x-restli-id` nosi ID komentarja, telo pa poln `commentUrn`. Tega ne beremo - komentar
+je zadnji korak pred brisanjem vrstice.
+
+Pravica za osebni profil je `w_member_social_feed` (tabela »Permissions« iste strani), ne
+`w_organization_social_feed`, ki velja za stran. Preverba oziroma dodajanje obsega na credentialu
+`LinkedIn Igor P` ostaja Janijevo delo, izven te naloge.
+
+### Invarianta čakalne vrste
+
+`LI Pe - Store Post URN` v **isti** posodobitvi zapiše `platform_post_id`, `status: published` in
+`published_at`. Če URN-a ni, zapiše prazen niz in tek nadaljuje; napake ne meče. Objavljena vrstica
+zato nikoli ne ostane `scheduled`, tudi če kasnejši korak pade - `Get Scheduled Posts` je naslednji
+dan ne pobere in objave ne ponovi.
+
+Ob napaki komentarja vrstica ostane v tabeli (s `status: published`), Jani pa dobi URN po Telegramu
+za ročno pripenjanje.
+
+### Kaj namerno ni preneseno iz Taska 3
+
+Zamenjava vrstnega reda `Fetch`/`Init` in vozlišče `Merge` se tu **ne** ponovita. Vrstni red ostaja
+`Register → Fetch → Upload`, binarni podatek gre naravnost iz `Fetch` v `Upload` in ga noben vmesni
+JSON klic ne more izgubiti. Cena je znana in sprejeta: ob nedosegljivem `image_url` ostane pri
+LinkedInu registrirano nedokončano sredstvo, preden tek pade na `Fetch`. Nedokončano sredstvo ni
+objavljeno in ni vidno nikomur.
+
+### Nepreverjeno pri predaji v Task 6
+
+- Nič od tega ni bilo pognano. Workflow ostaja `active: false`, vseh deset novih vozlišč je
+  `disabled: true`, `LI Setup - Create Post via HTTP` prav tako. Pravilnost izrazov je preverjena
+  statično in proti dokumentaciji, ne z živim klicem.
+- Pot `value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl`
+  je prepisana iz vzorčnega odgovora v dokumentaciji, ne iz dejanskega odgovora instance - tek je
+  prepovedan do Task 6. To je najdaljši in najkrhkejši izraz v tej veji; če kaj odpove, začni tu.
+- Podedovano tveganje `pairedItem` (iz Taska 3 in 4) velja tudi tu, in sicer ostreje: izrazi na
+  `LI Pe - Add First Comment` in `LI Pe - Comment Failed Alert` uporabljajo
+  `$("LI Setup - Create Post via HTTP").item` in `$("Route by Platform").item` prek vozlišča
+  `LI Pe - Store Post URN` (`dataTable`, `update`), za katero ni dokazano, da prenaša `pairedItem`.
+  Če ga ne, `.item` vrže »Can't determine which item to use«. Izpad je varen: `status: published` je
+  takrat že zapisan, torej podvojene objave ni, izgubljen je samo komentar. Popravek bi bil `.first()`
+  ali `itemMatching(0)`. Ne popravljeno vnaprej, ker se to lahko pokaže šele pri živem teku.
