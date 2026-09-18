@@ -47,13 +47,16 @@ Za dani jezik (`hr` ali `en`):
            "source_text": "<languages.sl.content>",
            "source_lang": "sl",
            "target_text": "<besedilo>",
-           "target_lang": "hr",
+           "target_lang": "<jezik>",
            "checkPrompt": "<vsebina prompta z vstavljenim datumom>"
          }
        }
      }
    }
    ```
+
+   `target_lang` je jezik tega teka (`"hr"` ali `"en"`) - workflow `hr` privzame **samo**, kadar
+   polje manjka; napačno trdo vpisan `"hr"` pri angleškem teku gre skozi nespremenjen.
 
    `executionMode` je `"manual"`, ker workflow ni aktiven. `"manual"` je izrecno dovoljen tudi za
    klice, ki dejansko kličejo zunanje storitve, ne le za suha testiranja.
@@ -94,7 +97,7 @@ Za dani jezik (`hr` ali `en`):
 
    ```json
    {
-     "language": "hr",
+     "language": "<jezik>",
      "round": 1,
      "input": "<besedilo, kot je bilo POSLANO v ta krog, pred popravkom>",
      "check_prompt": "<checkPrompt, kot je bil POSLAN, z vstavljenim datumom>",
@@ -119,10 +122,13 @@ Za dani jezik (`hr` ali `en`):
    ```json
    "_run": {
      "transcreation_check": {
-       "hr": {"rounds": 1, "verdict": "ok", "openai_error": null, "gemini_error": null}
+       "<jezik>": {"rounds": 1, "verdict": "ok", "openai_error": null, "gemini_error": null}
      }
    }
    ```
+
+   Ključ je jezik, ki ga ta tek obdela (`"hr"` ali `"en"`) - vpiši samo pod ta ključ in ne prepiši
+   ključa drugega jezika, ki ga je zapisal prejšnji tek.
 
    `rounds` je število **dejansko opravljenih** krogov. Krog, v katerem sta padla oba ocenjevalca,
    se ne šteje.
