@@ -266,3 +266,66 @@ veljavno, namerno vedenje in je tu zabeleženo kot znana lastnost, ne kot odprta
 komentarju, ki ga doda Task 4. **Če se Task 6 (živi test) izvede pred Task 4, bo prava objava na
 LinkedIn strani FrodX brez kakršnekoli povezave na članek**, dokler komentar ni pripet ročno ali dokler
 Task 4 ni implementirana.
+
+### Task 4: prvi komentar in premik brisanja
+
+Izvedeno 18. 9. 2026. Dodani sta dve novi vozlišči, obe `disabled: true`; obstoječih deset se ni
+spremenilo, razen prevezave `LI Co - Store Post URN`.
+
+```
+Post LinkedIn Company
+     ├─ (uspeh) → LI Co - Store Post URN
+     │              → LI Co - Add First Comment      (POST /rest/socialActions/{urn}/comments)
+     │                   ├─ (uspeh) → Delete Published LI Co
+     │                   └─ (napaka) → LI Co - Comment Failed Alert   (novo, Telegram)
+     └─ (napaka) → Telegram LI Co Post Failure   (nespremenjeno)
+```
+
+Brisanje vrstice (`Delete Published LI Co`) se je premaknilo za komentar: prej je sledilo takoj za
+`LI Co - Store Post URN`, zdaj je edini predhodnik `LI Co - Add First Comment` po **uspešnem** izhodu.
+Razlog: `LI Co - Store Post URN` že pred Task 4 vrstici nastavi `status: published`, s čimer je
+izpolnjena invarianta »objavljena vrstica se nikoli več ne vrne v čakalno vrsto« ne glede na to, kaj
+pade za tem. Če bi brisanje ostalo pred komentarjem, bi neuspel komentar pomenil izgubljeno vrstico -
+edini zapis, iz katerega bi bilo URN mogoče še ročno prebrati za pripenjanje komentarja, bi izginil.
+Zato brisanje čaka na uspešen komentar; ob napaki komentarja vrstica ostane v tabeli (s `status:
+published`, torej je naslednji jutranji tek več ne pobere), Jani pa dobi URN po Telegramu za ročno
+pripenjanje.
+
+**Neveljavna predpostavka iz brief-a (preverjeno prek `get_node_types` za `n8n-nodes-base.dataTable`,
+resource `row`, operation `update`, verzija 1.1):** izhod te operacije je `{ id, createdAt, updatedAt }`
+- vrstice **ne** vrne. `{{ $json.platform_post_id }}` na vozliščih za `LI Co - Store Post URN` zato ne
+bi delalo, prav tako pa niti branje prek `$("LI Co - Store Post URN")` ne bi pomagalo, ker ta vozel
+sam nima `platform_post_id` na svojem izhodu - vrednost je bila izračunana iz njegovega **vhoda**
+(odgovor `Post LinkedIn Company`), ne zapisana nazaj nanj. Zato `LI Co - Add First Comment` URN bere
+neposredno iz `$("Post LinkedIn Company").item.json.headers`, po istem vzorcu treh pisav glave
+(`x-restli-id` / `X-RestLi-Id` / `X-Restli-Id`), kot ga uporablja `LI Co - Store Post URN`. **Enako je
+popravljeno besedilo Telegram opozorila v Step 4** - brief je za vrstico `URN:` predvidel
+`{{ $json.platform_post_id }}`, kar je isti neveljavni sklic; nadomeščeno je z isto ekstrakcijo prek
+`$("Post LinkedIn Company")`. Preostalo besedilo opozorila (vključno z `{{ $json.error?.message }}`)
+je prevzeto dobesedno - ta izraz je že preverjen vzorec, ki ga `Telegram LI Co Post Failure` uspešno
+uporablja na istem tipu napakovnega izhoda (`onError: continueErrorOutput`) enega vozlišča prej v isti
+verigi.
+
+**Step 1 - preverba proti živi dokumentaciji (`comments-api`, Microsoft Learn, `defaultMoniker:
+li-lms-2026-09`):** telo zahtevka iz brief-a (`actor`, `object`, `message.text`) se ujema z živo
+dokumentacijo dobesedno - polje z besedilom komentarja je res `message.text`. Pot je
+`POST /rest/socialActions/{shareUrn|ugcPostUrn}/comments`.
+
+Glede URL-kodiranja `{urn}` v poti dokumentacija in praksa **nista enoznačni** - enako razhajanje kot
+pri Task 3:
+- Uradna dokumentacija sama v enem od svojih primerov (»Create a Comment on a Comment«) v pot postavi
+  dejanski, ne placeholder URN, **nekodiran**: `.../socialActions/urn:li:comment:(urn:li:activity:...,
+  ...)/comments`. Enak vzorec (nekodiran URN neposredno v poti) že uporablja obstoječe vozlišče
+  `LI Co - Check Image Status` v tej isti verigi.
+- En sam najden praktični vir (LinkedIn Developer Q&A) poroča o `403` z nekodiranim URN-om v poti na
+  `socialActions/.../comments`, brez razrešitve ali potrditve, da je kodiranje popravek - `403` se
+  enako dobro razloži z znanim manjkajočim obsegom na credentialu (glej spodaj).
+
+Implementirano je **nekodirano** (ujema se z uradnim dokumentiranim primerom in z obstoječo prakso v
+tej verigi). **Odprto vprašanje za Task 6:** če živi test vrne `400`/`403` na tem klicu in obseg
+credentiala ni vzrok, poskusi pot s kodiranim URN-om (`urn%3Ali%3Aactivity%3A...`).
+
+**Neujemanje imena obsega (scope) v brief-u:** brief v Step 4 kot manjkajoč obseg navaja
+`w_organization_social`. Živa dokumentacija (`comments-api`, tabela »Permissions«) ta obseg imenuje
+`w_organization_social_feed`. Popravek obsega na credentialu »LI FrodX Page Igor P« ostaja Janijev in
+je izven te naloge - tu je zabeleženo samo pravilno ime za LinkedIn Developer portal.
