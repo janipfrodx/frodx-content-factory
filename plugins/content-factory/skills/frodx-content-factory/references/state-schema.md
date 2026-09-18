@@ -52,10 +52,10 @@ Seznam. Vsak element:
 }
 ```
 
-Kdaj se zapiše: kadar korak nadaljuje, čeprav nekaj v njem ni bilo opravljeno, in je to zavestna odločitev človeka - ne kadar korak pade. Znana dva primera:
+Kdaj se zapiše: kadar korak nadaljuje, čeprav nekaj v njem ni bilo opravljeno - ne kadar korak pade. Navadno gre za zavestno odločitev človeka; korak 4 je izjema, ker zadolžitev zapiše sam skill, ne glede na odločitev. Znana dva primera:
 
 - **korak 1:** vrstica v vrsti tem ni bila označena kot `picked`, ker je konektor bralni (`frodx-topic-pick`, točka 8);
-- **korak 4:** hrvaščina brez native pregleda, če Igor ali Jani odloči, da tek gre naprej.
+- **korak 4:** hrvaščina brez native pregleda - zapiše jo `frodx-transcreation-check` vedno, tudi kadar sta oba ocenjevalca vrnila `OBJAVLJIVO`; to ni stvar presoje v posameznem teku.
 
 Pravila:
 

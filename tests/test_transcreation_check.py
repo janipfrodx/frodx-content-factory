@@ -95,3 +95,18 @@ def test_shema_pozna_transcreation_check():
     assert "transcreation_check" in vsebina
     for polje in ("rounds", "verdict"):
         assert polje in vsebina, polje
+
+
+def test_shema_zadolzitev_za_hrvascino_ni_pogojna():
+    """Nekoč je pisalo 'ce Igor ali Jani odloci' - to nasprotuje dirigentovemu 'vedno' in bi bralca
+    zavedlo, da je zadolžitev pogojna."""
+    vsebina = SHEMA.read_text(encoding="utf-8")
+    vrstice = [
+        v for v in vsebina.splitlines()
+        if "korak 4" in v and "native pregled" in v
+    ]
+    assert vrstice, "vrstica o koraku 4 v open_tasks ni najdena"
+    vrstica = vrstice[0]
+    assert "vedno" in vrstica
+    assert "če Igor" not in vrstica
+    assert "odloči" not in vrstica
