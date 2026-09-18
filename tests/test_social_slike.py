@@ -1,0 +1,71 @@
+import json
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+SKILLI = REPO / "plugins" / "content-factory" / "skills"
+IMAGE_RUN = SKILLI / "frodx-image-run" / "SKILL.md"
+DIRIGENT = SKILLI / "frodx-content-factory" / "SKILL.md"
+MAPPING = SKILLI / "frodx-content-factory" / "references" / "igor-output-mapping.md"
+SHEMA_STANJA = SKILLI / "frodx-content-factory" / "references" / "state-schema.md"
+SHEMA = REPO / "schema" / "content-json.schema.json"
+
+
+def _razdelek(vsebina, naslov):
+    """Vrne besedilo enega razdelka drugega nivoja, brez naslednjega."""
+    zacetek = vsebina.index(naslov)
+    ostanek = vsebina[zacetek + len(naslov):]
+    konec = ostanek.find("\n## ")
+    return ostanek if konec == -1 else ostanek[:konec]
+
+
+def test_image_run_ima_fazo_za_socialne_slike():
+    vsebina = IMAGE_RUN.read_text(encoding="utf-8")
+    assert "## Faza B" in vsebina
+    assert "social-image" in vsebina
+    assert "1024x1024" in vsebina
+
+
+def test_image_run_dela_eno_kandidatko_na_objavo():
+    """Odločitev 18. 9. 2026: samo OpenAI, ena kandidatka - Gemini para tu ni."""
+    faza_b = _razdelek(IMAGE_RUN.read_text(encoding="utf-8"), "## Faza B").lower()
+    assert "gemini" not in faza_b
+    assert "ena kandidatka" in faza_b
+
+
+def test_image_run_naslovna_slika_ostane_na_1536():
+    """Faza A se ne spremeni - naslovna slika potrebuje crop na 1200x630."""
+    vsebina = IMAGE_RUN.read_text(encoding="utf-8")
+    assert "1536x1024" in vsebina
+    assert "lHc3NdejxehMyc9O" in vsebina
+
+
+def test_image_run_pise_obe_polji_v_social_posts():
+    vsebina = IMAGE_RUN.read_text(encoding="utf-8")
+    assert "social_posts[i].image_url" in vsebina
+    assert "social_posts[i].image_alt" in vsebina
+
+
+def test_shema_stanja_pozna_social_images():
+    vsebina = SHEMA_STANJA.read_text(encoding="utf-8")
+    assert "social_images" in vsebina
+
+
+def test_json_shema_zahteva_obe_slikovni_polji():
+    shema = json.loads(SHEMA.read_text(encoding="utf-8"))
+    objave = shema["properties"]["social_posts"]
+    assert set(objave["items"]["required"]) == {"text", "image_url", "image_alt"}
+    assert objave["items"]["additionalProperties"] is False
+
+
+def test_json_shema_stevila_objav_ne_omejuje():
+    """Spec: stevila objav gate ne preverja, minItems 1 ostane, maxItems ni."""
+    shema = json.loads(SHEMA.read_text(encoding="utf-8"))
+    objave = shema["properties"]["social_posts"]
+    assert objave["minItems"] == 1
+    assert "maxItems" not in objave
+
+
+def test_image_run_nima_vec_placeholderja_za_id_workflowa():
+    """Ce ostane <ID-IZ-TASK-2>, skill poklice neobstojec workflow in tega nihce ne opazi."""
+    vsebina = IMAGE_RUN.read_text(encoding="utf-8")
+    assert "ID-IZ-TASK-2" not in vsebina
