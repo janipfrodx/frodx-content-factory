@@ -71,3 +71,34 @@ def test_image_run_nima_vec_placeholderja_za_id_workflowa():
     """Ce ostane <ID-IZ-TASK-2>, skill poklice neobstojec workflow in tega nihce ne opazi."""
     vsebina = IMAGE_RUN.read_text(encoding="utf-8")
     assert "ID-IZ-TASK-2" not in vsebina
+
+
+def test_dirigent_zahteva_stiri_objave_in_predlog_dveh():
+    vsebina = DIRIGENT.read_text(encoding="utf-8")
+    assert "štiri objave" in vsebina
+    assert "dve najboljši" in vsebina
+
+
+def test_dirigent_zapise_vse_stiri_pred_vprasanjem():
+    """Popravek po teku 14. 9. 2026: rezultat gre v state.json ob nastanku, ne ob potrditvi."""
+    vsebina = DIRIGENT.read_text(encoding="utf-8")
+    assert "_run.social_candidates" in vsebina
+
+
+def test_dirigent_pozna_obliko_kandidatk_iz_speca():
+    """Spec doloca stiri polja na kandidatko; chosen pove, katero je Igor potrdil."""
+    vsebina = DIRIGENT.read_text(encoding="utf-8")
+    for polje in ("text", "lever", "score", "chosen"):
+        assert f'"{polje}"' in vsebina
+
+
+def test_mapping_ne_govori_vec_o_batchu_3_5():
+    """Standard 3-5 je Igorjev splošni; ta veriga je od 18. 9. 2026 zožena na 4."""
+    vsebina = MAPPING.read_text(encoding="utf-8")
+    assert "batch 3-5" not in vsebina
+    assert "štiri" in vsebina
+
+
+def test_mapping_ne_obljublja_vec_da_je_social_posts_koncna_oblika_z_enim_poljem():
+    vsebina = MAPPING.read_text(encoding="utf-8")
+    assert "image_url" in vsebina
