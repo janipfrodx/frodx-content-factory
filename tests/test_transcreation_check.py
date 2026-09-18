@@ -4,6 +4,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SKILL_DIR = REPO / "plugins" / "content-factory" / "skills" / "frodx-transcreation-check"
 PROMPT = SKILL_DIR / "references" / "transcreation-check-prompt.md"
+SKILL = SKILL_DIR / "SKILL.md"
 
 
 def test_prompt_pozna_obe_sodbi():
@@ -25,3 +26,44 @@ def test_prompt_loci_merila_po_jezikih():
         assert pojem in vsebina, pojem
     for pojem in ("idiom", "phrasal", "cee"):
         assert pojem in vsebina, pojem
+
+
+def test_skill_ima_angleski_frontmatter():
+    """Po `description` Claude izbira skill, zato je angleški; telo je slovensko."""
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert vsebina.startswith("---\n")
+    glava = vsebina.split("---", 2)[1]
+    assert "name: frodx-transcreation-check" in glava
+    assert "description:" in glava
+    assert "Croatian" in glava
+
+
+def test_skill_klice_pravi_workflow():
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "transcreation-check" in vsebina
+    assert "execute_workflow" in vsebina
+    assert '"manual"' in vsebina
+
+
+def test_skill_bere_oceni_iz_odgovora_ne_iz_izvedbe():
+    """Ta workflow odgovarja prek Respond to Webhook; loceno branje izvedbe ni potrebno."""
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "openai_error" in vsebina and "gemini_error" in vsebina
+    assert "Respond to Webhook" in vsebina
+
+
+def test_skill_ima_dva_kroga_in_popravek_skozi_transkreacijo():
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "dva kroga" in vsebina
+    assert "frodx-transcreation" in vsebina
+    assert "{{DANES}}" in vsebina
+
+
+def test_skill_nima_vec_placeholderja_za_id_workflowa():
+    """Ce ostane <ID-IZ-TASK-1>, skill poklice neobstojec workflow in tega nihce ne opazi."""
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "ID-IZ-TASK-1" not in vsebina
+
+    # n8n ID je 16 znakov iz crk in stevilk; poisci ga ob imenu workflowa.
+    najdbe = re.findall(r'"workflowId":\s*"([A-Za-z0-9]{16})"', vsebina)
+    assert najdbe, "v SKILL.md ni workflowId oblike, kot jo vrne n8n"
