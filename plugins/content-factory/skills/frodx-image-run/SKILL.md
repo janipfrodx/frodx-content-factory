@@ -136,7 +136,7 @@ Igorju; slike ne izbirajo, katera objava gre v objavo.
     }
     ```
 
-    **Ena kandidatka na objavo, samo OpenAI.** Drugega ponudnika tu ni - Janijeva odločitev
+    **Ena kandidatka na objavo, samo OpenAI.** Gemini v tej fazi ne sodeluje - Janijeva odločitev
     18. 9. 2026. Primerjave ni, ker ni s čim primerjati; ocenjuješ eno sliko proti promptu.
 
     Odgovor: `{"url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/<uuid>.png"}`

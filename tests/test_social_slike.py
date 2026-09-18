@@ -27,8 +27,10 @@ def test_image_run_ima_fazo_za_socialne_slike():
 
 def test_image_run_dela_eno_kandidatko_na_objavo():
     """Odločitev 18. 9. 2026: samo OpenAI, ena kandidatka - Gemini para tu ni."""
-    faza_b = _razdelek(IMAGE_RUN.read_text(encoding="utf-8"), "## Faza B").lower()
-    assert "gemini" not in faza_b
+    faza_b_raw = _razdelek(IMAGE_RUN.read_text(encoding="utf-8"), "## Faza B")
+    faza_b = faza_b_raw.lower()
+    assert "ZvoLqzl7zBr8X4WR" in faza_b_raw
+    assert "lHc3NdejxehMyc9O" not in faza_b_raw
     assert "ena kandidatka" in faza_b
 
 
