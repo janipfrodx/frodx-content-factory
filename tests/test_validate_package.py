@@ -29,11 +29,17 @@ def test_prazna_hrvascina_pade():
     napake = _validate("package_missing_hr.json")
     assert any("languages.hr.content" in n for n in napake)
     assert any("languages.hr.seo_title" in n for n in napake)
+    assert not [n for n in napake if "social_posts" in n], (
+        "vzorec meri samo manjkajoco hrvascino - slikovna polja objav morajo biti veljavna"
+    )
 
 
 def test_izmisljena_kampanja_pade():
     napake = _validate("package_bad_campaign.json")
     assert any("campaign_name" in n and "Zvestoba in nagrade" in n for n in napake)
+    assert not [n for n in napake if "social_posts" in n], (
+        "vzorec meri samo izmisljeno kampanjo - slikovna polja objav morajo biti veljavna"
+    )
 
 
 def test_predolg_seo_title_pade():
@@ -504,6 +510,32 @@ def test_social_slika_na_tujem_gostitelju_pade():
 
     napake = _napake(spremeni)
     assert any("social_posts[0].image_url" in n and "gostitelj" in n for n in napake)
+
+
+def test_social_slika_brez_https_pade():
+    """Ista veja kot pri naslovni sliki: `http://` aplikacija ne servira."""
+    def spremeni(pkg):
+        pkg["social_posts"][0]["image_url"] = (
+            pkg["social_posts"][0]["image_url"].replace("https://", "http://")
+        )
+
+    napake = _napake(spremeni)
+    assert any("social_posts[0].image_url" in n and "https" in n for n in napake)
+
+
+def test_social_slika_samo_z_gostiteljem_brez_poti_pade():
+    """Gol gostitelj ni slika - brez te preverbe gate spusti `https://<host>` naprej."""
+    for url in (
+        "https://umvjwjzdrtamfrcqhopa.supabase.co",
+        "https://umvjwjzdrtamfrcqhopa.supabase.co/",
+    ):
+        def spremeni(pkg, url=url):
+            pkg["social_posts"][0]["image_url"] = url
+
+        napake = _napake(spremeni)
+        assert any(
+            "social_posts[0].image_url" in n and "nima poti" in n for n in napake
+        ), url
 
 
 def test_social_predolg_alt_pade():

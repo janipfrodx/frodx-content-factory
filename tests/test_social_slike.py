@@ -58,6 +58,25 @@ def test_image_run_naslovna_slika_ostane_na_1536():
     assert "lHc3NdejxehMyc9O" in vsebina
 
 
+def _faza_b_uvod(vsebina):
+    """Uvod faze B - vse pred prvo ostevilceno tocko, z normaliziranim belim prostorom."""
+    faza_b = _razdelek(vsebina, "## Faza B")
+    return " ".join(faza_b.split("\n12.")[0].split())
+
+
+def test_image_run_se_ne_ustavi_pri_treh_objavah_ampak_sele_pri_stirih():
+    """Spec: meje stevila objav ne zabija stroj - odlocitev je Igorjeva.
+
+    Ustavitev ostane samo pri stirih ali vec (korak 2 ni bil opravljen), in
+    Igor mora ob odstopanju izvedeti, koliko placljivih klicev to stane.
+    """
+    uvod = _faza_b_uvod(IMAGE_RUN.read_text(encoding="utf-8"))
+    assert "natanko dve" not in uvod, "stara trda ustavitev pri dveh objavah"
+    assert "ne ustavljaj" in uvod
+    assert "štirih ali več" in uvod, "ustavitev pri stirih objavah je izpadla"
+    assert "plačljiv" in uvod, "uvod mora povedati ceno, ki jo odstopanje pomeni"
+
+
 def test_image_run_pise_obe_polji_v_social_posts():
     vsebina = IMAGE_RUN.read_text(encoding="utf-8")
     assert "social_posts[i].image_url" in vsebina
@@ -67,6 +86,16 @@ def test_image_run_pise_obe_polji_v_social_posts():
 def test_shema_stanja_pozna_social_images():
     vsebina = SHEMA_STANJA.read_text(encoding="utf-8")
     assert "social_images" in vsebina
+
+
+def test_shema_stanja_pozna_social_candidates():
+    """Dirigent ga zapise v koraku 2; brez vrstice v shemi ga bralec sheme ne najde."""
+    vrstice = [
+        v for v in SHEMA_STANJA.read_text(encoding="utf-8").splitlines()
+        if v.startswith("| `social_candidates` |")
+    ]
+    assert vrstice, "shema `_run` nima vrstice za social_candidates"
+    assert "koraka 2" in vrstice[0], "vrstica ne pove, kateri korak ga zapise"
 
 
 def test_json_shema_zahteva_obe_slikovni_polji():
@@ -114,10 +143,20 @@ def test_dirigent_pozna_obliko_kandidatk_iz_speca():
 
 
 def test_mapping_ne_govori_vec_o_batchu_3_5():
-    """Standard 3-5 je Igorjev splošni; ta veriga je od 18. 9. 2026 zožena na 4."""
-    vsebina = MAPPING.read_text(encoding="utf-8")
+    """Standard 3-5 je Igorjev splošni; ta veriga je od 18. 9. 2026 zožena na 4.
+
+    Beli prostor se normalizira: niz je bil nekoč prelomljen čez dve vrstici in
+    ga je ta test spregledal.
+    """
+    vsebina = " ".join(MAPPING.read_text(encoding="utf-8").split())
     assert "batch 3-5" not in vsebina
     assert "štiri" in vsebina
+
+
+def test_mapping_socialnih_objav_ne_uokvirja_vec_kot_odprto_tocko():
+    """Vejo 18. 9. 2026 jo je zaprla - okvir »odprta točka« je zastarel."""
+    vsebina = " ".join(MAPPING.read_text(encoding="utf-8").split())
+    assert "odprta točka" not in vsebina
 
 
 def test_mapping_ne_obljublja_vec_da_je_social_posts_koncna_oblika_z_enim_poljem():

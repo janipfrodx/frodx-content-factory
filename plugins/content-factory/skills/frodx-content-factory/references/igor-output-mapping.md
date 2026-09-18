@@ -35,12 +35,13 @@ Preslikava v `state.json`:
   v state.
 - **Postavka 5 (ocena)** se ne zapiše v `state.json`. Namenjena je Igorju pri tem koraku.
 
-**Socialne objave (`social_posts[]`) - odprta točka.** `references/state-schema.md` pripiše
-`social_posts[]` korak 2, vendar osnovnih pet postavk »Izhoda« zgoraj socialnih objav NE
-vsebuje. Standard za socialne objave (`igor-column-writer/references/social-posts.md`: batch
-3-5, vsaka z drugim vzvodom, samoocena 0-10, Igor izbere) je v vendoriranem skillu opisan v
+**Socialne objave (`social_posts[]`) - rešeno z odločitvijo 18. 9. 2026.** `references/state-schema.md`
+pripiše `social_posts[]` korak 2, vendar osnovnih pet postavk »Izhoda« zgoraj socialnih objav NE
+vsebuje. Standard za socialne objave (`igor-column-writer/references/social-posts.md`: nabor
+3-5 objav, vsaka z drugim vzvodom, samoocena 0-10, Igor izbere) je v vendoriranem skillu opisan v
 okviru ločenega, neobveznega koraka »Publishing format«, ki se sproži šele, ko Igor izrecno
-reče »naredi publishing fajl« ali podobno - ne avtomatsko ob osnovnem teku skilla.
+reče »naredi publishing fajl« ali podobno - ne avtomatsko ob osnovnem teku skilla. Zato jih ta
+veriga naroči sama; spodaj je, kako.
 
 Ker ta veriga socialne objave potrebuje že v koraku 2 (ne šele ob morebitnem docx pakiranju),
 mora dirigent po izhodu kolumne **izrecno prositi** za nabor socialnih objav po standardu iz

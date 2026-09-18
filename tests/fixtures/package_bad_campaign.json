@@ -10,7 +10,9 @@
   "social_posts": [
     {
       "text": "Prodajalec mi je ponudil popust, ki ga imam že tri leta. Zvestoba se ne meri v odstotkih.",
-      "publish_date": ""
+      "publish_date": "",
+      "image_url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/11111111-1111-1111-1111-111111111111.png",
+      "image_alt": "Zlata članska kartica leži na pultu poleg letaka z velikim popustom za nove kupce."
     }
   ],
   "languages": {

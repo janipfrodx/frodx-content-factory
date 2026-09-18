@@ -57,7 +57,7 @@ Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` 
 | 2 | `igor-column-writer` | je kolumna v redu |
 | 3 | `frodx-critique-loop` | je popravljena verzija v redu |
 | 4 | `frodx-transcreation` | sta EN in HR v redu |
-| 5 | `frodx-image-run` | je slika v redu |
+| 5 | `frodx-image-run` | so slike v redu |
 | 6 | `frodx-publishing-meta` | so meta podatki v redu |
 | 7 | `frodx-publish-send` | (brez vprašanja, samo pošlje) |
 
