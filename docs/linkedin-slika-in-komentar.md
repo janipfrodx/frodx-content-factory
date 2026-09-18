@@ -59,7 +59,13 @@ spreminja stanja na noben produkcijski sistem.
 
 Preverjenih je bilo vseh 17 vozlišč tipa `httpRequest` v kopiji; edina gostitelja sta
 `api.hubapi.com` in `api.linkedin.com` (slednji je onemogočen že v prvotni varnostni pripravi).
-Noben drug zunanji ponudnik v kopiji ne piše v produkcijo.
+
+**Popravek (18. 9. 2026):** zgornji pregled po URL-ju spregleda dedicirane tipe vozlišč, ki nimajo
+polja `url`. Preverjeno je bilo zato tudi po **tipih** vseh 105 vozlišč kopije: edini dedicirani tip,
+ki piše navzven mimo `httpRequest`, je `n8n-nodes-base.facebookGraphApi` - eno vozlišče, `Facebook
+Graph API`, in je `disabled: true`. Preostali tipi v kopiji (`dataTable`, `telegram`, `code`,
+`respondToWebhook`, `if`, `switch`, `webhook`, `telegramTrigger`, `scheduleTrigger`, `stickyNote`) ne
+pišejo v zunanje produkcijske sisteme. Noben drug zunanji ponudnik v kopiji ne piše v produkcijo.
 
 **Posledica za poznejše naloge:** ker so vsa HubSpot pisalna vozlišča onemogočena, poln ročni tek od
 `Telegram Callback Trigger` naprej ne bo dobil pravega odgovora HubSpot API-ja na tej točki (ne bo
@@ -67,3 +73,15 @@ ustvarjenega osnutka, ne bo `id`-ja objave, ne bo planiranja). Izhod teh vozliš
 s pripeto vsebino (`prepare_workflow_pin_data`), enako kot je za LinkedIn/Facebook objavo že
 predvideno v prejšnjem razdelku - sicer se veriga po teh vozliščih prekine, ker naslednji koraki
 pričakujejo polja iz HubSpot odgovora (npr. `id` objave).
+
+## Pot slikovnih polj
+
+`content.social_posts[].image_url` in `.image_alt` prideta iz paketa in potujeta:
+
+`Prepare Pipeline Row` (v `social_posts_json`) → `Create Platform Posts` (v vse tri kanalske
+vrstice) → `TEST-FrodX-Social-Posts` (dva nova stolpca) → objavno vozlišče.
+
+Manjkajoči polji postaneta prazna niza, ne `undefined`. Star paket in ročni docx uvoz zato še naprej
+tečeta, samo brez slike.
+
+Facebookova vrstica polji dobi, a ju ta krog ne uporabi.
