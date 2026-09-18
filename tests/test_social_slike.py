@@ -8,6 +8,7 @@ DIRIGENT = SKILLI / "frodx-content-factory" / "SKILL.md"
 MAPPING = SKILLI / "frodx-content-factory" / "references" / "igor-output-mapping.md"
 SHEMA_STANJA = SKILLI / "frodx-content-factory" / "references" / "state-schema.md"
 SHEMA = REPO / "schema" / "content-json.schema.json"
+APP_DOKUMENT = REPO / "docs" / "social-slike-v-aplikaciji.md"
 
 
 def _razdelek(vsebina, naslov):
@@ -122,3 +123,10 @@ def test_mapping_ne_govori_vec_o_batchu_3_5():
 def test_mapping_ne_obljublja_vec_da_je_social_posts_koncna_oblika_z_enim_poljem():
     vsebina = MAPPING.read_text(encoding="utf-8")
     assert "image_url" in vsebina
+
+
+def test_dokument_o_aplikaciji_pojasni_zakaj_sta_polji_neobvezni():
+    vsebina = APP_DOKUMENT.read_text(encoding="utf-8")
+    assert "dispatchToN8n" in vsebina
+    assert 'default("")' in vsebina
+    assert "docx" in vsebina
