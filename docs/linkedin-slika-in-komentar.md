@@ -311,21 +311,49 @@ li-lms-2026-09`):** telo zahtevka iz brief-a (`actor`, `object`, `message.text`)
 dokumentacijo dobesedno - polje z besedilom komentarja je res `message.text`. Pot je
 `POST /rest/socialActions/{shareUrn|ugcPostUrn}/comments`.
 
-Glede URL-kodiranja `{urn}` v poti dokumentacija in praksa **nista enoznačni** - enako razhajanje kot
-pri Task 3:
-- Uradna dokumentacija sama v enem od svojih primerov (»Create a Comment on a Comment«) v pot postavi
-  dejanski, ne placeholder URN, **nekodiran**: `.../socialActions/urn:li:comment:(urn:li:activity:...,
-  ...)/comments`. Enak vzorec (nekodiran URN neposredno v poti) že uporablja obstoječe vozlišče
-  `LI Co - Check Image Status` v tej isti verigi.
-- En sam najden praktični vir (LinkedIn Developer Q&A) poroča o `403` z nekodiranim URN-om v poti na
-  `socialActions/.../comments`, brez razrešitve ali potrditve, da je kodiranje popravek - `403` se
-  enako dobro razloži z znanim manjkajočim obsegom na credentialu (glej spodaj).
+**Popravek po pregledu (18. 9. 2026):** prejšnja različica tega razdelka je URL-kodiranje razglasila za
+odprto vprašanje in implementirala nekodirano pot - to je bilo napačno branje dokumentacije. Stran
+`comments-api`, ki sem jo prvotno preveril, res kaže samo abstraktne placeholderje
+(`{shareUrn|ugcPostUrn|commentUrn}`) za primer »Create a Comment«, brez izpolnjenega konkretnega
+primera. Obstaja pa vzporedna, prav tako trenutna stran istega API-ja, `network-update-social-actions`
+(isti `defaultMoniker: li-lms-2026-09`, isti datum posodobitve), ki pod natanko istim naslovom »Create
+Comment« doda konkreten »Sample Request Example« s pravim URN-om:
 
-Implementirano je **nekodirano** (ujema se z uradnim dokumentiranim primerom in z obstoječo prakso v
-tej verigi). **Odprto vprašanje za Task 6:** če živi test vrne `400`/`403` na tem klicu in obseg
-credentiala ni vzrok, poskusi pot s kodiranim URN-om (`urn%3Ali%3Aactivity%3A...`).
+```
+https://api.linkedin.com/rest/socialActions/urn%3Ali%3AugcPost%3A7096760097833439232/comments
+```
+
+- **Kodirani so vsi konkretni primeri s share/ugcPost URN-om** na tej strani: Retrieve a Summary of
+  Social Actions, Batch_GET Summary, Retrieve Likes on Shares, Retrieve Comments on Shares, Get a
+  Comment, Create Comment, Delete Comment from Share.
+- **Nekodirana sta samo dva primera v celotnem dokumentu**, in oba so ugnezdeni primeri z drugačnim,
+  že sestavljenim ključem oblike `urn:li:comment:(urn:li:activity:...,...)`: »Retrieve Comments on
+  Comments« in »Create a Comment on a Comment«. To je drugačna uporaba (odgovor na komentar, ne prvi
+  komentar pod objavo) - prejšnja različica tega razdelka je napačno posplošila ta dva primera na vse
+  primere.
+- `X-Restli-Protocol-Version: 2.0.0` (Rest.li 2.0), ki ga to vozlišče že pošilja, kodiranje ključev v
+  poti pričakuje - to je dodatna, neodvisna potrditev iste smeri.
+- Sklic na `LI Co - Check Image Status` kot precedens za nekodirano pot ne zdrži: gre za drug API
+  (Images, ne socialActions), z URN-om druge oblike, in to vozlišče je poleg tega `disabled: true` in
+  še nikoli ni teklo - ni preverjen precedens, samo neizvedena domneva.
+
+**Implementirano je zdaj kodirano** - `encodeURIComponent(...)` samo okoli URN-a v URL-ju vozlišča
+`LI Co - Add First Comment`. **Telo zahtevka ostane nekodirano**: polje `object` nosi navaden URN
+(`urn:li:activity:...` oz. `urn:li:ugcPost:...`), enako kot v obeh uradnih primerih telesa.
 
 **Neujemanje imena obsega (scope) v brief-u:** brief v Step 4 kot manjkajoč obseg navaja
 `w_organization_social`. Živa dokumentacija (`comments-api`, tabela »Permissions«) ta obseg imenuje
 `w_organization_social_feed`. Popravek obsega na credentialu »LI FrodX Page Igor P« ostaja Janijev in
 je izven te naloge - tu je zabeleženo samo pravilno ime za LinkedIn Developer portal.
+
+**Neodvisno od kodiranja - nepreverjeno tveganje za Task 6 (podedovano iz Task 3):** oba izraza na
+`LI Co - Add First Comment` (URL in telo) ter besedilo `LI Co - Comment Failed Alert` uporabljajo
+`$("Post LinkedIn Company").item` in `$("Route by Platform").item` - poimenovan sklic na vozlišče, ki
+stoji **pred** `LI Co - Store Post URN` (`dataTable`, operacija `update`). Ni preverjeno, ali `dataTable`
+`update` naprej prenese `pairedItem` skozi verigo. Če ga ne, `.item` na teh sklicih vrže napako oblike
+»Can't determine which item to use« - to bi se pokazalo šele pri živem teku v Task 6, ker je vozlišče do
+takrat `disabled: true`. Izpad je varen (tek se ustavi z jasno napako, invarianta `status: published` je
+takrat na vrstici že zapisana, torej vrstica ne gre nazaj v čakalno vrsto) - to ni novo tveganje te
+naloge, isti vzorec sklicevanja (`$("Route by Platform").item` prek `dataTable` vozlišč) že uporabljajo
+`Delete Published LI Co` in `Telegram LI Co Post Failure` iz Task 3. Če se v Task 6 pokaže ta napaka, je
+popravek zamenjava `.item` z `.first()` ali z eksplicitnim `itemMatching(0)`.
