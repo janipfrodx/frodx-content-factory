@@ -78,7 +78,9 @@ Za dani jezik (`hr` ali `en`):
    - **Padel eden:** nadaljuj s tistim, ki je odgovoril. V zapisu kroga in Igorju izrecno povej, da
      je polovica presoje manjkala - da ni videti, kot da sta se ocenjevalca strinjala.
    - **Padla oba:** zanko ustavi takoj. Kroga **ne štej**. Povej Janiju, katero vozlišče je padlo in
-     s katero napako. Popravek je v n8n, ne v besedilu.
+     s katero napako. Popravek je v n8n, ne v besedilu. **Če do takrat še noben krog ni bil
+     dokončan** (torej `rounds` ostane `0`), v `_run.transcreation_check.<jezik>` namesto `"ok"`
+     ali `"revise"` zapiši `"verdict": "napaka"` - sodbe namreč ni bilo, ne prve ne druge.
 
    c. Presodi obe oceni. Nista enakovredna glasova - urednik si ti. Najdbo, ki je napačna ali gre
    proti Igorjevemu glasu, zavrni in to zapiši v `rejected` z utemeljitvijo.
@@ -117,6 +119,12 @@ Za dani jezik (`hr` ali `en`):
 
    h. Zanka se nadaljuje samo, če je `verdict` `"revise"` in je `krog` = 1. Tretjega kroga ni.
 
+   Če je krog 2 sodba `"revise"`, se popravek iz točke e še vedno izvede in zapiše (točka g), a se
+   **ne oceni ponovno** - tretje ocene ni. `verdict: "revise"`, ki ostane zapisan za ta jezik, se
+   torej nanaša na **vhod** kroga 2 (besedilo pred tem zadnjim popravkom), ne na končno besedilo, ki
+   dejansko pristane v `languages.<jezik>.content`. Zadnji popravek gre naravnost v paket, brez
+   tretjega mnenja.
+
 5. Konec zanke za ta jezik. Zapiši v `state.json`:
 
    ```json
@@ -133,6 +141,10 @@ Za dani jezik (`hr` ali `en`):
    `rounds` je število **dejansko opravljenih** krogov. Krog, v katerem sta padla oba ocenjevalca,
    se ne šteje.
 
+   Če sta oba ocenjevalca padla, preden je bil dokončan sploh en krog, je `rounds` `0` in
+   `verdict` je `"napaka"` - ne `"ok"`, ne `"revise"`, ker sodbe o prevodu ni bilo, samo napaka
+   klica. `openai_error`/`gemini_error` v tem primeru nosita zadnjo napako vsakega vozlišča.
+
 ## Odprta zadolžitev za človeka
 
 Po obeh jezikih zapiši v `_run.open_tasks` zadolžitev za hrvaščino - **vedno**, tudi kadar sta oba
@@ -142,6 +154,17 @@ ocenjevalca rekla `OBJAVLJIVO`:
 {"what": "hrvaška različica: GPT in Gemini sta jo pregledala (<verdict>, <rounds> krog/a), native pregled ni bil opravljen",
  "who": "native govorec hrvaščine", "created_at": "<ISO čas>", "step": 4}
 ```
+
+**Če je `verdict` `"napaka"`** (oba ocenjevalca sta padla in do sodbe ni prišlo), zgornje predloge
+ne uporabi - besedilo z `<verdict>, <rounds> krog/a` bi bralca zavedlo, da je pregled tekel. Namesto
+tega zapiši:
+
+```json
+{"what": "hrvaška različica: preverba ni bila opravljena (oba ocenjevalca sta padla), native pregled ni bil opravljen",
+ "who": "native govorec hrvaščine", "created_at": "<ISO čas>", "step": 4}
+```
+
+Zadolžitev nastane enako - vedno, ne glede na to, ali je preverba sploh stekla.
 
 Igorju ob gateu izrecno povej, da **priporočaš še native pregled**. Dva modela nista Hrvat. To je
 Janijeva odločitev z 18. 9. 2026 in ni stvar presoje v posameznem teku.

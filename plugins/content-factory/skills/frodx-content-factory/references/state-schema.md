@@ -33,7 +33,7 @@ Ta blok se pred pošiljanjem odstrani.
 | `brief` | `{topic, target_prompt, format, rationale}` iz koraka 1 |
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |
-| `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 - izid preverbe prevoda; `verdict` je `ok` ali `revise`, `rounds` šteje samo dejansko opravljene kroge |
+| `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 - izid preverbe prevoda; `verdict` je `ok`, `revise` ali `napaka` (oba ocenjevalca padla, preden je bil dokončan en krog - takrat je `rounds` `0`), `rounds` šteje samo dejansko opravljene kroge |
 | `image` | `{chosen, url, attempts, dimensions, rubric, reason}` iz koraka 5 - `url` je javni URL izbrane slike v shrambi aplikacije, edino, kar aplikacija o sliki dobi; glej `frodx-image-run/SKILL.md` |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 7 - izid predaje v aplikacijo; `status` je `created` ali `duplicate` |
 | `open_tasks` | odprte zadolžitve, ki jih veriga ni opravila - glej spodaj |
@@ -45,7 +45,7 @@ Seznam. Vsak element:
 
 ```json
 {
-  "what": "hrvaška različica ni šla skozi native pregled",
+  "what": "hrvaška različica: GPT in Gemini sta jo pregledala (<verdict>, <rounds> krog/a), native pregled ni bil opravljen",
   "who": "native govorec hrvaščine",
   "created_at": "2026-08-15T12:00:00.000Z",
   "step": 4

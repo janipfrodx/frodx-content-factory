@@ -63,7 +63,7 @@ Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` 
 
 Korak 2 je Igorjev skill in sme prekiniti z vprašanji o hooku, tezi in številkah. To je pričakovano - pusti ga.
 
-Koraka 2 in 4 (Igorjeva vendorirana skilla) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov.
+Korak 2 in del koraka 4 (Igorjeva vendorirana skilla `igor-column-writer` in `frodx-transcreation`) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov. `frodx-transcreation-check`, ki v koraku 4 teče za `frodx-transcreation`, je izjema - piše sam: `languages.<jezik>.content` (po popravku), `_run.transcreation_check` in `_run.open_tasks`.
 
 Korak 4 kliči dvakrat: SL→EN in SL→HR.
 

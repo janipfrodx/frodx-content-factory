@@ -47,8 +47,10 @@ def test_skill_ima_angleski_frontmatter():
 
 
 def test_skill_klice_pravi_workflow():
+    """Ime skilla samega vsebuje 'transcreation-check', zato ta niz ne dokazuje nicesar o tem,
+    kateri workflow klice - preveri pravi n8n ID iz naloge 1."""
     vsebina = SKILL.read_text(encoding="utf-8")
-    assert "transcreation-check" in vsebina
+    assert "eGHQGAbgeQhfCcZu" in vsebina
     assert "execute_workflow" in vsebina
     assert '"manual"' in vsebina
 
@@ -61,9 +63,13 @@ def test_skill_bere_oceni_iz_odgovora_ne_iz_izvedbe():
 
 
 def test_skill_ima_dva_kroga_in_popravek_skozi_transkreacijo():
+    """'frodx-transcreation' kot golo podnizje je vedno res, ker ga vsebuje ze ime tega skilla
+    ('frodx-transcreation-check'), in tudi `frodx-transcreation` z obojestranskim backtickom se
+    pojavi vec mest (npr. samo v uvodu). Preveri natancno stavek, ki popravek dejansko poklice
+    nazaj skozi Igorjev skill, ne rocno popravljanje."""
     vsebina = SKILL.read_text(encoding="utf-8")
     assert "dva kroga" in vsebina
-    assert "frodx-transcreation" in vsebina
+    assert "Pokliči `frodx-transcreation` znova" in vsebina
     assert "{{DANES}}" in vsebina
 
 
@@ -75,6 +81,16 @@ def test_skill_nima_vec_placeholderja_za_id_workflowa():
     # n8n ID je 16 znakov iz crk in stevilk; poisci ga ob imenu workflowa.
     najdbe = re.findall(r'"workflowId":\s*"([A-Za-z0-9]{16})"', vsebina)
     assert najdbe, "v SKILL.md ni workflowId oblike, kot jo vrne n8n"
+
+
+def test_skill_target_lang_ni_trdo_zapisan():
+    """Regresija iz naloge 3: workflow ob manjkajocem target_lang privzame 'hr', zato mora telo
+    klica nositi spremenljivko za jezik teka, ne trdo zapisan 'hr' (kar bi anglescino tiho poslalo
+    kot hrvascino)."""
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert '"target_lang": "<jezik>"' in vsebina
+    assert '"target_lang": "hr"' not in vsebina
+    assert '"target_lang": "en"' not in vsebina
 
 
 def test_dirigent_v_koraku_4_poklice_preverbo():
