@@ -18,6 +18,22 @@ def _razdelek(vsebina, naslov):
     return ostanek if konec == -1 else ostanek[:konec]
 
 
+KORAK_2_ZACETEK = "Korak 2 je Igorjev skill"
+KORAK_2_KONEC = "Koraka 2 in 4 (Igorjeva vendorirana skilla)"
+
+
+def _korak_2(vsebina):
+    """Vrne odsek dirigenta, ki opisuje naročilo socialnih objav v koraku 2.
+
+    Meji sta literalna niza, ne '## ' naslov: znotraj enega razdelka '## Koraki'
+    ni ločenega podnaslova za vsak korak, zato _razdelek() tu ne bi ločil
+    koraka 2 od koraka 4, ki sledi takoj za njim.
+    """
+    zacetek = vsebina.index(KORAK_2_ZACETEK)
+    konec = vsebina.index(KORAK_2_KONEC, zacetek)
+    return vsebina[zacetek:konec]
+
+
 def test_image_run_ima_fazo_za_socialne_slike():
     vsebina = IMAGE_RUN.read_text(encoding="utf-8")
     assert "## Faza B" in vsebina
@@ -74,22 +90,26 @@ def test_image_run_nima_vec_placeholderja_za_id_workflowa():
 
 
 def test_dirigent_zahteva_stiri_objave_in_predlog_dveh():
-    vsebina = DIRIGENT.read_text(encoding="utf-8")
-    assert "štiri objave" in vsebina
-    assert "dve najboljši" in vsebina
+    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    assert "igor-column-writer" in korak_2
+    assert "štiri objave" in korak_2
+    assert "dve najboljši" in korak_2
 
 
 def test_dirigent_zapise_vse_stiri_pred_vprasanjem():
     """Popravek po teku 14. 9. 2026: rezultat gre v state.json ob nastanku, ne ob potrditvi."""
-    vsebina = DIRIGENT.read_text(encoding="utf-8")
-    assert "_run.social_candidates" in vsebina
+    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    assert "_run.social_candidates" in korak_2
+    korak_2_brez_prelomov = " ".join(korak_2.split())
+    assert "preden Igorja" in korak_2_brez_prelomov
 
 
 def test_dirigent_pozna_obliko_kandidatk_iz_speca():
     """Spec doloca stiri polja na kandidatko; chosen pove, katero je Igor potrdil."""
-    vsebina = DIRIGENT.read_text(encoding="utf-8")
+    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    assert "_run.social_candidates" in korak_2
     for polje in ("text", "lever", "score", "chosen"):
-        assert f'"{polje}"' in vsebina
+        assert f'"{polje}"' in korak_2
 
 
 def test_mapping_ne_govori_vec_o_batchu_3_5():
