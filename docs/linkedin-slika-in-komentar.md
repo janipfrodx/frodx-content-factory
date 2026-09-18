@@ -85,3 +85,114 @@ Manjkajoči polji postaneta prazna niza, ne `undefined`. Star paket in ročni do
 tečeta, samo brez slike.
 
 Facebookova vrstica polji dobi, a ju ta krog ne uporabi.
+
+## LinkedIn stran
+
+Urejeno 18. 9. 2026 (Task 3). Objava na strani FrodX zdaj nosi sliko namesto kartice članka in
+zajame URN objave za komentar iz Task 4.
+
+### Ugotovitev iz Step 1 (živa dokumentacija proti briefu)
+
+Preverjeno z `WebFetch` proti uradni LinkedIn/Microsoft Learn dokumentaciji (`images-api` in
+`posts-api`, oba z `defaultMoniker: li-lms-2026-09`, kar potrjuje da je `LinkedIn-Version: 202606`
+med podprtimi verzijami - je v seznamu monikerjev). **Oblike iz briefa se ujemajo z živo
+dokumentacijo dobesedno**, brez razlik:
+
+- `POST /rest/images?action=initializeUpload` z `{"initializeUploadRequest": {"owner": "urn:li:organization:..."}}`
+  vrne `{"value": {"uploadUrl": "...", "image": "urn:li:image:..."}}` - identično briefu.
+- `POST /rest/posts` s `content.media` v obliki `{"id": "urn:li:image:...", "altText": "..."}` -
+  identično briefu (vrstni red polj v JSON-u ni pomemben).
+- Uspešna objava vrne `201 Created`, URN pa pride v odgovoru **v glavi `x-restli-id`**, ne v telesu -
+  identično briefu.
+
+**Eno odstopanje, ki ga je vredno zabeležiti**, ker ni šlo v prid briefu po sreči, ampak je bilo
+preverjeno: uradna stran za Images API pri koraku »Upload the Image« kaže na dokumentacijo
+**opuščenega** Assets API (`vector-asset-api`), ki za nalaganje slike (ne videa) zahteva
+`Authorization: Bearer` glavo na PUT klicu - to je nasprotno od tega, kar predpisuje brief
+(»brez credentiala, `uploadUrl` je podpisan«). To je zastarel navzkrižni sklic v uradni
+dokumentaciji, ne veljavno navodilo za novi Images API: trije neodvisni praktični viri iz leta 2026
+(vključno z razčlenjenim vodičem za Node.js integracijo) eksplicitno navajajo, da PUT na `uploadUrl`
+iz **Images API** (`/rest/images`, ne `/v2/assets`) ne sme nositi `Authorization` glave, ker gre za
+podpisan URL. Implementirano je po briefu (brez credentiala), kar se ujema z novejšim mehanizmom, ne
+s starim navzkrižnim sklicem.
+
+### Veriga vozlišč (po vrsti)
+
+```
+Route by Platform (linkedin_company)
+  → LI Co - Init Image Upload       (POST /rest/images?action=initializeUpload)
+  → LI Co - Fetch Image Bytes       (GET image_url iz vrstice, responseFormat: file)
+  → LI Co - Upload Image Bytes      (PUT na uploadUrl, telo = binarni podatek, brez credentiala)
+  → Post LinkedIn Company           (POST /rest/posts, content.media, fullResponse: true)
+      ├─ (uspeh) → LI Co - Store Post URN   (zapiše platform_post_id, ustavi tek če je prazen)
+      │              → Delete Published LI Co
+      └─ (napaka) → Telegram LI Co Post Failure   (nespremenjeno)
+```
+
+Vseh pet vozlišč (štiri nova plus predelan `Post LinkedIn Company`) je `disabled: true`. Brisanje
+vrstice (`Delete Published LI Co`) se je premaknilo za `LI Co - Store Post URN`, da URN pride v
+vrstico, preden se ta izbriše - prej je vrstica izginila takoj po objavi.
+
+### Telo zahtevka, kot je dejansko napisano
+
+`LI Co - Init Image Upload` (telo je statično, brez izraza):
+
+```json
+{"initializeUploadRequest": {"owner": "urn:li:organization:1132284"}}
+```
+
+`Post LinkedIn Company` (telo, `options.response.fullResponse: true`):
+
+```
+={{ ({
+  author: "urn:li:organization:1132284",
+  commentary: $("Route by Platform").item.json.post_text,
+  visibility: "PUBLIC",
+  distribution: { feedDistribution: "MAIN_FEED", targetEntities: [], thirdPartyDistributionChannels: [] },
+  content: { media: {
+    id: $("LI Co - Init Image Upload").item.json.value.image,
+    altText: $("Route by Platform").item.json.image_alt
+  } },
+  lifecycleState: "PUBLISHED",
+  isReshareDisabledByAuthor: false
+}) }}
+```
+
+`LI Co - Store Post URN` (stolpec `platform_post_id`, ustavi tek z `throw` če je prazen):
+
+```
+={{ (() => {
+  const v = $json.headers && $json.headers['x-restli-id'];
+  if (!v) { throw new Error('platform_post_id je prazen - LinkedIn objava je nastala, komentarja pa ne bo mogoce pripeti'); }
+  return v;
+})() }}
+```
+
+**Tehnična opomba k referencam**: brief za `LI Co - Fetch Image Bytes` navaja `={{ $json.image_url }}`,
+kar bi po vrinjenju `LI Co - Init Image Upload` pred njim brala odgovor tega vozlišča, ne vrstice
+objave. Uporabljeno je `$("Route by Platform").item.json.image_url` - enak vzorec sklicevanja, kot ga
+že uporabljajo obstoječa vozlišča v tej verigi (`Delete Published LI Co`, `Telegram LI Co Post
+Failure`). Enako za `image_alt` in `post_text` v `Post LinkedIn Company`. Glave HTTP odgovora
+(`x-restli-id`) so v n8n privzeto male črke (`lowercaseHeaders: true` je privzeta nastavitev
+`httpRequest` vozlišča) - to ni bilo mogoče preveriti z živim tekom, ker je tek prepovedan do Task 6;
+če se izkaže drugače, je treba izraz v `LI Co - Store Post URN` popraviti po prvem ročnem teku.
+
+### Odprto vprašanje za pregled: manjkajoč image_url
+
+Vsa štiri nova vozlišča predpostavljajo, da `image_url` na vrstici objave ni prazen (brief tega
+primera ne naslavlja - `LI Co - Fetch Image Bytes` bi na prazen niz naredil GET na prazen URL, kar bi
+padlo in ustavilo tek, ker privzeti `onError` ni nastavljen na `continueErrorOutput`). To je v
+neskladju z izrecno navedenim ciljnim vedenjem drugje v tem načrtu:
+
+- Task 2 (ledger, 18. 9. 2026): »Star paket in ročni docx uvoz zato še naprej tečeta, samo brez
+  slike« - torej star paket lahko pripelje prazen `image_url` do te verige.
+- Sam načrt (`docs/superpowers/plans/2026-09-18-linkedin-slika-in-komentar.md:764`, razdelek o
+  prenosu v produkcijo): »Brez njiju objavno vozlišče prebere prazno polje in objavi brez slike - brez
+  napake.«
+
+Implementirano je dobesedno po Step 2-5 brifa (brez pogojne veje za prazen `image_url`), ker brif
+eksplicitno predpisuje natanko ta štiri vozlišča in ne omenja pogojne logike. Ni pa to isto kot
+»brez napake« vedenje, ki ga sicer ta načrt obljublja - trenutna veriga se pri praznem `image_url`
+ustavi s hard error, namesto da bi objavila brez slike. To presega obseg Task 3 brifa in ni
+popravljeno na lastno pobudo; potrebna je Janijeva odločitev, ali se doda pogojna veja (in v katerem
+tasku).
