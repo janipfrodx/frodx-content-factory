@@ -33,6 +33,7 @@ Ta blok se pred pošiljanjem odstrani.
 | `brief` | `{topic, target_prompt, format, rationale}` iz koraka 1 |
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |
+| `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 - izid preverbe prevoda; `verdict` je `ok` ali `revise`, `rounds` šteje samo dejansko opravljene kroge |
 | `image` | `{chosen, url, attempts, dimensions, rubric, reason}` iz koraka 5 - `url` je javni URL izbrane slike v shrambi aplikacije, edino, kar aplikacija o sliki dobi; glej `frodx-image-run/SKILL.md` |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 7 - izid predaje v aplikacijo; `status` je `created` ali `duplicate` |
 | `open_tasks` | odprte zadolžitve, ki jih veriga ni opravila - glej spodaj |

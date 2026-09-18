@@ -56,7 +56,7 @@ Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` 
 | 1 | `frodx-topic-pick` | katero temo pišemo |
 | 2 | `igor-column-writer` | je kolumna v redu |
 | 3 | `frodx-critique-loop` | je popravljena verzija v redu |
-| 4 | `frodx-transcreation` | sta EN in HR v redu |
+| 4 | `frodx-transcreation` + `frodx-transcreation-check` | sta EN in HR v redu |
 | 5 | `frodx-image-run` | je slika v redu |
 | 6 | `frodx-publishing-meta` | so meta podatki v redu |
 | 7 | `frodx-publish-send` | (brez vprašanja, samo pošlje) |
@@ -65,16 +65,20 @@ Korak 2 je Igorjev skill in sme prekiniti z vprašanji o hooku, tezi in številk
 
 Koraka 2 in 4 (Igorjeva vendorirana skilla) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov.
 
-Korak 4 kliči dvakrat: SL→EN in SL→HR. Hrvaščina rabi native pregled; če Igor pove, da ga bo opravil nekdo drug, počakaj in tega ne obidi.
+Korak 4 kliči dvakrat: SL→EN in SL→HR.
 
-Če Igor (ali Jani) izrecno odloči, da tek gre naprej **brez** native pregleda, je to dovoljeno - a zadolžitev takrat zapiši v `_run.open_tasks` (oblika je v `references/state-schema.md`):
+Po obeh transkreacijah in **pred Igorjevim gateom** pokliči `frodx-transcreation-check`, prav tako
+dvakrat - za `hr` in za `en`. Ta skill da prevod v pregled GPT-ju in Geminiju, popravke naroči nazaj
+`frodx-transcreation` in zapiše izid v `_run.transcreation_check`. Korak 4 se s tem ne razdeli na dva
+koraka; gate ostane en sam, po preverbi.
 
-```json
-{"what": "hrvaška različica ni šla skozi native pregled", "who": "native govorec hrvaščine",
- "created_at": "<ISO čas odločitve>", "step": 4}
-```
+Zadolžitev za hrvaški native pregled se odslej zapiše v `_run.open_tasks` **vedno**, tudi kadar sta
+oba ocenjevalca rekla `OBJAVLJIVO` - zapiše jo `frodx-transcreation-check` sam. Igorju ob gateu
+izrecno povej, da **priporočaš še native pregled**; dva modela nista Hrvat. To je Janijeva odločitev
+z 18. 9. 2026 in ni stvar presoje v posameznem teku.
 
-Ločena datoteka v mapi teka s seznamom, kaj naj native govorec preveri, je koristen dodatek, ni pa nadomestilo: taka datoteka ne potuje s paketom in gate je ne vidi. Zapis v `_run.open_tasks` je tisti, ki ga korak 7 prebere in izpiše.
+Zadolžitve ne odstranjuj, da bi bil izpis gatea v koraku 7 čist. Odstrani jo šele, ko človek potrdi,
+da je pregled opravljen.
 
 ### Terminologija in AEO ciljni prompt
 
