@@ -469,3 +469,63 @@ def test_veljaven_url_in_dovolj_velika_slika_gresta_skozi(tmp_path):
     from validate_package import preveri_sliko
     state = _tek(tmp_path, 1536, 1024)
     assert preveri_sliko({"image": {"chosen": "openai", "url": SHRAMBA}}, state) == []
+
+
+# --- Socialne objave nosijo svojo sliko (od 18. 9. 2026) ---
+
+def _napake(spremeni):
+    """Vzame veljaven vzorec, ga spremeni in vrne seznam kršitev."""
+    from validate_package import validate
+
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    spremeni(pkg)
+    return validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+
+
+def test_social_brez_slike_pade():
+    """Objava brez slike je po 18. 9. 2026 nepopolna - LinkedIn objava je tekst plus slika."""
+    def spremeni(pkg):
+        del pkg["social_posts"][0]["image_url"]
+
+    assert any("social_posts[0].image_url" in n for n in _napake(spremeni))
+
+
+def test_social_brez_alt_teksta_pade():
+    def spremeni(pkg):
+        pkg["social_posts"][0]["image_alt"] = "   "
+
+    assert any("social_posts[0].image_alt" in n for n in _napake(spremeni))
+
+
+def test_social_slika_na_tujem_gostitelju_pade():
+    """Isti gostitelj kot naslovna slika - drugje aplikacija slike ne servira."""
+    def spremeni(pkg):
+        pkg["social_posts"][0]["image_url"] = "https://example.com/slika.png"
+
+    napake = _napake(spremeni)
+    assert any("social_posts[0].image_url" in n and "gostitelj" in n for n in napake)
+
+
+def test_social_predolg_alt_pade():
+    def spremeni(pkg):
+        pkg["social_posts"][0]["image_alt"] = "a" * 161
+
+    napake = _napake(spremeni)
+    assert any("social_posts[0].image_alt" in n and "160" in n for n in napake)
+
+
+def test_vec_objav_gate_ne_zavrne():
+    """Spec: stevila objav gate ne preverja - to pravilo uveljavi Igor na gateu koraka 2.
+
+    Tri veljavne objave morajo iti skozi; zavrne se lahko samo zaradi vsebine objave,
+    nikoli zaradi njihovega stevila.
+    """
+    def spremeni(pkg):
+        pkg["social_posts"] = pkg["social_posts"] * 3
+
+    napake = _napake(spremeni)
+    assert napake == []
+
+
+def test_veljaven_paket_z_dvema_objavama_gre_skozi():
+    assert _validate("package_valid.json") == []

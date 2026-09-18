@@ -29,13 +29,24 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["text"],
+        "required": ["text", "image_url", "image_alt"],
         "additionalProperties": false,
         "properties": {
           "text": { "type": "string", "minLength": 1 },
           "publish_date": {
             "type": "string",
             "description": "Neobvezno. Ta veriga ga ne zapolni - datum objave izbere Igor v aplikaciji. Polje je prisotno za skladnost z Igorjevim izvornim formatom (glej igor-column-writer/references/publishing-contract.md)."
+          },
+          "image_url": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Javni URL slike te objave v shrambi aplikacije. Naredi ga n8n workflow cf-social-image v koraku 5, faza B. Gostitelj mora biti umvjwjzdrtamfrcqhopa.supabase.co."
+          },
+          "image_alt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160,
+            "description": "Alt tekst slike te objave, slovenski. Opisuje, kar je na sliki, ne o cem je clanek."
           }
         }
       }
