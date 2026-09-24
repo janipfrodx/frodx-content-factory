@@ -40,7 +40,7 @@ Stanje preverjeno 16. 9. 2026. Workflow obe sliki naloži v shrambo aplikacije (
  "gemini": {"url": "..."}}
 ```
 
-Skill oba URL-ja sam prenese s `curl` v `images/openai.png` in `images/gemini.png`. Ročni prenos prek n8n UI ni
+Skill oba URL-ja sam prenese s `curl` v `images/openai.<pripona>` in `images/gemini.<pripona>` (pripona iz URL-ja; Gemini vrne `.jpg`). Ročni prenos prek n8n UI ni
 več potreben. `get_execution` binarnih bajtov ne vrne (instanca teče v načinu `filesystem-v2` in vrne referenco
 na pot na disku, ne slike) - to skillu ni več ovira, ker slik od tam ne potrebuje.
 
@@ -66,11 +66,11 @@ Preveri:
 
   ```bash
   python3 plugins/content-factory/skills/frodx-publish-send/scripts/dimenzije.py \
-    runs/<slug>/images/openai.png runs/<slug>/images/gemini.png
+    runs/<slug>/images/openai.<pripona> runs/<slug>/images/gemini.<pripona>
   ```
 
 - [ ] kandidatka pod **1200x630** je zavrnjena, tudi če je lepša; če nobena ne doseže praga, skill ne izbira, ampak pove, da si najbrž dobil pomanjšan predogled
-- [ ] izbrana slika je v `images/izbrana.png` - **ena sama datoteka in ena sama pripona**, nobene `izbrana.jpg` poleg nje
+- [ ] izbrana slika je v `images/izbrana.<pripona>` - **ena sama datoteka in ena sama pripona**, nobene druge `izbrana.*` poleg nje
 - [ ] alt teksti so trije, vsak en stavek do 160 znakov, noben se ne začne z »Slika prikazuje«, »Image of« ali »Fotografija«, in nobeden ni prevod slovenskega
 - [ ] `_run.image` ima vseh šest polj: `chosen`, `url`, `attempts`, `dimensions` (izmerjene, ne ugibane), `rubric` in `reason`
 - [ ] `rubric` ima šest povedi: `koncept`, `robustnost`, `thumbnail`, `anti_slop`, `kompozicija`, `brand_fit` - povedi o **izbrani** sliki, ne ocene v številkah
@@ -98,7 +98,7 @@ To je najtišja napaka v verigi, zato ima svoj preizkus. Ko ti skill pokaže obe
 
 Preveri:
 
-- [ ] skill **najprej znova prekopira** izbrano sliko čez `images/izbrana.png` in šele potem popravi `_run.image`
+- [ ] skill **najprej znova prekopira** izbrano sliko v `images/izbrana.<pripona>` (staro `izbrana.*` prej odstrani) in šele potem popravi `_run.image`
 - [ ] `images/izbrana.png` je po tem res tista slika, ki si jo izbral ti - odpri datoteko in poglej, ne verjemi zapisu
 - [ ] `_run.image` je popravljen **v celoti**, tudi `rubric` in `reason`, ne le `chosen`
 - [ ] alt teksti ustrezajo novi sliki, ne stari

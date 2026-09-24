@@ -85,10 +85,18 @@ Za dani jezik (`hr` ali `en`):
    c. Presodi obe oceni. Nista enakovredna glasova - urednik si ti. Najdbo, ki je napačna ali gre
    proti Igorjevemu glasu, zavrni in to zapiši v `rejected` z utemeljitvijo.
 
-   d. Sodba kroga. Šteje samo ocenjevalec, ki je **odgovoril**:
-      - vsi, ki so odgovorili, rečejo `OBJAVLJIVO` → `verdict` = `"ok"`, `changes` = `[]`,
-        besedilo se ne spremeni;
-      - sicer → `verdict` = `"revise"`.
+   Zavrni tudi najdbo, ki je samo druga, enako dobra rešitev (sinonim, drug vrstni red, »bolj
+   tekoče«), in najdbo, ki gre proti hišni tipografiji v promptu (npr. `14 eura` ali “ … ” v
+   hrvaščini). Živi tek 24. 9. 2026 je pokazal, da oba modela take najdbe dajeta v vsakem krogu.
+
+   d. Sodba kroga je tvoja, ne modelov. Odloča, ali po točki c ostane **vsaj ena sprejeta najdba**:
+      - ne ostane nobena → `verdict` = `"ok"`, `changes` = `[]`, besedilo se ne spremeni - tudi
+        če je model napisal `ZA POPRAVEK`;
+      - ostane vsaj ena → `verdict` = `"revise"`.
+
+      Šteje samo ocenjevalec, ki je **odgovoril**. Brez tega pravila sodba nikoli ne postane `ok`,
+      ker model v krogu 2 vedno najde novo slogovno drobnarijo (tek 24. 9. 2026: po dveh krogih
+      `revise` pri obeh jezikih, pa čeprav so bile najdbe kroga 2 večinoma slogovne).
 
    e. Ob `revise` **popravek ni ročno krpanje stavka.** Pokliči `frodx-transcreation` znova, za isti
    jezik, in mu kot vhod daj izvirnik, trenutni prevod in sprejete najdbe kot izrecne zahteve.

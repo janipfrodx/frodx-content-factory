@@ -28,8 +28,9 @@ def test_skill_in_shema_poznata_rubriko():
 
 def test_izbrana_slika_je_ena_sama_datoteka():
     vsebina = SKILL.read_text(encoding="utf-8")
-    assert "izbrana.png" in vsebina
-    assert "izbrana.jpg" not in vsebina
+    assert "izbrana.<pripona>" in vsebina
+    assert "ena sama pripona" in vsebina
+    assert "izbrana.png" not in vsebina
     assert "znova prekopiraj izbrano sliko" in vsebina
 
 

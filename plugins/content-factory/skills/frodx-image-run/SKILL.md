@@ -43,9 +43,12 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
    Oba prenesi v mapo teka:
 
    ```bash
-   curl -sS -o runs/<slug>/images/openai.png "<openai.url>"
-   curl -sS -o runs/<slug>/images/gemini.png "<gemini.url>"
+   curl -sS -o runs/<slug>/images/openai.<pripona> "<openai.url>"
+   curl -sS -o runs/<slug>/images/gemini.<pripona> "<gemini.url>"
    ```
+
+   `<pripona>` vzemi iz konca URL-ja (`.png` ali `.jpg`). Gemini vrne `.jpg`, OpenAI `.png` -
+   preverjeno v teku 24. 9. 2026. Datoteke ne preimenuj v drugo pripono, kot jo ima URL.
 
    URL-ja si **zapiši**, ne samo datotek - URL izbrane slike gre v točki 10 v `_run.image.url` in je edino, kar aplikacija o sliki potrebuje.
 
@@ -54,7 +57,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
    ```bash
    python3 <plugin>/skills/frodx-publish-send/scripts/dimenzije.py \
-     runs/<slug>/images/openai.png runs/<slug>/images/gemini.png
+     runs/<slug>/images/openai.<pripona> runs/<slug>/images/gemini.<pripona>
    ```
 
    `<plugin>` je `plugins/content-factory/`, torej ista mapa, iz katere teče ta skill. Poti do slik
@@ -64,7 +67,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
 6. Preberi `references/image-decision.md` in `frodx-key-visual/references/visual-style.md`. Poglej obe sliki in odloči.
 7. Če zavrneš obe: popravi oba prompta v isti smeri in ponovi od točke 3. Največ dve ponovitvi.
-8. Izbrano sliko kopiraj v `images/izbrana.png`. Ena sama datoteka in ena sama pripona, da je jasno, katero sliko si izbral. Korak 7 te datoteke ne pošilja - aplikaciji preda `_run.image.url`; datoteka na disku je le tvoj delovni izvod, ki ga meri gate.
+8. Izbrano sliko kopiraj v `images/izbrana.<pripona>`, s pripono izbrane slike. Ena sama datoteka in ena sama pripona, da je jasno, katero sliko si izbral. Korak 7 te datoteke ne pošilja - aplikaciji preda `_run.image.url`; datoteka na disku je le tvoj delovni izvod, ki ga meri gate.
 9. Napiši alt tekst za vse tri jezike. Opiši, **kar je na sliki**, ne o čem je članek. Naslov uporabi samo za razdvoumljenje. En stavek, do 160 znakov, ciljno okoli 125. Ne začenjaj z »Slika prikazuje«, »Image of«, »Fotografija«.
 10. Zapiši v `state.json`:
     - `languages.sl.featured_image_alt`, `languages.en.featured_image_alt`, `languages.hr.featured_image_alt`
@@ -92,7 +95,7 @@ Iz besedila kolumne naredi naslovno sliko in alt tekste.
 
     `url` je javni URL **izbrane** kandidatke, prepisan iz odgovora workflowa v točki 4. Aplikacija drugega o sliki ne dobi, zato mora biti tu in mora biti tisti, ki ustreza `chosen`. Zavržena kandidatka ostane v shrambi; to ni napaka, ampak zapis, med čim se je izbiralo.
     - `_run.step` = 5, `_run.status` = `awaiting_approval`
-11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej znova prekopiraj izbrano sliko čez `images/izbrana.png`**, šele potem popravi `_run.image` v celoti, tudi `chosen`, `url`, `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri dimenzije datoteke in `_run.image.url` ločeno, da sta neusklajena, pa ne vidi.
+11. Pokaži Igorju obe sliki, izmerjene dimenzije, svojo izbiro in rubriko. Če izbere drugo, spoštuj to: **najprej odstrani staro `images/izbrana.*` in znova prekopiraj izbrano sliko v `images/izbrana.<pripona>`**, šele potem popravi `_run.image` v celoti, tudi `chosen`, `url`, `rubric` in `reason`. Brez prve polovice gre v objavo zavrnjena slika - gate meri dimenzije datoteke in `_run.image.url` ločeno, da sta neusklajena, pa ne vidi.
 
 ## Kako sliki dejansko prideta do tebe
 

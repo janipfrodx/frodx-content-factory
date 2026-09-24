@@ -42,9 +42,35 @@ ki se bere kot prevod, je padlo - tudi če je pomensko točno.
 - številke, imena in izdelki se morajo ujemati z izvirnikom, znak za znak
 - izdelek je `SAP Engagement Cloud`. Izjema: če izvirnik govori o `Emarsys` kot izvoru platforme
   ali o tem, kaj bralec išče, `Emarsys` tam ostane - to ni napaka
-- tipografija ciljnega jezika: narekovaji, presledek pred odstotkom, decimalno ločilo
+- tipografija ciljnega jezika, po hišnih pravilih FrodX spodaj - ne po šolskem pravopisu
 - dolgi pomišljaj (U+2014) je prepovedan v vseh jezikih
 - nič dodanega: trditev, številk ali obljub, ki jih v izvirniku ni
+
+## Hišna tipografija FrodX - to je pravilno, ne označuj
+
+**Hrvaščina:**
+
+- valuta: število in beseda - `14 eura`, `1.200 eura`. Ne `14 €`, ne `€14`
+- narekovaji: privzeto “ … ”. Tudi „ … " je dovoljen. Napaka je samo mešanje obeh v istem besedilu
+- odstotek s presledkom - `59 %`; decimalna vejica - `8,5`; tisočice s piko - `10.000`
+
+**Angleščina:**
+
+- valuta: simbol pred številom - `€14`, `€1,200`
+- narekovaji “ … ”; odstotek brez presledka - `59%`; decimalna pika - `8.5`
+
+## Kaj je najdba in kaj ne
+
+Najdba je samo tisto, kar bi native bralec prepoznal kot **napako ali kot prevod**: kalk, srbizem,
+prenesena dvojina, napačen pomen, napačna številka ali ime, nenaravna zveza, ki je noben native
+pisec ne bi zapisal, kršitev tipografije zgoraj.
+
+Najdba **ni** druga, enako dobra rešitev. Če je obstoječi stavek pravilen in naraven, ga ne
+predlagaš zamenjati s sinonimom, z drugim vrstnim redom ali z »bolj tekočo« različico, tudi če bi jo
+sam napisal drugače. Tak predlog ni najdba in ne sodi na seznam.
+
+Preden najdbo zapišeš, se vprašaj: bi urednik zaradi tega ustavil objavo? Če ne, je ne zapiši.
+Prevod brez takih najdb je `OBJAVLJIVO`, tudi če bi ga sam napisal drugače.
 
 ## Česa ne počneš
 
