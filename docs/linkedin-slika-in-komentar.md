@@ -664,3 +664,36 @@ sliko brez povezave in poslala Telegram opozorilo.
 - Isti credential uporablja produkcija; nov obseg je dodan k obstoječim, nobeden ni odvzet.
 - Po testu so vozlišča spet `disabled: true`. Testna vrstica `test-li2-20260924-linkedin_company`
   je ostala v tabeli.
+
+## Fallback brez slike in slika v Telegram predogledu (dodano 24. 9. 2026)
+
+### Objave
+
+- Vsaka veja (LI Co, LI Pe, FB Co) začne z vozliščem `<veja> - Has Image`. Brez `image_url` gre objava
+  v `<veja> - Post Without Image`, ki je enaka stari produkcijski objavi: besedilo in povezava kot
+  kartica, brez prvega komentarja. Uspeh gre v `Delete Published`, napaka v obstoječi Telegram
+  `Post Failure`.
+- V isto vozlišče se preusmeri tudi vsaka napaka priprave slike: prenos slike, init/register, upload,
+  preverba statusa in status, ki po čakanju ni `AVAILABLE`. Pri FB napaka `FB Co - Post Photo`.
+- Vozlišči `Image Not Available` (Stop and Error) sta odstranjeni. Napaka ene objave ne ustavi več
+  cele izvedbe.
+- Znana meja: `LI Co - Merge Image Data` kombinira po poziciji. Če bi isto jutro čakali dve LI Co
+  objavi in bi init padel samo pri eni, bi se podatki zamaknili. Pri eni objavi na dan ni vpliva.
+
+### Telegram predogled
+
+- `Prepare First Social Preview` in `Check Next Social Post` vrneta še `image_url` / `next_image_url`.
+- `First/Next Preview Has Image` pošlje fotografijo s podnapisom in istima gumboma
+  (`Send ... Social Preview Photo`), če slika obstaja in je besedilo do 1024 znakov (meja podnapisa).
+- Sicer, ali če pošiljanje fotografije pade, gre klasično besedilno sporočilo kot prej.
+- Klasični sporočili zdaj bereta podatke iz `$('Prepare First Social Preview')` oziroma
+  `$('Check Next Social Post')`, ker ob fallbacku `$json` nosi napako.
+
+### Živi test 24. 9. 2026 (izvedbe 209957, 209958, 209959) - uspel
+
+- 209957: tri vrstice brez `image_url`. LI Co (201), LI Pe `urn:li:share:7508853564279234561`,
+  FB `158934470808043_1661596339295650`; vse tri vrstice pobrisane z `Delete Published`.
+- 209958: predogled s sliko je prišel kot fotografija s podnapisom in gumboma (začasni ročni sprožilec,
+  run_id `999`, nato odstranjen).
+- 209959: neobstoječa slika, Telegram vrne `failed to get HTTP URL content`, prišlo je klasično
+  sporočilo.
