@@ -599,7 +599,8 @@ s kartico predogleda bloga.
    Napaka gre na obstoječi `Telegram FB Co Post Failure`, vrstica ostane `scheduled`.
 2. `FB Co - Store Post ID`: vrstici zapiše `platform_post_id` = `post_id`, `status` = `published`,
    `published_at`. Od tu naprej naslednji dnevni tek objave ne ponovi.
-3. `FB Co - Add First Comment`: `POST /{post_id}/comments`, `message` = `post_url`.
+3. `FB Co - Add First Comment`: `POST /{post_id}/comments`, `message` =
+   `Celotno kolumno preberite na našem blogu: <post_url>`.
 4. Uspeh komentarja → `Delete Published FB Co`. Napaka → `FB Co - Comment Failed Alert` (Telegram),
    vrstica ostane za ročni komentar.
 
@@ -616,3 +617,16 @@ da ročni tek ne pobriše testne vrstice.
   ponavlja vsak dan brez števca poskusov. LinkedIn veja v tem primeru tek ustavi; FB ne. Odprto.
 - Enako tveganje `pairedItem` kot pri LinkedInu: `.item` skozi `FB Co - Store Post ID` (`dataTable`,
   `update`). Izpad je varen (objava je zapisana, izgubljen je samo komentar), popravek `.first()`.
+
+### Živi test 24. 9. 2026 (izvedba 209909) - uspel
+
+- Nov Page token (24. 9. 2026) ima tudi `pages_manage_engagement` in `business_management`;
+  ne poteče, dostop do podatkov pa poteče okoli 22. 12. 2026 - takrat ga je treba znova potrditi
+  v Graph API Explorerju. Stari token dovoljenja za komentar ni imel.
+- Testna vrstica `test-fb-20260924-facebook_company` (slika in besedilo kolumne z 23. 9.).
+- `/photos` je vrnil `{id, post_id}`, `post_id` = `158934470808043_1661553512633266`.
+- Vrstica: `status` = `published`, `platform_post_id` zapisan. Komentar uspel.
+- Tveganje `pairedItem` se ni uresničilo: `.item` skozi `dataTable` `update` deluje.
+- Sprožilec teče v **UTC** (`Timezone: UTC`): `30 5 * * *` je 7.30 po poletnem času, po
+  25. 10. 2026 pa 6.30.
+- Po testu so vozlišča spet `disabled: true`. Testna vrstica je ostala v tabeli.
