@@ -43,7 +43,7 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    - če reče, naj počaka, ne pošiljaj in ne piši v `outbox/` - tek ostane na koraku 6;
    - zadolžitev iz `state.json` **ne brisi**, da bi bil izpis čist. Odstrani jo samo, ko človek potrdi, da je opravljena.
 
-   Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena) in brez tega opozorila gre nepregledana v objavo.
+   Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena), prevod je sicer strojno pregledan v koraku 4 (`frodx-transcreation-check`), a brez tega opozorila gre v objavo, ne da bi ga videl native govorec hrvaščine.
 
 4. **Če gate gre skozi (exit 0):** sestavi telo predaje.
 
