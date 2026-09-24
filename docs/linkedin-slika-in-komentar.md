@@ -697,3 +697,24 @@ sliko brez povezave in poslala Telegram opozorilo.
   run_id `999`, nato odstranjen).
 - 209959: neobstoječa slika, Telegram vrne `failed to get HTTP URL content`, prišlo je klasično
   sporočilo.
+
+## Prenos na produkcijo 24. 9. 2026
+
+- V produkcijsko tabelo Social-Posts (`TBzDVg7ktxYnD4AD`) sta dodana stolpca `image_url` in
+  `image_alt` (tip string).
+- Workflow `3lK6pjOfOAa0BxDm`:
+  - dodanih je 32 vozlišč iz kopije;
+  - `Facebook Graph API` je preimenovan v `FB Co - Post Photo`;
+  - posodobljena so vozlišča `Check Next Social Post`, `Create Platform Posts`,
+    `Prepare Pipeline Row`, `Prepare First Social Preview`, `Send First Social Preview`,
+    `Insert Approved Social Posts`, `LI Setup - Create Post via HTTP` in `Post LinkedIn Company`;
+  - 9 povezav je odstranjenih, 60 dodanih.
+- Pri novih vozliščih so ID tabele zamenjani s produkcijskimi in Telegram chat s produkcijskim
+  (`-5299932503`). Nova vozlišča so vklopljena.
+- Preverba: po prenosu je bil produkcijski workflow strojno primerjan s kopijo. Ostale so samo
+  pričakovane razlike: pot webhooka, ime testne tabele Pipeline in velikost opombe. Vozlišča,
+  povezave, poverilnice in `onError` se ujemajo.
+- Objavljena verzija je `7208a394-18c5-4915-a17a-31b688685070`. Prejšnja aktivna verzija
+  `cdd359a5-e2f4-4d81-8fc1-060a45d33de8` ostane v zgodovini za povrnitev.
+- Še ni preverjeno: celotna veriga od Content Factory paketa do Telegram potrditve in vpisa
+  `image_url` v tabelo.
