@@ -102,3 +102,21 @@ Ugotovitev: tek ne pade, `gemini` je `null`, `gemini_error` neprazen, `openai` n
 - `Normalize Input` ob praznem `checkPrompt` še vedno vstavi `PLACEHOLDER`. Skill prompt vedno
   pošlje, zato se v teh preizkusih ni pokazalo.
 - Nov OpenAI ključ je Janijev osebni in je začasen.
+
+## Ponovni preizkus po omehčanju prompta - 24. 9. 2026
+
+Prompt je dobil hišno tipografijo FrodX in merilo »kaj je najdba«. Isti tek (kolumna o kazni za
+zvestobo), tri izvedbe:
+
+| Izvedba | Vhod | OpenAI | Gemini | Sodba skilla |
+|---|---|---|---|---|
+| `209871` | HR pred popravki | ZA POPRAVEK: djecu → dijete, otvoriti → pokrenuti projekt, sužavati → pogoršavati uvjete, »jednom deset godina« | ZA POPRAVEK: djecu → dijete, »Mi stari korisnici«, »kojih još nema« | `revise` |
+| `209867` | HR po dveh krogih | ZA POPRAVEK: »je na 44 %«, »smanjivati pažnju« | OBJAVLJIVO | `ok` - obe najdbi zavrnjeni: prva zvesto sledi izvirniku, druga je slogovna |
+| `209869` | EN po dveh krogih | ZA POPRAVEK: »yes three times« | OBJAVLJIVO | `ok` - najdba zavrnjena: zvesto sledi izvirniku, razumljiva |
+
+Ugotovitve:
+
+- Ostrina je ostala: prava napaka (»djecu«) in kalki so ujeti v prvem krogu, pri obeh modelih.
+- Lažnih alarmov na tipografiji (`14 eura`, “ … ”) ni več v nobeni od treh izvedb.
+- Gemini je končni različici potrdil brez najdb. OpenAI še vedno najde 1-2 drobnariji, zato je
+  sodba po skillu (točka d) nujna - brez nje bi bila sodba spet `revise`.
