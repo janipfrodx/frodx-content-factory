@@ -652,3 +652,15 @@ Obe veji sta objavili sliko z besedilom. Komentar je uspel na Igorjevem profilu,
 
 Odprto: dovoljenje za komentar v imenu strani FrodX. Brez njega bo produkcija na strani objavila
 sliko brez povezave in poslala Telegram opozorilo.
+
+### Ponovni test strani FrodX 24. 9. 2026 (izvedba 209944) - uspel
+
+- Vzrok 403: credential `LI FrodX Page Igor P` ni imel obsega `w_organization_social_feed`, čeprav
+  ga aplikacija ponuja. Jani ga je dodal v polje Scope in credential ponovno povezal.
+- Nov token je pripisan Janijevemu računu (`agent`/`impersonator` v odgovoru je
+  `urn:li:person:91QVbNlRWr`). Objava in komentar se prikažeta kot FrodX.
+- Objava `urn:li:share:7508848498067406848`, komentar `7508848501057937409` z besedilom
+  `Celotno kolumno preberite na našem blogu: <post_url>`.
+- Isti credential uporablja produkcija; nov obseg je dodan k obstoječim, nobeden ni odvzet.
+- Po testu so vozlišča spet `disabled: true`. Testna vrstica `test-li2-20260924-linkedin_company`
+  je ostala v tabeli.
