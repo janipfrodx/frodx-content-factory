@@ -126,3 +126,12 @@ def test_shema_zadolzitev_za_hrvascino_ni_pogojna():
     assert "vedno" in vrstica
     assert "če Igor" not in vrstica
     assert "odloči" not in vrstica
+
+
+PREIZKUSI = SKILL_DIR / "docs" / "preizkusi-preverbo.md"
+
+
+def test_dokument_preizkusov_opisuje_vse_tri_primere():
+    vsebina = PREIZKUSI.read_text(encoding="utf-8")
+    for pojem in ("ZA POPRAVEK", "OBJAVLJIVO", "gemini_error"):
+        assert pojem in vsebina, pojem
