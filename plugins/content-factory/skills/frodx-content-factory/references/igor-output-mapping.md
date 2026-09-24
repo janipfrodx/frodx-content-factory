@@ -35,20 +35,33 @@ Preslikava v `state.json`:
   v state.
 - **Postavka 5 (ocena)** se ne zapiše v `state.json`. Namenjena je Igorju pri tem koraku.
 
-**Socialne objave (`social_posts[]`) - odprta točka.** `references/state-schema.md` pripiše
-`social_posts[]` korak 2, vendar osnovnih pet postavk »Izhoda« zgoraj socialnih objav NE
-vsebuje. Standard za socialne objave (`igor-column-writer/references/social-posts.md`: batch
-3-5, vsaka z drugim vzvodom, samoocena 0-10, Igor izbere) je v vendoriranem skillu opisan v
+**Socialne objave (`social_posts[]`) - rešeno z odločitvijo 18. 9. 2026.** `references/state-schema.md`
+pripiše `social_posts[]` korak 2, vendar osnovnih pet postavk »Izhoda« zgoraj socialnih objav NE
+vsebuje. Standard za socialne objave (`igor-column-writer/references/social-posts.md`: nabor
+3-5 objav, vsaka z drugim vzvodom, samoocena 0-10, Igor izbere) je v vendoriranem skillu opisan v
 okviru ločenega, neobveznega koraka »Publishing format«, ki se sproži šele, ko Igor izrecno
-reče »naredi publishing fajl« ali podobno - ne avtomatsko ob osnovnem teku skilla.
+reče »naredi publishing fajl« ali podobno - ne avtomatsko ob osnovnem teku skilla. Zato jih ta
+veriga naroči sama; spodaj je, kako.
 
 Ker ta veriga socialne objave potrebuje že v koraku 2 (ne šele ob morebitnem docx pakiranju),
-moraš dirigent po izhodu kolumne **izrecno prositi** za nabor socialnih objav po standardu iz
-`references/social-posts.md` (batch 3-5, različni vzvodi, samoocena), počakati na Igorjevo
-izbiro, in šele izbrano/potrjeno besedilo zapisati v `social_posts[]` kot seznam
-`{"text": "<besedilo objave>"}` (brez `publish_date` - tega ta veriga ne zapolni, glej
-`schema/content-json.schema.json`). To je zahteva te verige, ni avtomatika osnovnega skilla -
-ne domnevaj, da jih igor-column-writer vrne sam, brez da bi jih posebej naročil.
+mora dirigent po izhodu kolumne **izrecno prositi** za nabor socialnih objav po standardu iz
+`references/social-posts.md`. Ta veriga naroči **štiri** - razpon 3-5 iz standarda je zožen z
+odločitvijo 18. 9. 2026, merila (različni vzvodi, samoocena 0-10, tretja oseba, odprta zanka, brez
+povezave v besedilu) pa ostanejo Igorjeva in se ne spreminjajo.
+
+Vse štiri gredo takoj v `_run.social_candidates`. Claude nato predlaga dve najboljši, Igor potrdi
+ali zamenja, in šele izbrani dve se zapišeta v `social_posts[]`:
+
+```json
+{"text": "<besedilo objave>", "publish_date": "", "image_url": "", "image_alt": ""}
+```
+
+`publish_date` ostane prazen - datum izbere Igor v aplikaciji. `image_url` in `image_alt` ostaneta
+prazna do koraka 5, faze B, ki naredi po eno sliko na objavo; oblika polj je v
+`schema/content-json.schema.json`.
+
+To je zahteva te verige, ni avtomatika osnovnega skilla - ne domnevaj, da jih igor-column-writer
+vrne sam, brez da bi jih posebej naročil.
 
 Socialne objave so **samo slovenske** (`publishing-contract.md` §3: »Samo SL«) - `frodx-transcreation`
 jih v koraku 4 ne prevaja.

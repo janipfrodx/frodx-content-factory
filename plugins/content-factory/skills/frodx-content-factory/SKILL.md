@@ -57,11 +57,52 @@ Vrstni red je zato pri koraku 1 obrnjen glede na korake 2-7: `frodx-topic-pick` 
 | 2 | `igor-column-writer` | je kolumna v redu |
 | 3 | `frodx-critique-loop` | je popravljena verzija v redu |
 | 4 | `frodx-transcreation` + `frodx-transcreation-check` | sta EN in HR v redu |
-| 5 | `frodx-image-run` | je slika v redu |
+| 5 | `frodx-image-run` | so slike v redu |
 | 6 | `frodx-publishing-meta` | so meta podatki v redu |
 | 7 | `frodx-publish-send` | (brez vprašanja, samo pošlje) |
 
 Korak 2 je Igorjev skill in sme prekiniti z vprašanji o hooku, tezi in številkah. To je pričakovano - pusti ga.
+
+**Socialne objave v koraku 2: štiri objave nastanejo, dve gresta naprej.** Po izhodu kolumne izrecno naroči
+`igor-column-writer` **štiri** socialne objave po standardu iz njegovega
+`references/social-posts.md` - vsaka z drugim vzvodom, vsaka s samooceno. Štiri je odločitev te
+verige z 18. 9. 2026 in zoži njegov splošni razpon 3-5; standard sam se ne spreminja.
+
+Vse štiri zapiši v `state.json` pod `_run.social_candidates` **takoj, ko nastanejo**, še preden
+Igorja karkoli vprašaš:
+
+```json
+"social_candidates": [
+  {"text": "<objava 1>", "lever": "<vzvod>", "score": 8, "chosen": false},
+  {"text": "<objava 2>", "lever": "...", "score": 7, "chosen": false},
+  {"text": "<objava 3>", "lever": "...", "score": 9, "chosen": false},
+  {"text": "<objava 4>", "lever": "...", "score": 6, "chosen": false}
+]
+```
+
+`score` je Igorjeva samoocena iz njegovega standarda. `chosen` ob nastanku pri vseh štirih `false`;
+po Igorjevi potrditvi ga postavi na `true` pri tistih dveh, ki gresta naprej. Tako je iz `state.json`
+razvidno ne le, med čim se je izbiralo, ampak tudi kaj je bilo izbrano.
+
+Nato **sam predlagaj dve najboljši** in za vsako povej, zakaj. Ne ponavljaj Igorjeve samoocene kot
+svoje utemeljitve - njegova ocena je vhod, tvoja presoja je izbira. Merila so ista kot v njegovem
+standardu: drugačnost vzvoda, odprta zanka, tretja oseba, brez povezave v besedilu.
+
+Igorju predlog predstavi kot gate: potrdi ali zamenjaj. Če zamenja, spoštuj to brez prepričevanja -
+ti predlagaš, on odloči. Šele po njegovem odgovoru zapiši izbrani dve v `social_posts[]`:
+
+```json
+"social_posts": [
+  {"text": "<izbrana objava>", "publish_date": "", "image_url": "", "image_alt": ""},
+  {"text": "<izbrana objava>", "publish_date": "", "image_url": "", "image_alt": ""}
+]
+```
+
+`image_url` in `image_alt` pustiš prazna - zapolni ju korak 5, faza B. Gate v koraku 7 ju zahteva
+neprazna, zato paket, ki bi šel v oddajo pred korakom 5, tam pade. To je namerno.
+
+Zavrnjenih dveh ne brišeš iz `_run.social_candidates`; ostaneta z `"chosen": false`. Zapis, med čim
+se je izbiralo, je enako koristen kot izbira.
 
 Korak 2 in del koraka 4 (Igorjeva vendorirana skilla `igor-column-writer` in `frodx-transcreation`) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov. `frodx-transcreation-check`, ki v koraku 4 teče za `frodx-transcreation`, je izjema - piše sam: `languages.<jezik>.content` (po popravku), `_run.transcreation_check` in `_run.open_tasks`.
 

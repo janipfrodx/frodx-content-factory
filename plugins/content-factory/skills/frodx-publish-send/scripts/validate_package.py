@@ -151,10 +151,35 @@ def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
 
     objave = pkg.get("social_posts") or []
     if not objave:
-        napake.append("social_posts je prazen - potrebna je vsaj ena objava")
+        napake.append("social_posts je prazen")
     for i, objava in enumerate(objave):
         if not str(objava.get("text", "")).strip():
             napake.append(f"social_posts[{i}].text je prazen")
+
+        url = str(objava.get("image_url", "")).strip()
+        if not url:
+            napake.append(f"social_posts[{i}].image_url je prazen")
+        elif not url.startswith("https://"):
+            napake.append(f"social_posts[{i}].image_url ni https: {url}")
+        else:
+            gostitelj, _, pot = url[len("https://"):].partition("/")
+            if gostitelj != SLIKA_HOST:
+                napake.append(
+                    f"social_posts[{i}].image_url je na tujem gostitelju {gostitelj}, "
+                    f"pričakovan {SLIKA_HOST}"
+                )
+            elif not pot.strip("/"):
+                napake.append(
+                    f"social_posts[{i}].image_url nima poti do datoteke, samo gostitelja: {url}"
+                )
+
+        alt = str(objava.get("image_alt", "")).strip()
+        if not alt:
+            napake.append(f"social_posts[{i}].image_alt je prazen")
+        elif len(alt) > ALT_MAX:
+            napake.append(
+                f"social_posts[{i}].image_alt je predolg: {len(alt)} znakov (najvec {ALT_MAX})"
+            )
 
     kampanje_v_paketu = set()
 

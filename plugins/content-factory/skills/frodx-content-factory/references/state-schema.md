@@ -10,7 +10,8 @@
 | `meta.exported_at` | korak 1 (ustvarjanje), korak 7 (osveži) |
 | `meta.version` | vedno `"1.2"` |
 | `universal.slug` | korak 6 |
-| `social_posts[]` | korak 2 |
+| `social_posts[].text` | korak 2 |
+| `social_posts[].image_url`, `social_posts[].image_alt` | korak 5 (faza B) |
 | `languages.<jezik>.content` | korak 2 (sl), korak 3 (popravki sl), korak 4 (en, hr) |
 | `languages.<jezik>.slug` | korak 6 |
 | `languages.<jezik>.seo_title` | korak 6 |
@@ -34,7 +35,9 @@ Ta blok se pred pošiljanjem odstrani.
 | `approvals` | `{step2: <ISO čas>, ...}` - kdaj je Igor kaj potrdil |
 | `critique_rounds` | koliko krogov kritike je bilo |
 | `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 - izid preverbe prevoda; `verdict` je `ok`, `revise` ali `napaka` (oba ocenjevalca padla, preden je bil dokončan en krog - takrat je `rounds` `0`), `rounds` šteje samo dejansko opravljene kroge |
+| `social_candidates` | `[{text, lever, score, chosen}]` iz koraka 2 - vse štiri objave, ki jih je vrnil `igor-column-writer`; `chosen` pove, katere je Igor potrdil in so šle v `social_posts[]` |
 | `image` | `{chosen, url, attempts, dimensions, rubric, reason}` iz koraka 5 - `url` je javni URL izbrane slike v shrambi aplikacije, edino, kar aplikacija o sliki dobi; glej `frodx-image-run/SKILL.md` |
+| `social_images` | `[{index, url, prompt, dimensions, attempts}]` iz koraka 5, faza B - po en zapis na socialno objavo; `index` je mesto objave v `social_posts[]`, ne zaporedje generiranja |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 7 - izid predaje v aplikacijo; `status` je `created` ali `duplicate` |
 | `open_tasks` | odprte zadolžitve, ki jih veriga ni opravila - glej spodaj |
 | `skill_versions` | verzije skillov, ki so tek obdelali |
