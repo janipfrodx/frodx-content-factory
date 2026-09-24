@@ -630,3 +630,25 @@ da ročni tek ne pobriše testne vrstice.
 - Sprožilec teče v **UTC** (`Timezone: UTC`): `30 5 * * *` je 7.30 po poletnem času, po
   25. 10. 2026 pa 6.30.
 - Po testu so vozlišča spet `disabled: true`. Testna vrstica je ostala v tabeli.
+
+## Živi test LinkedIn 24. 9. 2026 (izvedbe 209917, 209922, 209924)
+
+Obe veji sta objavili sliko z besedilom. Komentar je uspel na Igorjevem profilu, na strani ne.
+
+- **209917 - napaka pred objavo:** `LI Co - Check Image Status` je vrnil `400 Syntax exception in path
+  variables`, ker URN slike v poti ni bil kodiran. Popravljeno z `encodeURIComponent(...)`. Nič ni bilo
+  objavljeno; na LinkedInu je ostalo eno naloženo, neobjavljeno slikovno sredstvo.
+- **209922 - stran:** slika je bila `AVAILABLE` po 5 sekundah, objava uspela
+  (`urn:li:share:7508843474369294336`), vrstica `published`. Komentar: `403 ACCESS_DENIED`,
+  `Not enough permissions to access: partnerApiSocialActions.CREATE.20260601`. Credential
+  `LI FrodX Page Igor P` nima dovoljenja za komentar v imenu strani (`w_organization_social_feed`).
+  Tudi `LI Co - Comment Failed Alert` je padel: Telegram z `parse_mode: Markdown` ni razčlenil
+  besedila napake. Vsem trem opozorilom o komentarju (LI Co, LI Pe, FB Co) je `parse_mode` odstranjen.
+- **209924 - Igorjev profil:** nalaganje po legacy poti, objava (`urn:li:share:7508843935872622592`)
+  in komentar so uspeli; Jani je objavo in komentar preveril na profilu in objavo pobrisal.
+- Komentar se glasi `Celotno kolumno preberite na našem blogu: <post_url>` na vseh treh vejah.
+- Tveganje `pairedItem` se ni uresničilo na nobeni veji.
+- Po testu so vsa vozlišča spet `disabled: true`. Testne vrstice so ostale v tabeli.
+
+Odprto: dovoljenje za komentar v imenu strani FrodX. Brez njega bo produkcija na strani objavila
+sliko brez povezave in poslala Telegram opozorilo.
