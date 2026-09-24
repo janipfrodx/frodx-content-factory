@@ -583,3 +583,36 @@ objavljeno in ni vidno nikomur.
   Če ga ne, `.item` vrže »Can't determine which item to use«. Izpad je varen: `status: published` je
   takrat že zapisan, torej podvojene objave ni, izgubljen je samo komentar. Popravek bi bil `.first()`
   ali `itemMatching(0)`. Ne popravljeno vnaprej, ker se to lahko pokaže šele pri živem teku.
+
+## Facebook stran (dodano 24. 9. 2026)
+
+Enak vzorec kot pri LinkedInu: slika in besedilo v objavi, povezava do bloga v prvem komentarju.
+Spremenjeno samo v kopiji `ccAcIxMOEKlWkbg7` (verzija »FB: slika in besedilo, link v prvem
+komentarju«). Produkcija `3lK6pjOfOAa0BxDm` še vedno objavlja na `/feed` z `link`, torej besedilo
+s kartico predogleda bloga.
+
+### Veriga vozlišč
+
+1. `FB Co - Post Photo` (preimenovan iz `Facebook Graph API`): `POST /158934470808043/photos`,
+   `url` = `image_url`, `caption` = `post_text`. `message` in `link` sta odstranjena - `message` je
+   pri `/photos` opuščen, `caption` je pravo polje. Odgovor je `{id, post_id}`.
+   Napaka gre na obstoječi `Telegram FB Co Post Failure`, vrstica ostane `scheduled`.
+2. `FB Co - Store Post ID`: vrstici zapiše `platform_post_id` = `post_id`, `status` = `published`,
+   `published_at`. Od tu naprej naslednji dnevni tek objave ne ponovi.
+3. `FB Co - Add First Comment`: `POST /{post_id}/comments`, `message` = `post_url`.
+4. Uspeh komentarja → `Delete Published FB Co`. Napaka → `FB Co - Comment Failed Alert` (Telegram),
+   vrstica ostane za ročni komentar.
+
+Vsa štiri vozlišča in `Delete Published FB Co` so `disabled: true`. Brisanje je onemogočeno zato,
+da ročni tek ne pobriše testne vrstice.
+
+### Pogoji, ki jih je treba preveriti pred živim tekom
+
+- Credential `FB Graph Acc Jani P` mora biti **Page** token z `pages_manage_posts`,
+  `pages_read_engagement`, `pages_show_list` (objava) in **`pages_manage_engagement`** (komentar).
+  Zadnjega trenutni `/feed` ni potreboval, zato ni dokazano, da ga ima.
+- `image_url` mora biti javno dosegljiv URL (Supabase public). Facebook sliko prenese sam.
+- Prazen `image_url`: `/photos` pade, pride Telegram opozorilo, vrstica ostane `scheduled` in se
+  ponavlja vsak dan brez števca poskusov. LinkedIn veja v tem primeru tek ustavi; FB ne. Odprto.
+- Enako tveganje `pairedItem` kot pri LinkedInu: `.item` skozi `FB Co - Store Post ID` (`dataTable`,
+  `update`). Izpad je varen (objava je zapisana, izgubljen je samo komentar), popravek `.first()`.
