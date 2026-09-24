@@ -282,6 +282,14 @@ test samo napolni.
 **4. Telegram je ena skupina** (`chatId` `-5299932503`). Testna sporočila padejo v pravo skupino. Bodisi
 se to sprejme in Igorja opozori, bodisi se kopija preveže na testni chat.
 
+5. **Kopija si z produkcijo deli Telegram bota, zato se je ne aktivira.** Bot
+   `FrodXContentPublisher` ima en sam registriran webhook in ta pripada produkciji
+   `3lK6pjOfOAa0BxDm`. Aktivacija kopije bi ga prevzela in Igorjeve potrditve gumbov bi obtičale.
+   Odhodna sporočila so ločena z menjavo naslovnika: vseh 26 Telegram vozlišč kopije piše v
+   `8773374711` (zasebni chat Jani + bot), ne v `-5299932503` (Igorjeva skupina). Inline gumbov v
+   testnih sporočilih se ne pritiska - callback bi šel na produkcijski webhook z neznanim `run_id`.
+   Ta točka na seznamu 17. 8. 2026 manjka in je hujša od podvojenega Telegram sporočila.
+
 Neizogibno ostane, da test ustvari **resnične osnutke v HubSpotu**. So osnutki in se dajo pobrisati;
 `PROD 2` ima za to lastne nodee (`Delete HubSpot Drafts (SL/EN/HR)`).
 
