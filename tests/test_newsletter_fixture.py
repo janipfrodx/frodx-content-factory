@@ -57,3 +57,14 @@ def test_fixture_obvezna_polja_izdaje():
 
 def test_fixture_brez_dolgega_pomisljaja():
     assert "\u2014" not in FIXTURE.read_text(encoding="utf-8")
+
+
+SKRIPTA = Path(__file__).parent.parent / "tools" / "preveri_strojni_vhod_nl.sh"
+
+
+def test_skripta_obstaja_in_ne_izpise_kljuca():
+    besedilo = SKRIPTA.read_text(encoding="utf-8")
+    assert "newsletter_draft_body.json" in besedilo
+    assert "echo \"$INGEST_API_KEY\"" not in besedilo
+    assert "set -x" not in besedilo
+    assert "\u2014" not in besedilo
