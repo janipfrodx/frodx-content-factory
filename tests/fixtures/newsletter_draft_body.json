@@ -1,0 +1,131 @@
+{
+  "run_slug": "test-strojni-vhod-nl",
+  "editions": [
+    {
+      "package_id": "nl-test-strojni-vhod-si",
+      "edition_name": "TEST strojni vhod",
+      "language": "si",
+      "status": "ready_to_send",
+      "delivery": { "segment_ref": "TEST-SEGMENT-SI" },
+      "sender": { "from_name": "TEST FrodX", "from_email": "test@frodx.com", "reply_to": "test@frodx.com" },
+      "subject": "TEST: osnutek iz tovarne",
+      "preheader": "Preverba strojnega vhoda, ne pošiljaj.",
+      "greeting": "Pozdravljeni,",
+      "hook": { "archetype": "B_prizor", "paragraphs": ["to je testni hook.", "Drugi odstavek hooka."] },
+      "blocks": [
+        {
+          "block_id": "block-01",
+          "type": "column",
+          "image": {
+            "url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/3ce803d7-1b09-47f0-926d-0600d45a9e72.png",
+            "alt": "Testna slika",
+            "file": ""
+          },
+          "title": "Testni blok s sliko",
+          "body": ["Prvi odstavek bloka.", "Drugi odstavek bloka."],
+          "bullets": ["Prva alineja", "Druga alineja"],
+          "event": null,
+          "cta": { "label": "Preberi kolumno", "url": "https://www.frodx.com/" }
+        },
+        {
+          "block_id": "block-02",
+          "type": "webinar",
+          "image": null,
+          "title": "Testni webinar brez slike",
+          "body": ["Opis webinarja."],
+          "bullets": [],
+          "event": { "date": "2026-11-12", "time": "10:00", "duration_min": 45 },
+          "cta": { "label": "Prijava", "url": "https://www.frodx.com/" }
+        }
+      ],
+      "closing": { "type": "bookend", "paragraphs": ["Testni zaključek."] },
+      "signoff": { "phrase": "Lep pozdrav,", "name": "TEST" },
+      "ps": null,
+      "footer_ref": null
+    },
+    {
+      "package_id": "nl-test-strojni-vhod-en",
+      "edition_name": "TEST machine intake",
+      "language": "en",
+      "status": "ready_to_send",
+      "delivery": { "segment_ref": "TEST-SEGMENT-EN" },
+      "sender": { "from_name": "TEST FrodX", "from_email": "test@frodx.com", "reply_to": "test@frodx.com" },
+      "subject": "TEST: draft from the factory",
+      "preheader": "Machine intake check, do not send.",
+      "greeting": "Hello,",
+      "hook": { "archetype": "B_prizor", "paragraphs": ["this is a test hook.", "Second hook paragraph."] },
+      "blocks": [
+        {
+          "block_id": "block-01",
+          "type": "column",
+          "image": {
+            "url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/3ce803d7-1b09-47f0-926d-0600d45a9e72.png",
+            "alt": "Test image",
+            "file": ""
+          },
+          "title": "Test block with image",
+          "body": ["First block paragraph.", "Second block paragraph."],
+          "bullets": ["First bullet", "Second bullet"],
+          "event": null,
+          "cta": { "label": "Read the column", "url": "https://www.frodx.com/" }
+        },
+        {
+          "block_id": "block-02",
+          "type": "webinar",
+          "image": null,
+          "title": "Test webinar without image",
+          "body": ["Webinar description."],
+          "bullets": [],
+          "event": { "date": "2026-11-12", "time": "13:00", "duration_min": 45 },
+          "cta": { "label": "Register", "url": "https://www.frodx.com/" }
+        }
+      ],
+      "closing": { "type": "bookend", "paragraphs": ["Test closing."] },
+      "signoff": { "phrase": "Best regards,", "name": "TEST" },
+      "ps": null,
+      "footer_ref": null
+    },
+    {
+      "package_id": "nl-test-strojni-vhod-hr",
+      "edition_name": "TEST strojni ulaz",
+      "language": "hr",
+      "status": "ready_to_send",
+      "delivery": { "segment_ref": "TEST-SEGMENT-HR" },
+      "sender": { "from_name": "TEST FrodX", "from_email": "test@frodx.com", "reply_to": "test@frodx.com" },
+      "subject": "TEST: nacrt iz tvornice",
+      "preheader": "Provjera strojnog ulaza, ne slati.",
+      "greeting": "Pozdrav,",
+      "hook": { "archetype": "B_prizor", "paragraphs": ["ovo je testni hook.", "Drugi odlomak hooka."] },
+      "blocks": [
+        {
+          "block_id": "block-01",
+          "type": "column",
+          "image": {
+            "url": "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/3ce803d7-1b09-47f0-926d-0600d45a9e72.png",
+            "alt": "Testna slika",
+            "file": ""
+          },
+          "title": "Testni blok sa slikom",
+          "body": ["Prvi odlomak bloka.", "Drugi odlomak bloka."],
+          "bullets": ["Prva stavka", "Druga stavka"],
+          "event": null,
+          "cta": { "label": "Pročitajte kolumnu", "url": "https://www.frodx.com/" }
+        },
+        {
+          "block_id": "block-02",
+          "type": "webinar",
+          "image": null,
+          "title": "Testni webinar bez slike",
+          "body": ["Opis webinara."],
+          "bullets": [],
+          "event": { "date": "2026-11-12", "time": "13:00", "duration_min": 45 },
+          "cta": { "label": "Prijava", "url": "https://www.frodx.com/" }
+        }
+      ],
+      "closing": { "type": "bookend", "paragraphs": ["Testni zaključak."] },
+      "signoff": { "phrase": "Srdačan pozdrav,", "name": "TEST" },
+      "ps": null,
+      "footer_ref": null
+    }
+  ]
+}
