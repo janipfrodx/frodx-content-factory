@@ -362,3 +362,22 @@ Preverjeno v vrstici, ne v paketu na disku:
 S tem je zaprto vprašanje iz prevzemnega teka glede poti Cowork → aplikacija.
 Odprt ostane zadnji člen: Igorjeva oddaja iz čarovnika v `PROD 2` in nastanek
 članka. Vrstica danes stoji na `status: new`.
+
+## `cf-deliver-newsletter`
+
+- workflowId: `Wd1gVtK77b29ePrJ`
+- n8n projekt: Content Factory (`FucXmQlDiWLVsRHW`)
+- webhook pot (Trigger): `POST /webhook/cf-deliver-newsletter`; workflow je neaktiven in se kliče z
+  `execute_workflow` v načinu `manual`, kot `cf-deliver-draft`
+- vozlišča: `Trigger` -> `Create Draft` (POST na `https://automatednewsletter.lovable.app/api/drafts`) -> `Shape Response` ->
+  `Respond to Webhook`
+- credential: Header Auth `FrodX Newsletter Hub Ingest` (id `FpwIoqSVqtweUzP6`), ključ je ločen od
+  blogovega `FrodX Content App Ingest`
+- telo navzdol: `{"run_slug": "...", "editions": [si, en, hr]}`; pogodba je
+  `tests/fixtures/newsletter_draft_body.json`
+- izidi: 201 created, 409 duplicate, 400 rejected, 401/503 misconfigured, karkoli drugo retry
+
+Aplikacija: Newsletter Hub, Lovable `23f3780d-0747-4082-8612-dd0f715dcacd`, objavljena na
+`https://automatednewsletter.lovable.app`. Osnutek iz tovarne (`newsletter_drafts.source = 'factory'`) vidita oba
+uporabnika; `edit_url` odpre korak 2. Preverba po objavi:
+`INGEST_API_KEY='<ključ>' bash tools/preveri_strojni_vhod_nl.sh https://automatednewsletter.lovable.app`.
