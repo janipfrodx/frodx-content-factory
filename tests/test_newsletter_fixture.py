@@ -56,4 +56,4 @@ def test_fixture_obvezna_polja_izdaje():
 
 
 def test_fixture_brez_dolgega_pomisljaja():
-    assert "—" not in FIXTURE.read_text(encoding="utf-8")
+    assert "\u2014" not in FIXTURE.read_text(encoding="utf-8")
