@@ -105,6 +105,12 @@ def test_blok_brez_slike_dobi_null():
     assert izdaja_iz_editions("si", ed)["blocks"][0]["image"] is None
 
 
+def test_prazen_footer_ref_postane_null():
+    ed = copy.deepcopy(_vzorec()["si"])
+    ed["meta"] = [("FOOTER_REF", "") if k == "FOOTER_REF" else (k, v) for k, v in ed["meta"]]
+    assert izdaja_iz_editions("si", ed)["footer_ref"] is None
+
+
 def test_napacen_jezik_v_meta_pade():
     with pytest.raises(NapakaPreslikave):
         izdaja_iz_editions("hr", _vzorec()["si"])

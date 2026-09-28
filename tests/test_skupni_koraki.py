@@ -33,7 +33,7 @@ def test_prompt_novicnika_ohrani_pravili_iz_teka():
 
 
 def test_prompt_novicnika_brez_dolgega_pomisljaja():
-    assert "—" not in PROMPT_NL.read_text(encoding="utf-8")
+    assert "\u2014" not in PROMPT_NL.read_text(encoding="utf-8")
 
 
 def test_kritika_pozna_vhod_po_veji_in_ohrani_kolumno():
