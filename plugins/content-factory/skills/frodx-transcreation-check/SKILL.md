@@ -21,6 +21,8 @@ popravek ne obide njegovih pravil glasu.
 
 ## Postopek
 
+Postopek spodaj je zapisan za kolumno: izvirnik je `languages.sl.content`, prevod `languages.<jezik>.content`. Za drugo vejo glej razdelek »Vhod po veji« na koncu; kroga, pravila in odprta zadolžitev za hrvaščino ostanejo ista.
+
 Za dani jezik (`hr` ali `en`):
 
 1. Preberi `state.json`. Vzemi `languages.sl.content` (izvirnik) in `languages.<jezik>.content`
@@ -185,10 +187,21 @@ Za angleščino zadolžitve privzeto ni. Zapiše se **samo**, če je po dveh kro
  "created_at": "<ISO čas>", "step": 4}
 ```
 
+## Vhod po veji
+
+Veja v svojem `VEJA.md`, razdelek **Skupni koraki**, poda izvirnik, prevod in način popravka. Če ne poda ničesar, velja kolumna (postopek zgoraj).
+
+Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na mapo debla:
+
+- **Izvirnik (`source_text`):** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si`
+- **Prevod (`target_text`):** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> <jezik>`
+- **Popravek:** ne kličeš `frodx-transcreation` znova, ker bi vrnil golo besedilo brez oznak in strukture izdaje. Popravi le mesta, ki jih ocenjevalca upravičeno očitata, po pravilih transkreacije pisca novičnika (njegov korak 4, ki si izposodi pravila `frodx-transcreation`), in besedilo vpiši z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`. Ob `NAPAKA:` je `state.json` nespremenjen: popravek ponovi, ne vpisuj ga mimo skripte.
+- `_run.transcreation_check` in zadolžitev za hrvaški native pregled v `_run.open_tasks` se zapišeta enako kot pri kolumni.
+
 ## Kaj ne delaš
 
 - Ne pošiljaš slovenske kolumne v ta pregled. Za slovenščino je `frodx-critique-loop`.
-- Ne popravljaš prevoda sam, mimo `frodx-transcreation`.
+- Ne popravljaš prevoda sam, mimo `frodx-transcreation` (izjema: veja novičnik, glej »Vhod po veji«).
 - Ne urejaš `frodx-transcreation` ne njegovih referenc - Igorjev vendoriran skill je, njegova
   merila samo bereš.
 - Ne kličeš tretjega kroga, tudi če bi bilo skušnjava. Po dveh krogih odloči Igor.

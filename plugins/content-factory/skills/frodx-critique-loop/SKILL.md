@@ -11,6 +11,8 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 
 ## Postopek
 
+Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `references/critique-prompt.md`, zapis nazaj v `languages.sl.content`. Za drugo vejo glej razdelek »Vhod po veji« na koncu; zanka, število krogov in pravila ostanejo ista.
+
 1. Preberi `state.json`. Vzemi `languages.sl.content`. Če je prazen, povej Igorju, da kolumne še ni, in končaj.
 2. Preberi `references/critique-prompt.md` v celoti. To je vsebina, ki jo pošlješ kot `critiquePrompt` - v vsakem krogu enaka, se med krogi ne spreminja.
 
@@ -109,6 +111,26 @@ Ob koncu (po zadnjem opravljenem krogu):
 - `_run.step` = 3, `_run.status` = `awaiting_approval`
 
 Dirigent (`frodx-content-factory`) po tem vpraša Igorja, ali je popravljena verzija v redu, in šele po njegovi potrditvi zapiše čas v `_run.approvals` ter gre na korak 4. Ta skill sam ne sprašuje za potrditev in ne piše v `_run.approvals` - to je dirigentovo delo po generičnem pravilu za korake 2-7.
+
+## Vhod po veji
+
+Ta skill ne ve, iz katere veje prihaja. Veja mu v svojem `VEJA.md`, razdelek **Skupni koraki**, poda tri stvari: kaj pošlje v kritiko, s katerim promptom in kam zapiše popravljeno besedilo. Če veja ne poda ničesar, velja kolumna (postopek zgoraj).
+
+Za **novičnik** (`frodx-content-factory/veje/novicnik/`):
+
+- **Vhod:** besedilo SI izdaje, ki ga vrne
+  ```bash
+  python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si
+  ```
+  (pot relativna na mapo debla). To je `besedilo` za krog 1.
+- **Prompt:** `veje/novicnik/references/critique-prompt.md`, z isto zamenjavo `{{DANES}}`.
+- **`body.context`:** `novičnik | tip izdaje: <_run.tip_izdaje>`. `body.language` ostane `"sl"`.
+- **Zapis:** popravljeno besedilo po vsakem krogu zapiši v datoteko in ga vpiši z
+  ```bash
+  python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> si <besedilo.txt>
+  ```
+  Popravek ohrani vse oznake in vrstni red blokov. Če skripta vrne `NAPAKA:`, se je oblika pokvarila: `state.json` je ostal nespremenjen, popravek ponovi na zadnjem veljavnem besedilu, ne vpisuj ga mimo skripte.
+- `critique/round-N.json`, `_run.critique_rounds`, `_run.step = 3` in `_run.status` so enaki kot pri kolumni.
 
 ## Kaj ne delaš
 
