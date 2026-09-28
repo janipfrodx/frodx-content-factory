@@ -2,7 +2,7 @@
 name: frodx-image-run
 description: Produce every image a FrodX content run needs. Phase A is the key visual of a column - get the two image prompts from frodx-key-visual, run them through the n8n image workflow, judge the two results and write alt text in all three languages. Phase B makes one image for each approved social post and writes its alt text in Slovenian only. Phase C proposes an image for every block of a newsletter edition - reuse, generate or leave empty, block by block as Igor decides. Use after the text is final, or when Igor asks for "naslovna slika", "key visual", "slike za socialne objave", "slike za newsletter", "generiraj sliko". Stores chosen images in the run folder and their public URLs and alt texts in the run state.
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # Naslovna in socialne slike
@@ -211,7 +211,7 @@ izbral. Slike ne izbirajo, katera objava gre v objavo.
 
 Samo za vejo novičnik (`frodx-content-factory/veje/novicnik/`). Faza A in B tu ne tečeta.
 
-Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`. Sliko z URL-ja n8n ob pošiljanju prenese sam, zato ti nosiš samo URL. Blok brez slike ni napaka tovarne: osnutek gre v aplikacijo in Igor sliko doda z gumbom pri bloku.
+Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`, in to iz naše shrambe `content-images`: preverba paketa zavrne vsak drug naslov. Generirane slike tja naloži `lHc3NdejxehMyc9O`, slike za ponovno rabo `cf-import-image`. Blok brez slike ni napaka tovarne: osnutek gre v aplikacijo in Igor sliko doda z gumbom pri bloku.
 
 1. Preberi `state.json` in za vsak blok SI izdaje (`block_id`, `type`, `title`, `cta.url`) sestavi **predlog vira** po tem privzetem vrstnem redu:
 
@@ -219,10 +219,27 @@ Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`. Sliko
    2. **Ponovna raba po URL-ju:**
       - pri bloku `column`: naslovna slika objavljene kolumne s frodx.com (`og:image` strani iz `cta.url`, prebrana z `WebFetch`);
       - pri bloku `webinar`: slika s prijavne strani (`og:image` strani iz `cta.url`).
-      URL mora biti absoluten in `https://`. Relativnega (`/hubfs/...`) dopolni z domeno strani, `//cdn...` s `https:`, `http://` zamenjaj z `https://`. Absoluten `https://` URL, ki ga vrne `WebFetch` (og:image), sprejmeš kot predlog brez prenosa in brez `curl` preverbe - sliko z URL-ja ob pošiljanju prenese sama aplikacija oz. n8n. Neuspešen `curl` v Cowork okolju ni dokaz, da slike ni: bash tu ne doseže zunanjih URL-jev (`vendor/frodx-newsletter/references/image-compositing.md`). Relativen ali ne-https URL predloga ni.
+      URL mora biti absoluten in `https://`. Relativnega (`/hubfs/...`) dopolni z domeno strani, `//cdn...` s `https:`, `http://` zamenjaj z `https://`. Relativen ali ne-https URL, ki ga ne moreš dopolniti, predloga ni. Absoluten `https://` URL **uvoziš v shrambo** z n8n workflowom `cf-import-image` prek `execute_workflow` (neaktiven, zato `"manual"`):
+
+      ```json
+      {
+        "workflowId": "XZJOqzga4iVTCGzl",
+        "executionMode": "manual",
+        "triggerNodeName": "Trigger",
+        "inputs": {
+          "webhookData": {
+            "method": "POST",
+            "body": {"url": "<og:image URL>", "filename": "<block_id>-<ime datoteke iz URL-ja brez pripone>"}
+          }
+        }
+      }
+      ```
+
+      Počakaj, da se izvedba konča, in izhod vozlišča `Respond to Webhook` preberi z `get_workflow_execution` (`includeData: true`, `nodeNames: ["Respond to Webhook"]`). Odgovor je `{"url": "<javni URL v content-images>", "error": null}`. V predlog gre **ta** URL, nikoli izvirni s frodx.com: paket ne sme biti odvisen od tega, ali slika na blogu še obstaja. Uvoženo sliko prenesi s `curl -sS -o runs/<slug>/images/<block_id>.<pripona> "<url>"`, izmeri jo z `python3 <plugin>/skills/frodx-publish-send/scripts/dimenzije.py runs/<slug>/images/<block_id>.<pripona>` in jo poglej, šele nato jo predlagaj. Bash v Coworku zunanjih URL-jev ne doseže, shrambo `content-images` pa. Če je `error` neprazen ali `url` manjka, predloga iz ponovne rabe ni: Igorju povej, kaj je vrnil workflow, in pojdi na naslednji vir.
    3. **Generiranje** samo za konceptualne bloke, brez resničnih oseb, strank, partnerjev ali lokacij:
       - prompt sestavi po `frodx-key-visual` (vizualni slog in recepti), iz naslova in telesa bloka;
       - n8n workflow `lHc3NdejxehMyc9O` prek `execute_workflow`, z `size: "1024x1024"`, dve kandidatki (OpenAI in Gemini), tako kot v fazi A; odgovor vrne javna URL-ja v `content-images`;
+      - obe kandidatki prenesi s `curl`, izmeri z `dimenzije.py` in poglej, kot v fazi A (točki 4 in 5);
       - kvadrat, ker `gpt-image-1` 16:9 ne podpira, Igorjevo pravilo za slike blokov (`vendor/frodx-newsletter/references/image-compositing.md`) pa kvadrat dovoli.
    4. **Nič od tega:** `image` ostane brez URL-ja in Igor sliko doda v aplikaciji.
 
@@ -245,7 +262,7 @@ Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`. Sliko
 
 4. **Zapiši izbrano v vseh treh izdajah.** Za vsak blok v izdajah `si`, `en` in `hr`:
    - `image.url` = izbrani URL (enak v vseh treh), razen če je Igor za posamezen jezik priložil svojo sliko (npr. webinar z besedilom v hrvaščini);
-   - `image.alt` = alt tekst v jeziku izdaje, napisan po sliki, ne po naslovu bloka;
+   - `image.alt` = alt tekst v jeziku izdaje, napisan po sliki, ki si jo prenesel in pogledal (točka 1), ne po naslovu bloka. Pri Igorjevi priloženi sliki, ki je še ni v shrambi, alt napiše po sliki v pogovoru; če je ne vidiš, `image.alt` pusti prazen in Igorju povej, naj ga doda v aplikaciji;
    - `image.file` ostane, kar je bilo.
    Posodobi `_run.block_images` z Igorjevo odločitvijo. Nato `_run.step = 5`, `_run.status = awaiting_approval`.
 

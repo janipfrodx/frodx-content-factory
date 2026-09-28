@@ -5,7 +5,8 @@ Uporaba: python3 preveri_paket.py <state.json> [--telo <pot>]
 
 Iz state.json odstrani _run in preveri telo za POST /api/drafts. Kršitve
 izpiše s pristojnim korakom in vrne exit 1. Blok brez slike je opozorilo:
-Igor sliko doda v aplikaciji. Z --telo zapiše telo za oddajo, a samo,
+Igor sliko doda v aplikaciji. Slika mora biti v shrambi content-images, ne
+na zunanjem naslovu. Z --telo zapiše telo za oddajo, a samo,
 kadar kršitev ni. Manjkajočo mapo za --telo ustvari sam; če zapis kljub
 temu spodleti (napaka datotečnega sistema), izpiše eno vrstico NAPAKA: in
 vrne exit 2, ločeno od kršitev (exit 1). V SI in HR zahteva nedeljivi
@@ -21,6 +22,7 @@ TIPI = ("column", "webinar", "announcement")
 STATUSI = ("ready_to_send", "draft")
 RUN_SLUG = re.compile(r"^[a-z0-9-]{3,120}$")
 BLOCK_ID = re.compile(r"^block-\d{2}$")
+SHRAMBA = "https://umvjwjzdrtamfrcqhopa.supabase.co/storage/v1/object/public/content-images/"
 DATUM = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 URA = re.compile(r"^\d{2}:\d{2}$")
 DOLGI_POMISLJAJ = "\u2014"
@@ -110,6 +112,8 @@ def _preveri_blok(blok, p, napaka, opozorilo):
         opozorilo(f"{p}: blok {blok.get('block_id')} nima slike - Igor jo doda v aplikaciji (korak 5)")
     elif not isinstance(url, str) or not url.startswith("https://"):
         napaka(f"{p}.image.url", "mora biti https:// URL", 5)
+    elif not url.startswith(SHRAMBA):
+        napaka(f"{p}.image.url", "slika mora biti v shrambi content-images (faza C, cf-import-image)", 5)
 
 
 def _preveri_izdajo(izdaja, opozorila):

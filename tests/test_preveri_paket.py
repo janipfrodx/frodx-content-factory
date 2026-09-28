@@ -250,3 +250,13 @@ def test_cli_napacni_argumenti(tmp_path):
     r = subprocess.run([sys.executable, str(SKRIPTA)], capture_output=True, text=True)
     assert r.returncode == 1
     assert "uporaba" in r.stdout.lower()
+
+
+def test_slika_zunaj_shrambe_je_krsitev():
+    telo = _telo()
+    telo["editions"][0]["blocks"][0]["image"]["url"] = "https://www.frodx.com/hubfs/naslovna.jpg"
+    assert _ima(_krsitve(telo), "si.blocks[0].image.url", "content-images", "korak 5")
+
+
+def test_slika_v_shrambi_ni_krsitev():
+    assert _krsitve(_telo()) == []

@@ -65,3 +65,27 @@ def test_opis_skilla_omeni_novicnik():
     glava = SKILL.read_text(encoding="utf-8").split("---")[1]
     assert "Phase C" in glava
     assert "newsletter" in glava
+
+
+import sys
+
+sys.path.insert(0, str(REPO / "tests"))
+from test_uvoz_slike import id_uvoza
+
+
+def test_ponovna_raba_gre_skozi_uvoz():
+    faza = _faza_c()
+    assert f'"workflowId": "{id_uvoza()}"' in faza
+    assert '"triggerNodeName": "Trigger"' in faza
+    assert "nikoli izvirni s frodx.com" in faza
+    assert "brez prenosa" not in faza
+
+
+def test_alt_po_sliki_ki_si_jo_pogledal():
+    faza = _faza_c()
+    assert "curl" in faza and "dimenzije.py" in faza
+    assert "napisan po sliki, ki si jo prenesel in pogledal" in faza
+
+
+def test_verzija_image_run():
+    assert "version: 0.4.0" in SKILL.read_text(encoding="utf-8")
