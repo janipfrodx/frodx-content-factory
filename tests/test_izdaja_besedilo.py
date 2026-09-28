@@ -129,6 +129,52 @@ def test_prelom_v_polju_pade_ze_ob_izpisu():
         izdaja_v_besedilo(izdaja)
 
 
+
+@pytest.mark.parametrize("lokacija,vrednost", [
+    ("hook.paragraphs", "CTA: klikni"),
+    ("hook.paragraphs", "PS: še to"),
+    ("hook.paragraphs", "TELO:"),
+    ("hook.paragraphs", "[block-01 · column]"),
+    ("hook.paragraphs", "SUBJECT: x"),
+    ("body", "CTA: klikni"),
+    ("body", "PS: še to"),
+    ("body", "TELO:"),
+    ("body", "[block-01 · column]"),
+    ("body", "SUBJECT: x"),
+    ("bullets", "CTA: klikni"),
+    ("bullets", "PS: še to"),
+    ("bullets", "TELO:"),
+    ("bullets", "[block-01 · column]"),
+    ("bullets", "SUBJECT: x"),
+    ("closing.paragraphs", "CTA: klikni"),
+    ("closing.paragraphs", "PS: še to"),
+    ("closing.paragraphs", "TELO:"),
+    ("closing.paragraphs", "[block-01 · column]"),
+    ("closing.paragraphs", "SUBJECT: x"),
+])
+def test_odstavek_z_rezervirano_oznako_pade_ob_izpisu(lokacija, vrednost):
+    izdaja = copy.deepcopy(_fixture()["editions"][0])
+    if lokacija == "hook.paragraphs":
+        izdaja["hook"]["paragraphs"][0] = vrednost
+    elif lokacija == "body":
+        izdaja["blocks"][0]["body"][0] = vrednost
+    elif lokacija == "bullets":
+        izdaja["blocks"][0]["bullets"] = [vrednost]
+    elif lokacija == "closing.paragraphs":
+        izdaja["closing"]["paragraphs"][0] = vrednost
+    with pytest.raises(NapakaOznak):
+        izdaja_v_besedilo(izdaja)
+
+
+def test_cli_izpis_z_rezervirano_oznako_v_odstavku_vrne_napako(tmp_path):
+    pot = _stanje(tmp_path)
+    stanje = json.loads(pot.read_text(encoding="utf-8"))
+    stanje["editions"][0]["hook"]["paragraphs"][0] = "PS: neka opozorila"
+    pot.write_text(json.dumps(stanje, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    r = subprocess.run([sys.executable, str(SKRIPTA), "izpis", str(pot), "si"], capture_output=True, text=True)
+    assert r.returncode == 1
+    assert r.stdout.startswith("NAPAKA:")
+
 def _stanje(tmp_path):
     stanje = _fixture()
     stanje["_run"] = {"veja": "novicnik", "step": 2}

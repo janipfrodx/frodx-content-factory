@@ -8,7 +8,8 @@ Uporaba:
 Vpis spremeni samo besedilna polja izdaje: subject, preheader, greeting,
 hook.paragraphs, blocks[].title/body/bullets/cta.label, closing.paragraphs,
 signoff.phrase in ps. Ob pokvarjenih oznakah vrne exit 1 in state.json
-pusti nedotaknjen.
+pusti nedotaknjen. Vsak odstavek (element seznama ali polje) se mora
+začeti z besedilo, ki se ne ujema z rezerviranimi oznakami.
 """
 import copy
 import json
@@ -36,6 +37,19 @@ def _ena_vrstica(vrednost, polje):
     return vrednost
 
 
+def _odstavek(vrednost, polje):
+    vrednost = _ena_vrstica(vrednost, polje)
+    s = vrednost.strip()
+    if GLAVA_BLOKA.match(s):
+        raise NapakaOznak(f"{polje} se začne z rezervirano oznako: {vrednost[:40]}")
+    if s in ("HOOK:", "ZAKLJUČEK:", "TELO:", "ALINEJE:"):
+        raise NapakaOznak(f"{polje} se začne z rezervirano oznako: {vrednost[:40]}")
+    label, dvopicje, _ = s.partition(":")
+    if dvopicje and label in GLAVNE + BLOKOVNE + ZAKLJUCNE:
+        raise NapakaOznak(f"{polje} se začne z rezervirano oznako: {vrednost[:40]}")
+    return vrednost
+
+
 def izdaja_v_besedilo(izdaja: dict) -> str:
     v = [
         f"SUBJECT: {_ena_vrstica(izdaja['subject'], 'subject')}",
@@ -44,16 +58,16 @@ def izdaja_v_besedilo(izdaja: dict) -> str:
         "",
         "HOOK:",
     ]
-    v += [_ena_vrstica(p, "hook.paragraphs") for p in izdaja["hook"]["paragraphs"]]
+    v += [_odstavek(p, "hook.paragraphs") for p in izdaja["hook"]["paragraphs"]]
     for blok in izdaja["blocks"]:
         bid = blok["block_id"]
         v += ["", f"[{bid} · {blok['type']}]", f"NASLOV: {_ena_vrstica(blok['title'], bid + '.title')}", "TELO:"]
-        v += [_ena_vrstica(p, bid + ".body") for p in blok["body"]]
+        v += [_odstavek(p, bid + ".body") for p in blok["body"]]
         v.append("ALINEJE:")
-        v += [_ena_vrstica(a, bid + ".bullets") for a in blok.get("bullets") or []]
+        v += [_odstavek(a, bid + ".bullets") for a in blok.get("bullets") or []]
         v.append(f"CTA: {_ena_vrstica(blok['cta']['label'], bid + '.cta.label')}")
     v += ["", "ZAKLJUČEK:"]
-    v += [_ena_vrstica(p, "closing.paragraphs") for p in izdaja["closing"]["paragraphs"]]
+    v += [_odstavek(p, "closing.paragraphs") for p in izdaja["closing"]["paragraphs"]]
     v.append(f"PODPIS: {_ena_vrstica(izdaja['signoff']['phrase'], 'signoff.phrase')}")
     v.append(f"PS: {_ena_vrstica(izdaja.get('ps') or '', 'ps')}")
     return "\n".join(v) + "\n"
