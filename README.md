@@ -1,6 +1,6 @@
 # FrodX Content Factory
 
-Cowork plugin z verigo skillov za produkcijo kolumn in socialnih objav.
+Cowork plugin z verigo skillov za produkcijo vsebine FrodX: kolumna za frodx.com s socialnimi objavami, naslovno sliko in meta podatki, ali novičnik FrodX GameChanger v treh jezikih (SI, HR, EN), ki konča kot osnutek v Newsletter Hubu.
 
 ## Namestitev v Claude Cowork
 
@@ -26,7 +26,7 @@ obe verziji za isto številko.
 
 ## Uporaba
 
-V Coworku napiši `/frodx-content-factory` ali »nova kolumna«. Skill te vodi skozi sedem korakov in med njimi čaka na tvojo potrditev.
+V Coworku napiši `/frodx-content-factory` in povej, kaj rabiš. Skill izbere pravo vejo: »nova kolumna« vodi skozi sedem korakov do objave na frodx.com, »pripravi novičnik« pa skozi šest korakov do osnutka v Newsletter Hubu. Med koraki čaka na tvojo potrditev.
 
 ## Lastništvo vsebine
 
