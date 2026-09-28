@@ -151,6 +151,18 @@ def test_send_datetime_je_krsitev():
     assert _ima(_krsitve(telo), "send_datetime", "korak 6")
 
 
+def test_timezone_je_krsitev():
+    telo = _telo()
+    telo["editions"][0]["delivery"]["timezone"] = "Europe/Ljubljana"
+    assert _ima(_krsitve(telo), "timezone", "korak 6")
+
+
+def test_toc_je_krsitev():
+    telo = _telo()
+    telo["toc"] = [{"title": "Blok 1"}]
+    assert _ima(_krsitve(telo), "toc", "korak 6")
+
+
 def test_run_v_telesu_je_krsitev():
     telo = _telo()
     telo["_run"] = {"veja": "novicnik"}
@@ -223,6 +235,15 @@ def test_cli_krsitev_brez_telesa(tmp_path):
     assert "KRŠITEV:" in r.stdout
     assert "korak" in r.stdout
     assert not izhod.exists()
+
+
+def test_cli_ustvari_manjkajoco_mapo_za_telo(tmp_path):
+    pot = _stanje(tmp_path, _telo())
+    izhod = tmp_path / "outbox" / "novi" / "telo.json"
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(pot), "--telo", str(izhod)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    assert izhod.exists()
+    assert json.loads(izhod.read_text(encoding="utf-8")) == _telo()
 
 
 def test_cli_napacni_argumenti(tmp_path):

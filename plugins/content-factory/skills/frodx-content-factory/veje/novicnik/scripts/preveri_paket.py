@@ -6,7 +6,9 @@ Uporaba: python3 preveri_paket.py <state.json> [--telo <pot>]
 Iz state.json odstrani _run in preveri telo za POST /api/drafts. Kršitve
 izpiše s pristojnim korakom in vrne exit 1. Blok brez slike je opozorilo:
 Igor sliko doda v aplikaciji. Z --telo zapiše telo za oddajo, a samo,
-kadar kršitev ni.
+kadar kršitev ni. Manjkajočo mapo za --telo ustvari sam; če zapis kljub
+temu spodleti (napaka datotečnega sistema), izpiše eno vrstico NAPAKA: in
+vrne exit 2, ločeno od kršitev (exit 1).
 """
 import json
 import re
@@ -157,8 +159,13 @@ def preveri(telo: dict):
         return ["paket ni objekt (init_run.py)"], []
     if "_run" in telo:
         krsitve.append("_run: odstrani ga pred oddajo (korak 6)")
-    if "send_datetime" in set(_kljuci(telo)):
+    kljuci_telesa = set(_kljuci(telo))
+    if "send_datetime" in kljuci_telesa:
         krsitve.append("send_datetime: čas pošiljanja nastavi Igor v aplikaciji (korak 6)")
+    if "timezone" in kljuci_telesa:
+        krsitve.append("timezone: časovni pas je vedno Europe/Ljubljana, paket ga ne nosi (korak 6)")
+    if "toc" in kljuci_telesa:
+        krsitve.append("toc: kazalo doda aplikacija, paket ga ne nosi (korak 6)")
     if not isinstance(telo.get("run_slug"), str) or not RUN_SLUG.match(telo["run_slug"]):
         krsitve.append("run_slug: mora ustrezati ^[a-z0-9-]{3,120}$ (init_run.py)")
 
@@ -209,7 +216,13 @@ def main(argv) -> int:
             print(f"KRŠITEV: {besedilo}")
         return 1
     if len(argv) == 4:
-        Path(argv[3]).write_text(json.dumps(telo, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        cilj = Path(argv[3])
+        try:
+            cilj.parent.mkdir(parents=True, exist_ok=True)
+            cilj.write_text(json.dumps(telo, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        except OSError as napaka:
+            print(f"NAPAKA: telo ni bilo mogoče zapisati: {napaka}")
+            return 2
     print("OK")
     return 0
 
