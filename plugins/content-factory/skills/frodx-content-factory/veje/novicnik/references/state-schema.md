@@ -27,6 +27,7 @@ Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi 
 | `status` | `awaiting_material`, `awaiting_approval`, `in_progress`, `sent` |
 | `gradivo` | `[{vrsta, vrednost}]` iz koraka 1; `vrsta` je `url`, `webinar`, `novica` ali `slika` |
 | `tip_izdaje` | tip izdaje po Igorjevem playbooku, iz koraka 1 |
+| `gradivo_odlocitve` | Igorjeve odločitve iz gate-a koraka 1: `{bloki: [block_id po vrstnem redu], pain_link: <URL ali null>, opombe: <niz>}` |
 | `approvals` | `{step1: <ISO čas>, ...}` |
 | `critique_rounds` | koliko krogov kritike SI je bilo |
 | `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 |

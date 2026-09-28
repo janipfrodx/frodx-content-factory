@@ -88,3 +88,32 @@ def test_brez_dolgega_pomisljaja():
         if "vendor" in pot.parts:
             continue
         assert "\u2014" not in pot.read_text(encoding="utf-8"), pot.name
+
+
+def test_korak_1_vpraša_za_pain_link_brez_izmisljanja():
+    koraki = _razdelek("Koraki")
+    vrstica = next(v for v in koraki.splitlines() if v.startswith("| 1 "))
+    assert "pain link" in vrstica
+    assert "ne izmišljaš" in vrstica
+    assert "_run.gradivo_odlocitve" in vrstica
+
+
+def test_korak_6_vprasa_o_odprtih_zadolzitvah():
+    koraki = _razdelek("Koraki")
+    vrstica = next(v for v in koraki.splitlines() if v.startswith("| 6 "))
+    assert "samo pošlje" not in vrstica
+    assert "vprašaš, ali oddaja kljub temu" in vrstica
+
+
+def test_package_id_po_jeziku():
+    vsebina = (NOVICNIK / "references" / "privzete-vrednosti.md").read_text(encoding="utf-8")
+    assert "## PACKAGE_ID po jeziku" in vsebina
+    for pripona in ("-hr", "-en"):
+        assert pripona in vsebina
+
+
+def test_shema_pozna_odlocitve_gradiva():
+    vsebina = (NOVICNIK / "references" / "state-schema.md").read_text(encoding="utf-8")
+    vrstica = next(v for v in vsebina.splitlines() if v.startswith("| `gradivo_odlocitve`"))
+    for polje in ("bloki", "pain_link"):
+        assert polje in vrstica

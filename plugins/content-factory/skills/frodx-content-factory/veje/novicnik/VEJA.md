@@ -30,12 +30,12 @@ python3 scripts/init_run.py --veja novicnik "<tema izdaje ali 'novicnik'>" runs
 
 | Korak | Kaj teče | Gate: kaj vprašaš Igorja |
 |---|---|---|
-| 1 Gradivo | Igor poda 1-3 URL-je kolumn ali vsebin, po želji webinar, novico in slike. Pisec, njegov korak 1 (Intake): vsebine z URL-jev prebereš z `web_fetch`, določiš tip izdaje. Zapiši `_run.gradivo` in `_run.tip_izdaje`. | kateri bloki gredo noter in v kakšnem vrstnem redu |
+| 1 Gradivo | Igor poda 1-3 URL-je kolumn ali vsebin, po želji webinar, novico in slike. Pisec, njegov korak 1 (Intake): vsebine z URL-jev prebereš z `web_fetch`, določiš tip izdaje. Igorjevo pravilo je natanko en pain link na izdajo (CTA na rešitev, demo, posvet ali prijavo; `self-eval-rubric.md`). Če v gradivu takega URL-ja ni, ga pri gate-u vprašaš. URL-ja ne izmišljaš. Zapiši `_run.gradivo`, `_run.tip_izdaje` in Igorjeve odločitve v `_run.gradivo_odlocitve`. | kateri bloki gredo noter, v kakšnem vrstnem redu in kateri CTA je pain link |
 | 2 SI izdaja | Pisec, njegova koraka 2-3 (SI original po `playbook.md`, sedem vrat po `self-eval-rubric.md`). Tu se ustaviš: HR in EN še ne nastaneta. | je SI izdaja v redu |
 | 3 Kritika | `frodx-critique-loop` na SI izdaji (glej Skupni koraki) | je popravljena verzija v redu |
 | 4 HR in EN | Pisec, njegova koraka 4-5 (transkreacija iz **popravljene** SI, sedem vrat z vrati 6). Nato `frodx-transcreation-check` za `hr` in za `en`. | sta HR in EN v redu (+ priporočilo za native pregled HR) |
 | 5 Slike | `frodx-image-run`, Faza C | so slike v redu (odloča blok za blokom) |
-| 6 Oddaja | preverba paketa, `cf-deliver-newsletter`, nato Igorjev scorecard in arhivska vrstica v pogovor | brez vprašanja o vsebini, samo pošlje (odprte zadolžitve prebereš na glas) |
+| 6 Oddaja | preverba paketa, `cf-deliver-newsletter`, nato Igorjev scorecard in arhivska vrstica v pogovor | brez vprašanja o vsebini; odprte zadolžitve prebereš na glas in vprašaš, ali oddaja kljub temu (`frodx-publish-send`) |
 
 **Pisčev korak 6 (docx build za Janija) se ne izvede nikoli.** Ne piši v `EDITIONS` znotraj `build_newsletter.py`, ne poganjaj ga in ne kliči `present_files`. Pisčev korak 7 (scorecard, kaj ostaja Igorju, vrstica za arhiv po `archive.md`) izvedeš ob oddaji, v pogovor, brez docxov.
 
