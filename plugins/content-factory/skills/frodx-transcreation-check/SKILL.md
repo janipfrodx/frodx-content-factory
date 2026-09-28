@@ -2,7 +2,7 @@
 name: frodx-transcreation-check
 description: Second-opinion review of a finished Croatian or English transcreation. Sends the Slovenian source and the translation to GPT and Gemini through the n8n workflow cf-transcreation-check, judges their findings, and has frodx-transcreation redo the passages that fail. Use after a transcreation is produced and before it is approved, or when Igor asks "preveri hrvaščino", "je prevod v redu", "daj prevod v pregled". Catches Slovenian calques, Serbian vocabulary in Croatian, and over-idiomatic English for CEE readers.
 metadata:
-  version: 0.1.0
+  version: 0.2.0
 ---
 
 # Preverba transkreacije
@@ -27,10 +27,11 @@ Za dani jezik (`hr` ali `en`):
 
 1. Preberi `state.json`. Vzemi `languages.sl.content` (izvirnik) in `languages.<jezik>.content`
    (prevod). Če je katero prazno, povej Igorju in končaj - preverjati ni česa.
-2. Preberi `references/transcreation-check-prompt.md` v celoti. **Zamenjaj `{{DANES}}` z današnjim
-   datumom** v obliki `18. 9. 2026`. Zamenjava se zgodi v nizu, ki ga pošlješ; datoteke ne
-   spreminjaj. Brez tega ocenjevalca pravilne letnice razglasita za halucinacije - to se je
-   15. 8. 2026 zgodilo pri kritiki kolumne, in oba modela imata presek znanja pred današnjim dnem.
+2. Preberi `references/transcreation-check-prompt.md`. Pošlješ **samo besedilo pod prvo vrstico `---`**.
+   **Zamenjaj `{{DANES}}` z današnjim datumom** v obliki `18. 9. 2026`. Zamenjava se zgodi
+   v nizu, ki ga pošlješ; datoteke ne spreminjaj. Brez tega ocenjevalca pravilne letnice razglasita
+   za halucinacije - to se je 15. 8. 2026 zgodilo pri kritiki kolumne, in oba modela imata presek
+   znanja pred današnjim dnem.
 3. Nastavi delovno spremenljivko `besedilo` = `languages.<jezik>.content`. To je vhod v **krog 1**.
 4. Za `krog` = 1, 2 (največ dvakrat), ponavljaj:
 
@@ -67,13 +68,28 @@ Za dani jezik (`hr` ali `en`):
    `target_text` je vrednost `besedilo` v tem trenutku - v krogu 2 torej popravljena verzija iz
    kroga 1, nikoli izvirni prevod.
 
-   b. Preberi odgovor. Ima vedno štiri polja:
+   **V krogu 2 na konec `checkPrompt` dodaj zavrnjene najdbe kroga 1** (`rejected` iz
+   `transcreation-check/<jezik>-round-1.json`), vsako z utemeljitvijo:
+
+   ```
+   ## Zavrnjene najdbe iz kroga 1
+
+   - <najdba> - <zakaj si jo zavrnil>
+   ```
+
+   Če v krogu 1 nisi zavrnil ničesar, razdelka ne dodaš. V `check_prompt` kroga 2 zapišeš prompt z
+   dodanim razdelkom, kot je šel ven. Tek 28. 9. 2026: »ekonomski razred« in »udio članova u
+   prodaji« sta prišla v obeh krogih, »Slovenian insurer« trikrat.
+
+   b. Preberi odgovor - glej spodaj, kako ga dobiš. Ima vedno štiri polja:
 
    ```json
    {"openai": "<ocena>", "gemini": "<ocena>", "openai_error": null, "gemini_error": null}
    ```
 
-   Ločenega klica `get_execution` ne potrebuješ - ta workflow odgovarja prek `Respond to Webhook`.
+   Počakaj, da se izvedba konča, in izhod preberi z `get_workflow_execution` (`workflowId`,
+   `executionId`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`): workflow oba
+   ocenjevalca združi prek `Respond to Webhook`, surovih izhodov obeh AI vozlišč ne bereš.
 
    **Če je polje `<model>_error` neprazno**, je tisto vozlišče padlo. To **ni sodba `ZA POPRAVEK`**:
 
