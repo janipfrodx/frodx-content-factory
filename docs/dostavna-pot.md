@@ -381,3 +381,13 @@ Aplikacija: Newsletter Hub, Lovable `23f3780d-0747-4082-8612-dd0f715dcacd`, obja
 `https://automatednewsletter.lovable.app`. Osnutek iz tovarne (`newsletter_drafts.source = 'factory'`) vidita oba
 uporabnika; `edit_url` odpre korak 2. Preverba po objavi:
 `INGEST_API_KEY='<ključ>' bash tools/preveri_strojni_vhod_nl.sh https://automatednewsletter.lovable.app`.
+
+## `critique-text`
+
+- workflowId: `GZmnPGOcVANH2sfy`
+- webhook pot (Trigger): `POST /webhook/critique-text`, `responseMode: responseNode`; workflow je neaktiven in se kliče z `execute_workflow` v načinu `manual`, `triggerNodeName: "Trigger"`
+- vozlišča: `Trigger` -> `Normalize Input` -> (`OpenAI Critique`, `Gemini Critique`, oba `onError: continueRegularOutput`) -> `Merge` -> `Shape` -> `Respond to Webhook`
+- `Shape` je dobesedno kopija vozlišča iz `cf-transcreation-check` (`eGHQGAbgeQhfCcZu`)
+- odgovor: `{"openai": ..., "gemini": ..., "openai_error": ..., "gemini_error": ...}`; klic webhooka prek HTTP (mogoč le, ko je workflow aktiven) dobi ta objekt kot telo odgovora in ločen `get_execution` ni potreben. `execute_workflow` (MCP) vrne takoj le `executionId` in `status: started` (preverjeno 28. 9. 2026), zato se pri tem klicu isti objekt prebere z `get_workflow_execution` (`includeData`, `nodeNames: ["Respond to Webhook"]`)
+- polja odgovora: `openai` in `gemini` (besedilo kritike ali `null`), `openai_error` in `gemini_error` (napaka ali `null`)
+- spremenjeno 28. 9. 2026 po auditu prvega teka novičnika; preizkus: izvedba `212697`
