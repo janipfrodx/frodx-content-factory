@@ -25,6 +25,16 @@ Ti si dirigent, ne pisec. Vsebino delajo podskilli. Tvoja naloga je: pripravi st
 4. Prvi odgovor Igorju vedno začni s potrditvijo veje, npr. »Gremo na kolumno.« ali »Gremo na novičnik.« Če si se zmotil, te Igor takoj popravi.
 5. Preberi izbrani `veje/<tip>/VEJA.md` v celoti in izvajaj njegove korake po vrsti. Razdelek **Koraki** je vrstni red, razdelek **Posebnosti** so pravila, ki veljajo samo za to vejo.
 
+## Zagon teka
+
+Tek ustvari veja v koraku, ki ga predpiše, z:
+
+```bash
+python3 scripts/init_run.py --veja <tip> "<naslov>" runs
+```
+
+Skripta zapiše `_run.veja` in začetni paket te veje ter izpiše pot do `state.json`. Če pove, da tek že obstaja, vprašaj Igorja, ali nadaljuje obstoječega ali začne novega z drugačnim naslovom.
+
 ## Splošna pravila (veljajo za vse veje)
 
 ### Zapis pred vprašanjem

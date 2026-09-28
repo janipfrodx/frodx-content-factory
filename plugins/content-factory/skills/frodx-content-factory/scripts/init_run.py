@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Ustvari mapo teka in začetni state.json.
 
-Uporaba: python3 init_run.py "<naslov teme>" <ciljna-mapa>
-Izpiše pot do ustvarjenega state.json. Exit 1, če tek že obstaja.
+Uporaba: python3 init_run.py [--veja kolumna|novicnik] "<naslov teme>" <ciljna-mapa>
+Brez --veja nastane tek kolumne. Izpiše pot do ustvarjenega state.json.
+Exit 1, če tek že obstaja.
 """
 import json
 import re
@@ -14,6 +15,7 @@ from pathlib import Path
 
 JEZIKI = ("sl", "en", "hr")
 SLUG_MAX = 80
+VEJE = ("kolumna", "novicnik")
 
 
 def slugify(naslov: str) -> str:
@@ -63,6 +65,7 @@ def zgradi_stanje(tema: str, slug: str, cas: str) -> dict:
         "social_posts": [],
         "languages": {koda: _prazen_jezik(koda) for koda in JEZIKI},
         "_run": {
+            "veja": "kolumna",
             # Tek nosi datum, ker je run_slug v aplikaciji unique in nosi
             # idempotenco. Brez datuma bi ista tema drugi dan dobila 409
             # in Igor povezavo na star osnutek.
@@ -79,12 +82,45 @@ def zgradi_stanje(tema: str, slug: str, cas: str) -> dict:
     }
 
 
+def zgradi_stanje_novicnik(tema: str, slug: str, cas: str) -> dict:
+    # Oblika telesa POST /api/drafts (tests/fixtures/newsletter_draft_body.json).
+    # run_slug nosi datum iz istega razloga kot pri kolumni: v aplikaciji je unique.
+    tek = f"{cas[:10]}-{slug}"
+    return {
+        "run_slug": tek,
+        "editions": [],
+        "_run": {
+            "veja": "novicnik",
+            "slug": tek,
+            "tema": tema,
+            "step": 0,
+            "status": "awaiting_material",
+            "gradivo": [],
+            "tip_izdaje": "",
+            "approvals": {},
+            "critique_rounds": 0,
+            "transcreation_check": {},
+            "block_images": [],
+            "open_tasks": [],
+            "skill_versions": {},
+        },
+    }
+
+
 def main() -> int:
-    if len(sys.argv) != 3:
-        print('Uporaba: init_run.py "<naslov teme>" <ciljna-mapa>')
+    argumenti = sys.argv[1:]
+    veja = "kolumna"
+    if argumenti[:1] == ["--veja"]:
+        if len(argumenti) < 2 or argumenti[1] not in VEJE:
+            print(f"Neznana veja. Dovoljene: {', '.join(VEJE)}")
+            return 1
+        veja, argumenti = argumenti[1], argumenti[2:]
+
+    if len(argumenti) != 2:
+        print('Uporaba: init_run.py [--veja kolumna|novicnik] "<naslov teme>" <ciljna-mapa>')
         return 1
 
-    tema = sys.argv[1].strip()
+    tema = argumenti[0].strip()
     if not tema:
         print("Naslov teme je prazen.")
         return 1
@@ -97,7 +133,7 @@ def main() -> int:
 
     zdaj = datetime.now(timezone.utc)
     danes = zdaj.strftime("%Y-%m-%d")
-    mapa = Path(sys.argv[2]) / f"{danes}-{slug}"
+    mapa = Path(argumenti[1]) / f"{danes}-{slug}"
 
     # mapa.mkdir() brez exist_ok je atomaren zahtevek: hkrati preverba IN
     # ustvarjanje, brez razmika med njima. FileExistsError (podrazred
@@ -119,8 +155,9 @@ def main() -> int:
 
         cas = zdaj.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         pot = mapa / "state.json"
+        zgradi = zgradi_stanje if veja == "kolumna" else zgradi_stanje_novicnik
         pot.write_text(
-            json.dumps(zgradi_stanje(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
+            json.dumps(zgradi(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )
     except OSError as napaka:

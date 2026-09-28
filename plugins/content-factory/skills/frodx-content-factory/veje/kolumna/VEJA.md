@@ -30,7 +30,7 @@ Ne sem: vse, kar omenja newsletter, novičnik, NL ali GameChanger. To je veja no
 2. Ko je tema izbrana, ustvari tek:
 
 ```bash
-python3 scripts/init_run.py "<naslov teme>" runs
+python3 scripts/init_run.py --veja kolumna "<naslov teme>" runs
 ```
 
 Pot `scripts/init_run.py` je relativna na mapo tega skilla (`plugins/content-factory/skills/frodx-content-factory/`); `runs` (in kasneje `outbox/`) nastane relativno na CWD ob zagonu ukaza.

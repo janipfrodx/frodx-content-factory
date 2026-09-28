@@ -176,3 +176,75 @@ def test_tek_slug_nosi_datum_clanek_pa_ne():
     assert stanje["_run"]["slug"] == "2026-09-17-test-tema"
     assert stanje["universal"]["slug"] == "test-tema"
     assert stanje["_run"]["slug"] != stanje["universal"]["slug"]
+
+
+import re
+
+RUN_SLUG = re.compile(r"^[a-z0-9-]{3,120}$")
+
+
+def test_kolumna_nosi_vejo():
+    from init_run import zgradi_stanje
+    stanje = zgradi_stanje("Test tema", "test-tema", "2026-09-28T09:00:00.000Z")
+    assert stanje["_run"]["veja"] == "kolumna"
+
+
+def test_novicnik_ima_obliko_telesa_za_api_drafts():
+    from init_run import zgradi_stanje_novicnik
+    stanje = zgradi_stanje_novicnik("Oktobrski novičnik", "oktobrski-novicnik", "2026-09-28T09:00:00.000Z")
+    assert set(stanje) == {"run_slug", "editions", "_run"}
+    assert stanje["run_slug"] == "2026-09-28-oktobrski-novicnik"
+    assert stanje["editions"] == []
+    run = stanje["_run"]
+    assert run["veja"] == "novicnik"
+    assert run["slug"] == stanje["run_slug"]
+    assert run["step"] == 0
+    assert run["status"] == "awaiting_material"
+    assert run["open_tasks"] == []
+    assert run["approvals"] == {}
+    assert "send_datetime" not in json.dumps(stanje)
+
+
+def test_cli_novicnik(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "--veja", "novicnik", "Oktobrski novičnik", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    stanje = json.loads(Path(r.stdout.strip()).read_text(encoding="utf-8"))
+    assert stanje["_run"]["veja"] == "novicnik"
+    assert RUN_SLUG.match(stanje["run_slug"])
+
+
+def test_cli_brez_veje_je_kolumna(tmp_path):
+    r = subprocess.run([sys.executable, str(SKRIPTA), "Tema brez veje", str(tmp_path)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout + r.stderr
+    stanje = json.loads(Path(r.stdout.strip()).read_text(encoding="utf-8"))
+    assert stanje["_run"]["veja"] == "kolumna"
+    assert "languages" in stanje
+
+
+def test_cli_neznana_veja(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "--veja", "podcast", "Tema", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 1
+    assert "neznana veja" in r.stdout.lower()
+    assert not any(tmp_path.iterdir())
+
+
+def test_cli_veja_brez_vrednosti(tmp_path):
+    r = subprocess.run([sys.executable, str(SKRIPTA), "--veja"], capture_output=True, text=True)
+    assert r.returncode == 1
+
+
+def test_run_slug_novicnika_z_dolgim_naslovom_ustreza_aplikaciji(tmp_path):
+    naslov = " ".join(["beseda"] * 60)
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "--veja", "novicnik", naslov, str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    stanje = json.loads(Path(r.stdout.strip()).read_text(encoding="utf-8"))
+    assert RUN_SLUG.match(stanje["run_slug"]), stanje["run_slug"]
