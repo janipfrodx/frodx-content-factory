@@ -41,8 +41,8 @@ curl -X POST https://frodxai.app.n8n.cloud/webhook-test/critique-text \
 kjer je `telo.json` datoteka z zgornjim JSON-om (s polno vsebino `critique-prompt.md` v `critiquePrompt`).
 
 Preveri:
-- [ ] `get_execution` vrne neprazna izhoda iz `OpenAI Critique` in `Gemini Critique`
-- [ ] `critiquePrompt` iz telesa je res prišel do modelov (kritika naj sledi obliki iz prompta: sodba v prvi vrstici, potem pripombe)
+- [ ] `get_workflow_execution` (vozlišče `Respond to Webhook`, `includeData: true`) vrne vsa štiri polja: `openai` in `gemini` neprazna, `openai_error` in `gemini_error` `null`
+- [ ] `critiquePrompt` iz telesa je res prišel do modelov (kritika naj sledi obliki iz prompta: sodba v prvi vrstici, nato vrstica za vsako merilo iz prompta - golo `OBJAVLJIVO` brez merilnih vrstic ni veljavna sodba, glej SKILL.md, razdelek "Postopek", točka 4.b, "Prazna sodba ni glas")
 - [ ] `critique/round-1.json` nastane in ima vseh šest ključev
 - [ ] `context` je res prišel do modelov - kritika se sklicuje na temo ali ciljani prompt iz polja `context` (npr. omenja »programe zvestobe« ali podoben pojem iz tvojega testnega `context`), ne le na golo besedilo kolumne. Če se kritika ne sklicuje na kontekst, je nekaj narobe z izrazom v `OpenAI Critique`/`Gemini Critique`, ki naj bi `context` dodal pred besedilo.
 
