@@ -2,7 +2,7 @@
 name: frodx-critique-loop
 description: Run the FrodX critique loop on a draft column - send the text to GPT and Gemini through the n8n critique workflow, apply the feedback, and repeat until both approve or three rounds are spent. Use after a column draft exists and before transcreation, or whenever Igor asks to "daj v kritiko", "preveri kolumno", "kaj pravita GPT in Gemini". Writes the revised text back into the run state and logs every round.
 metadata:
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # Kritika loop
@@ -14,9 +14,19 @@ Slovensko kolumno da v pregled GPT-ju in Geminiju, popravi po pripombah in ponov
 Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `references/critique-prompt.md`, zapis nazaj v `languages.sl.content`. Za drugo vejo glej razdelek »Vhod po veji« na koncu; zanka, število krogov in pravila ostanejo ista.
 
 1. Preberi `state.json`. Vzemi `languages.sl.content`. Če je prazen, povej Igorju, da kolumne še ni, in končaj.
-2. Preberi `references/critique-prompt.md` v celoti. To je vsebina, ki jo pošlješ kot `critiquePrompt` - v vsakem krogu enaka, se med krogi ne spreminja.
+2. Preberi `references/critique-prompt.md`. Pošlješ **samo besedilo pod prvo vrstico `---`**: glava nad njo je zapis za urednike, ne navodilo ocenjevalcu. To je osnova za `critiquePrompt` v vsakem krogu.
 
    **Pred pošiljanjem zamenjaj `{{DANES}}` z današnjim datumom** v obliki `17. 8. 2026`. Zamenjava se zgodi v nizu, ki ga pošlješ - datoteke ne spreminjaj. Če `{{DANES}}` v prompt ne vstaviš, ocenjevalec ne ve, kateri dan je, in bo pravilne letnice razglašal za halucinacije: to se je zgodilo 15. 8. 2026, ko je Gemini kot napako navedel Gartnerjevo raziskavo iz leta 2025, ker jo je bral kot prihodnost. Ocenjevalca sta modela s presekom znanja pred današnjim datumom - oba, ne samo eden.
+
+   **V krogu 2 in 3 na konec prompta dodaj zavrnjene pripombe** vseh prejšnjih krogov (polje `rejected`), vsako z utemeljitvijo:
+
+   ```
+   ## Zavrnjene pripombe iz prejšnjih krogov
+
+   - <pripomba> - <zakaj si jo zavrnil>
+   ```
+
+   Če v prejšnjih krogih nisi zavrnil ničesar, razdelka ne dodaš. Brez tega ocenjevalca zavrnjeno pripombo ponavljata v vsakem krogu (tek 28. 9. 2026).
 3. Nastavi delovno spremenljivko `besedilo` = `languages.sl.content` iz `state.json`. To je vhod v **krog 1**.
 4. Za `krog` = 1, 2, 3 (največ trikrat), ponavljaj:
 
@@ -26,6 +36,7 @@ Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `r
    {
      "workflowId": "GZmnPGOcVANH2sfy",
      "executionMode": "manual",
+     "triggerNodeName": "Trigger",
      "inputs": {
        "type": "webhook",
        "webhookData": {
@@ -47,13 +58,21 @@ Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `r
 
    `body.context` je vedno niz (ne objekt) - `Normalize Input` polje `context` je tipizirano kot `string` in ga oba ocenjevalca (`OpenAI Critique`, `Gemini Critique`) v uporabniškem sporočilu dobita pred besedilom kolumne, kadar ni prazen (n8n stran tega ne pusti prazne glave, če je `context` prazen niz).
 
-   b. Preberi izhod prek `get_execution` iz vozlišč `OpenAI Critique` in `Gemini Critique`.
+   b. Počakaj, da se izvedba konča, in preberi izhod vozlišča `Respond to Webhook` z `get_workflow_execution` (`workflowId`, `executionId`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`). Ima vedno štiri polja:
+
+   ```json
+   {"openai": "<kritika>", "gemini": "<kritika>", "openai_error": null, "gemini_error": null}
+   ```
+
+   Surovih izhodov vozlišč `OpenAI Critique` in `Gemini Critique` ne bereš več - workflow ju združi prek `Respond to Webhook` (`docs/dostavna-pot.md`, razdelek `critique-text`). Neprazno polje `<model>_error` pomeni, da je tisto vozlišče padlo.
 
    **Če je vozlišče padlo** (npr. HTTP 404, ker model ni več na voljo - to se je zgodilo 15. 8. 2026 z `models/gemini-3-pro-preview`), to **ni sodba `ZA POPRAVEK`**. Odpoved ocenjevalca ne sme šteti kot pripomba in ne sme tiho porabiti kroga:
 
    - Zapiši napako dobesedno v `round-<krog>.json` kot `openai_error` oz. `gemini_error` in v tisto polje kritike (`openai` / `gemini`) daj `null`, ne prazen niz.
    - **Če je padel eden:** nadaljuj s tistim, ki je odgovoril. V zapisu kroga in Igorju izrecno povej, da je polovica presoje manjkala - da ni videti, kot da sta se ocenjevalca strinjala.
    - **Če sta padla oba:** zanko ustavi takoj. Ne popravljaj besedila po nobeni pripombi (nobene ni) in kroga ne štej v `_run.critique_rounds`. Povej Igorju in Janiju, katero vozlišče je padlo in s katero napako. Popravek je v n8n, ne v besedilu - Jani ga naredi, potem se korak ponovi.
+
+   **Prazna sodba ni glas.** Odgovor, ki nima sodbe v prvi vrstici ali nima vrstice za vsako merilo iz prompta (npr. golo `OBJAVLJIVO`), obravnavaš kot padlo vozlišče: v `<model>_error` zapišeš `prazna sodba: <dobesedni odgovor>`, kritika v `openai` oziroma `gemini` je `null`, in veljata obe zgornji pravili. Tek 28. 9. 2026: Gemini je trikrat vrnil golo `OBJAVLJIVO` in spregledal navaden presledek pred % na 12 mestih, ki ga je OpenAI ujel.
 
    c. Presodi obe kritiki. Nista enakovredni glasovi - ti si urednik. Pripombo, ki je napačna ali gre proti Igorjevemu glasu, zavrni in to zapiši (v `changes` ali v pogovoru z Igorjem, ne v `state.json` kot uradno spremembo).
 
@@ -82,7 +101,7 @@ Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `r
 
    `input` je vedno besedilo, ki je šlo v n8n v točki a tega kroga - **ne** popravljena verzija. Če je `verdict` `"ok"`, je `changes` `[]` in `input` ostane veljavno besedilo (nespremenjeno).
 
-   `critique_prompt` je niz, ki je dejansko šel v `body.critiquePrompt` - torej z vstavljenim datumom, ne z `{{DANES}}`. Brez tega zapisa ni mogoče za nazaj ugotoviti, ali je ocenjevalec vedel, kateri dan je; audit teka 14. 9. 2026 je prav to označil za slepo pego. Prompt je v vseh krogih enak, zato ga smeš v krogih 2 in 3 zapisati enako kot v krogu 1, če ga nisi spreminjal.
+   `critique_prompt` je niz, ki je dejansko šel v `body.critiquePrompt` - torej z vstavljenim datumom, ne z `{{DANES}}`. Brez tega zapisa ni mogoče za nazaj ugotoviti, ali je ocenjevalec vedel, kateri dan je; audit teka 14. 9. 2026 je prav to označil za slepo pego. V krogih 2 in 3 zapiši prompt z dodanimi zavrnjenimi pripombami, tako kot je šel ven.
 
    f. Če je `verdict` za ta krog `"revise"`: nastavi delovno spremenljivko `besedilo` = `popravljeno`, in **takoj** (preden zanka gre na naslednji krog ali se konča) zapiši `languages.sl.content` = `popravljeno` v `state.json`. To zapišeš po vsakem krogu, ne šele na koncu - če se tek prekine sredi zanke, `state.json` ne sme izgubiti zadnjega popravka.
 
@@ -123,7 +142,7 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`):
   python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si
   ```
   (pot relativna na mapo debla). To je `besedilo` za krog 1.
-- **Prompt:** `veje/novicnik/references/critique-prompt.md` (relativno na mapo debla `frodx-content-factory/`), z isto zamenjavo `{{DANES}}`.
+- **Prompt:** `veje/novicnik/references/critique-prompt.md` (relativno na mapo debla `frodx-content-factory/`), samo besedilo pod prvo vrstico `---`, z isto zamenjavo `{{DANES}}` in istim dodajanjem zavrnjenih pripomb v krogu 2 in 3.
 - **`body.context`:** `novičnik | tip izdaje: <_run.tip_izdaje>`. `body.language` ostane `"sl"`.
 - **Zapis:** popravljeno besedilo po vsakem krogu zapiši v datoteko in ga vpiši z
   ```bash
