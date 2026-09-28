@@ -1,8 +1,8 @@
 ---
 name: frodx-content-factory
-description: Run the FrodX content production chain end to end - pick an AEO topic, write the column, run the critique loop, transcreate to EN and HR, generate the key visual, enrich publishing metadata and hand the package to the publishing app. Use whenever Igor wants to start a new column, blog post or content run for frodx.com, including when he only says "nova kolumna", "nova vsebina", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
+description: Run the FrodX content factory end to end and pick the right branch. The column branch picks an AEO topic, writes the column, runs the critique loop, transcreates to EN and HR, makes the key visual and social images, enriches publishing metadata and hands the package to the publishing app. The newsletter branch builds a GameChanger newsletter edition from Igor's material in SI, HR and EN, runs critique and translation review, proposes block images and hands the draft to Newsletter Hub. Use whenever Igor wants a new column, blog post, newsletter or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # FrodX Content Factory - deblo
