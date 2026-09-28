@@ -58,4 +58,4 @@ def test_prompt_ne_ponavlja_zavrnjenih(pot, naslov):
 
 @pytest.mark.parametrize("pot", VSI, ids=IME.get)
 def test_brez_dolgega_pomisljaja(pot):
-    assert "—" not in pot.read_text(encoding="utf-8")
+    assert "\u2014" not in pot.read_text(encoding="utf-8")
