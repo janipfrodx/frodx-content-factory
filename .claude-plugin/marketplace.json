@@ -1,6 +1,6 @@
 {
   "name": "frodx-content-factory",
-  "description": "Interni FrodX marketplace s Content Factory pluginom za produkcijo kolumn in socialnih objav.",
+  "description": "Interni FrodX marketplace s Content Factory pluginom za produkcijo kolumn, socialnih objav in novičnika.",
   "owner": {
     "name": "FrodX d.o.o.",
     "email": "jani.pahor@frodx.com"
@@ -9,8 +9,8 @@
     {
       "name": "content-factory",
       "source": "./plugins/content-factory",
-      "version": "0.5.0",
-      "description": "Veriga skillov za produkcijo FrodX kolumn in socialnih objav: izbira teme, pisanje, kritika, transkreacija, slika, meta podatki, predaja v objavo."
+      "version": "0.6.0",
+      "description": "Veriga skillov za produkcijo FrodX vsebin v dveh vejah: kolumna (izbira teme, pisanje, kritika, transkreacija, slike, meta podatki, predaja v objavo) in novičnik (gradivo, SI izdaja, kritika, HR in EN s preverbo, slike blokov, predaja v Newsletter Hub)."
     }
   ]
 }

@@ -23,6 +23,8 @@ Sprememba gre tako:
 
 Namen ni birokracija. Namen je, da se Igorjeva in naša kopija ne razideta tiho - to je natanko tveganje, ki ga Igor opisuje v `README-JANI.md` §8.
 
+Pisca, ki ju rabi ena sama veja, ležita v `vendor/` te veje: `igor-column-writer` v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`. Cowork ju zato ne vidi kot samostojna skilla in ne tekmujeta z deblom za iste fraze. Datoteke so nespremenjene; lokacijo pozna `tools/vendor_hash.py` (`POTI`). Igor ju samostojno uporablja v svojem izvornem kitu.
+
 ## Čakajoče točke za Igorja
 
 Te izhajajo iz živega teka 14.-15. 8. 2026. Vendoriranih datotek se ne dotikamo, zato so tu - ob Igorjevi vrnitvi gredo v pogovor z njim in nato skozi PR.
@@ -40,6 +42,10 @@ Prompt za kritiko sta napisala Jani in Claude, da veriga lahko teče. Ni Igorjev
 ### 3. `igor-column-writer` sam ne vrne socialnih objav
 
 V osnovnem teku jih je bilo treba izrecno naročiti po `references/social-posts.md`. Preslikava je opisana v `skills/frodx-content-factory/veje/kolumna/references/igor-output-mapping.md`. Vprašanje za Igorja: ali naj jih skill vrača sam kot del izhoda koraka 2.
+
+### 4. `frodx-newsletter` v tovarni
+
+Tovarna izvaja pisčeve korake 1-5 in 7, korak 6 (docx) nikoli. Med korakoma 3 in 4 vstavi kritiko SI (GPT + Gemini) s promptom `veje/novicnik/references/critique-prompt.md`, sestavljenim iz njegove `self-eval-rubric.md`. Vprašanji za Igorja: ali je v2.3 pravi skill in ali prompt kritike potrdi.
 
 ## Znana napaka v izvoru
 
