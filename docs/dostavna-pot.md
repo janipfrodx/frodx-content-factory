@@ -391,3 +391,16 @@ uporabnika; `edit_url` odpre korak 2. Preverba po objavi:
 - odgovor: `{"openai": ..., "gemini": ..., "openai_error": ..., "gemini_error": ...}`; klic webhooka prek HTTP (mogoč le, ko je workflow aktiven) dobi ta objekt kot telo odgovora in ločen `get_execution` ni potreben. `execute_workflow` (MCP) vrne takoj le `executionId` in `status: started` (preverjeno 28. 9. 2026), zato se pri tem klicu isti objekt prebere z `get_workflow_execution` (`includeData`, `nodeNames: ["Respond to Webhook"]`)
 - polja odgovora: `openai` in `gemini` (besedilo kritike ali `null`), `openai_error` in `gemini_error` (napaka ali `null`)
 - spremenjeno 28. 9. 2026 po auditu prvega teka novičnika; preizkus: izvedba `212697`
+
+## `cf-import-image`
+
+- workflowId: `XZJOqzga4iVTCGzl`
+- n8n projekt: Content Factory (`FucXmQlDiWLVsRHW`)
+- webhook pot (Trigger): `POST /webhook/import-image`, `responseMode: responseNode`; neaktiven, kliče se z `execute_workflow` v načinu `manual`, `triggerNodeName: "Trigger"`
+- vozlišča: `Trigger` -> `Normalize` -> `Download` -> `Extract b64` -> `Upload` (POST `https://frodx-content-app.lovable.app/api/images`) -> `Shape` -> `Respond to Webhook`
+- credential: Header Auth `FrodX Content App Ingest` (id `vS1Vj3wTuQUKF5WI`), isti kot `cf-social-image`
+- telo: `{"url": "<https URL slike>", "filename": "<ime>"}`
+- odgovor: `{"url": "<javni URL v content-images>" | null, "error": "<vzrok>" | null}`
+- pripona: aplikacija pripono objekta vzame iz `filename` (ime brez pripone da `<uuid>.<ime>`), zato `Upload` imenu brez slikovne pripone pripne pripono iz `mimeType` prenosa (`jpeg` -> `jpg`); `mime_type` pošlje brez parametrov (`; charset=...`)
+- namen: faza C (`frodx-image-run`) sliko za ponovno rabo uvozi v shrambo, da paket ne kaže na frodx.com in da jo Claude lahko prenese in pogleda (host shrambe je na Cowork allowlisti)
+- ustvarjen 28. 9. 2026; preizkusa: izvedbi `212723` (slika) in `212724` (ni slika)
