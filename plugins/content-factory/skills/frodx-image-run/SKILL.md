@@ -1,8 +1,8 @@
 ---
 name: frodx-image-run
-description: Produce every image a FrodX column needs, in two phases. Phase A is the key visual - get the two image prompts from frodx-key-visual, run them through the n8n image workflow, judge the two results and write alt text in all three languages. Phase B makes one image for each approved social post and writes its alt text in Slovenian only. Use after the column text is final and the social posts are chosen, or when Igor asks for "naslovna slika", "key visual", "slike za socialne objave", "generiraj sliko". Stores the chosen images in the run folder and their public URLs and alt texts in the run state.
+description: Produce every image a FrodX content run needs. Phase A is the key visual of a column - get the two image prompts from frodx-key-visual, run them through the n8n image workflow, judge the two results and write alt text in all three languages. Phase B makes one image for each approved social post and writes its alt text in Slovenian only. Phase C proposes an image for every block of a newsletter edition - reuse, generate or leave empty, block by block as Igor decides. Use after the text is final, or when Igor asks for "naslovna slika", "key visual", "slike za socialne objave", "slike za newsletter", "generiraj sliko". Stores chosen images in the run folder and their public URLs and alt texts in the run state.
 metadata:
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # Naslovna in socialne slike
@@ -15,6 +15,8 @@ potrjene socialne objave pa še po eno sliko s slovenskim alt tekstom.
 Skill ima dve fazi. **Faza A** naredi naslovno sliko kolumne - dve kandidatki, OpenAI in Gemini,
 1536x1024. **Faza B** naredi po eno sliko za vsako potrjeno socialno objavo - ena kandidatka,
 samo OpenAI, 1024x1024. Fazi sta ločeni, ker gresta na različna workflowa in imata različni merili.
+
+**Faza C** je samo za vejo novičnik: za vsak blok izdaje predlaga vir slike in Igor pri vsakem bloku odloči. Kolumna je ne uporablja.
 
 ## Faza A - naslovna slika
 
@@ -204,6 +206,48 @@ izbral. Slike ne izbirajo, katera objava gre v objavo.
     seznama. Na LinkedInu se vidita skupaj; oceniti ju je treba skupaj. Če katero sliko zavrne,
     ponovi 13 do 17 za tisto eno objavo in `state.json` prepiši v celoti za tisti `index`, tudi
     `_run.social_images`.
+
+## Faza C - slike blokov novičnika
+
+Samo za vejo novičnik (`frodx-content-factory/veje/novicnik/`). Faza A in B tu ne tečeta.
+
+Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`. Sliko z URL-ja n8n ob pošiljanju prenese sam, zato ti nosiš samo URL. Blok brez slike ni napaka tovarne: osnutek gre v aplikacijo in Igor sliko doda z gumbom pri bloku.
+
+1. Preberi `state.json` in za vsak blok SI izdaje (`block_id`, `type`, `title`, `cta.url`) sestavi **predlog vira** po tem privzetem vrstnem redu:
+
+   1. **Igorjeva priložena slika**, če jo je v tej seji priložil. Če ni očitno, kateremu bloku pripada, vprašaj. V tej verziji je tovarna **ne naloži**: v `image.file` zapiši ime datoteke, `image.url` pusti prazen in Igorju povej, da jo pri tem bloku doda v aplikaciji. Ključa do shrambe nimaš in ga ne iščeš.
+   2. **Ponovna raba po URL-ju:**
+      - pri bloku `column`: naslovna slika objavljene kolumne s frodx.com (`og:image` strani iz `cta.url`, prebrana z `WebFetch`);
+      - pri bloku `webinar`: slika s prijavne strani (`og:image` strani iz `cta.url`).
+      URL mora biti absoluten in `https://`. Relativnega (`/hubfs/...`) dopolni z domeno strani, `//cdn...` s `https:`, `http://` zamenjaj z `https://` in preveri, da se odpre (`curl -sI`). Če se ne, predloga ni.
+   3. **Generiranje** samo za konceptualne bloke, brez resničnih oseb, strank, partnerjev ali lokacij:
+      - prompt sestavi po `frodx-key-visual` (vizualni slog in recepti), iz naslova in telesa bloka;
+      - n8n workflow `lHc3NdejxehMyc9O` prek `execute_workflow`, z `size: "1024x1024"`, dve kandidatki (OpenAI in Gemini), tako kot v fazi A; odgovor vrne javna URL-ja v `content-images`;
+      - kvadrat, ker `gpt-image-1` 16:9 ne podpira, Igorjevo pravilo za slike blokov (`vendor/frodx-newsletter/references/image-compositing.md`) pa kvadrat dovoli.
+   4. **Nič od tega:** `image` ostane brez URL-ja in Igor sliko doda v aplikaciji.
+
+   Blok `announcement` z resnično stranko ali partnerjem se **nikoli ne generira**. Zanj pride v poštev samo priložena slika, ponovna raba ali prazno.
+
+2. **Zapiši predlog, preden vprašaš.** Za vsak blok dodaj zapis v `_run.block_images`:
+
+   ```json
+   {"block_id": "block-01", "vir": "ponovna_raba", "url": "https://...", "razlog": "naslovna slika kolumne", "kandidatke": []}
+   ```
+
+   `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez`. Pri generiranju gresta obe kandidatki v `kandidatke`, v `url` pa tista, ki jo predlagaš.
+
+3. **Gate po blokih.** Igorju za vsak blok pokaži predlog in razlog v eni vrstici, npr. »block-01: naslovna slika kolumne (ponovna raba)«, pri generiranju obe kandidatki. Pri vsakem bloku lahko reče:
+   - »zamenjaj« - predlagaj naslednji vir po vrstnem redu;
+   - »generiraj« - pojdi na točko 1.3 (razen pri `announcement` z resnično stranko: povej, zakaj ne);
+   - »tu je moja« - točka 1.1;
+   - »pusti prazno« - točka 1.4.
+   Igor odloča sproti in ni ti treba zbrati vseh odločitev naenkrat.
+
+4. **Zapiši izbrano v vseh treh izdajah.** Za vsak blok v izdajah `si`, `en` in `hr`:
+   - `image.url` = izbrani URL (enak v vseh treh), razen če je Igor za posamezen jezik priložil svojo sliko (npr. webinar z besedilom v hrvaščini);
+   - `image.alt` = alt tekst v jeziku izdaje, napisan po sliki, ne po naslovu bloka;
+   - `image.file` ostane, kar je bilo.
+   Posodobi `_run.block_images` z Igorjevo odločitvijo. Nato `_run.step = 5`, `_run.status = awaiting_approval`.
 
 ## Kako slike dejansko pridejo do tebe
 
