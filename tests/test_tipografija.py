@@ -80,6 +80,14 @@ def test_preverba_ne_gleda_url_jev():
     assert preveri(telo)[0] == []
 
 
+def test_preverba_odstotka_v_alt_slike_kaze_korak_5():
+    telo = _telo()
+    si = next(i for i in telo["editions"] if i["language"] == "si")
+    si["blocks"][0]["image"]["alt"] = "rast 12 % letno"
+    krsitve = preveri(telo)[0]
+    assert any("image.alt" in k and "korak 5" in k for k in krsitve), krsitve
+
+
 def _stanje_iz_fixture(tmp_path):
     telo = _telo()
     stanje = dict(telo, _run={"veja": "novicnik", "approvals": {"step3": "2026-09-28T10:00:00"}})

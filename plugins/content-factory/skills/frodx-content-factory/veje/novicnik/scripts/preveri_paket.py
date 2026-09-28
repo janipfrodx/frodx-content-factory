@@ -159,10 +159,11 @@ def _preveri_izdajo(izdaja, opozorila):
             napaka(pot, "vzorčna vrednost iz Igorjeve predloge EDITIONS")
         if pot.endswith("url"):
             continue
+        korak_odstotka = 5 if pot.endswith("image.alt") else korak
         if jezik in ("si", "hr") and ODSTOTEK_BREZ_NBSP.search(niz):
-            napaka(pot, "pred % mora biti nedeljivi presledek (U+00A0), npr. 12\u00a0%")
+            napaka(pot, "pred % mora biti nedeljivi presledek (U+00A0), npr. 12\u00a0%", korak_odstotka)
         elif jezik == "en" and ODSTOTEK_S_PRESLEDKOM.search(niz):
-            napaka(pot, "v angleščini je % brez presledka, npr. 12%")
+            napaka(pot, "v angleščini je % brez presledka, npr. 12%", korak_odstotka)
     return krsitve
 
 
