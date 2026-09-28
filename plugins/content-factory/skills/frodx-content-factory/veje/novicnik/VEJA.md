@@ -86,7 +86,7 @@ Ob vsakem gate-u Igorju pokaži izdajo z `python3 veje/novicnik/scripts/izdaja_b
 python3 veje/novicnik/scripts/preveri_paket.py <state.json> --telo outbox/<run_slug>.json
 ```
 
-Preveri: trije jeziki, vsak natanko enkrat; 1-3 bloki z enakim `block_id` in `type` v vseh jezikih; `webinar` ima `event` (datum, ura, trajanje), drugi bloki `null`; vsak blok ima naslov, telo in CTA z `https://`; ni dolgega pomišljaja (razen v `delivery.segment_ref`); ni vzorčnih vrednosti iz Igorjeve predloge; ni `send_datetime` in ni `_run`. Blok brez slike je opozorilo, ne kršitev. Vsaka kršitev pove pristojni korak.
+Preveri: trije jeziki, vsak natanko enkrat; 1-3 bloki z enakim `block_id` in `type` v vseh jezikih; `webinar` ima `event` (datum, ura, trajanje), drugi bloki `null`; vsak blok ima naslov, telo in CTA z `https://`; slika bloka mora biti v shrambi `content-images`; ni dolgega pomišljaja (razen v `delivery.segment_ref`); ni vzorčnih vrednosti iz Igorjeve predloge; v SI in HR nedeljivi presledek pred %, v EN % brez presledka; ni `send_datetime` in ni `_run`. Blok brez slike je opozorilo, ne kršitev. Vsaka kršitev pove pristojni korak.
 
 ## Oddaja
 

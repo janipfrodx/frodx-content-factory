@@ -262,19 +262,23 @@ Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`, in to
 
 4. **Zapiši izbrano v vseh treh izdajah.** Za vsak blok v izdajah `si`, `en` in `hr`:
    - `image.url` = izbrani URL (enak v vseh treh), razen če je Igor za posamezen jezik priložil svojo sliko (npr. webinar z besedilom v hrvaščini);
-   - `image.alt` = alt tekst v jeziku izdaje, napisan po sliki, ki si jo prenesel in pogledal (točka 1), ne po naslovu bloka. Pri Igorjevi priloženi sliki, ki je še ni v shrambi, alt napiše po sliki v pogovoru; če je ne vidiš, `image.alt` pusti prazen in Igorju povej, naj ga doda v aplikaciji;
+   - `image.alt` = alt tekst v jeziku izdaje, napisan po sliki, ki si jo prenesel in pogledal (točka 1), ne po naslovu bloka. Pri Igorjevi priloženi sliki, ki je še ni v shrambi, alt napišeš po sliki v pogovoru; če je ne vidiš, `image.alt` pusti prazen in Igorju povej, naj ga doda v aplikaciji;
    - `image.file` ostane, kar je bilo.
    Posodobi `_run.block_images` z Igorjevo odločitvijo. Nato `_run.step = 5`, `_run.status = awaiting_approval`.
 
 ## Kako slike dejansko pridejo do tebe
 
-Velja za obe fazi. Workflow faze A (`lHc3NdejxehMyc9O`, stanje preverjeno 16. 9. 2026) obe kandidatki
+Velja za faze A, B in C. Workflow faze A (`lHc3NdejxehMyc9O`, stanje preverjeno 16. 9. 2026) obe kandidatki
 naloži v shrambo aplikacije in vrne javna URL-ja; workflow faze B (`ZvoLqzl7zBr8X4WR`) stori enako za
 svojo eno sliko na objavo. Nalaganje opravi n8n s svojim credentialom; ključ nikoli ne pride v tvoj
 kontekst.
 
 Postopek je zato cel v točkah zgoraj - **3 do 5 za fazo A** in **13 do 15 za fazo B**: pokliči
 workflow, prenesi slike s `curl`, izmeri jih z `dimenzije.py`, poglej jih in odloči.
+
+**Faza C** gre po eni od dveh istih poti: generirane slike gredo skozi isti workflow kot faza A
+(`lHc3NdejxehMyc9O`); slike za ponovno rabo gredo skozi `cf-import-image` (`XZJOqzga4iVTCGzl`) v
+shrambo `content-images`, od koder jih, tako kot zgoraj, prenese `curl`.
 
 **Kar se ne poskuša več:**
 

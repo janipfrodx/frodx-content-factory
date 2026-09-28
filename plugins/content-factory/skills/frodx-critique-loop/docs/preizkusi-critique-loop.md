@@ -19,14 +19,14 @@ Prvi odstavek slovenske kolumne.
 igor.pauletic@frodx.com
 ```
 
-Telo zahteve (odpri `plugins/content-factory/skills/frodx-critique-loop/references/critique-prompt.md` in njegovo celotno vsebino prilepi kot vrednost `critiquePrompt` - spodaj je zaradi dolžine skrajšano na `...`):
+Telo zahteve (odpri `plugins/content-factory/skills/frodx-critique-loop/references/critique-prompt.md` in kot vrednost `critiquePrompt` prilepi samo besedilo pod prvo vrstico `---`, z zamenjanim `{{DANES}}` - spodaj je zaradi dolžine skrajšano na `...`):
 
 ```json
 {
   "text": "Prvi odstavek slovenske kolumne.\n\nigor.pauletic@frodx.com",
   "context": "Programi zvestobe | ciljani prompt: testni klic - preverjanje critique loopa",
   "language": "sl",
-  "critiquePrompt": "... (celotna vsebina references/critique-prompt.md) ..."
+  "critiquePrompt": "... (besedilo pod prvo vrstico --- v references/critique-prompt.md, z zamenjanim {{DANES}}) ..."
 }
 ```
 
@@ -38,7 +38,7 @@ curl -X POST https://frodxai.app.n8n.cloud/webhook-test/critique-text \
   -d @telo.json
 ```
 
-kjer je `telo.json` datoteka z zgornjim JSON-om (s polno vsebino `critique-prompt.md` v `critiquePrompt`).
+kjer je `telo.json` datoteka z zgornjim JSON-om (z besedilom pod prvo vrstico `---` iz `critique-prompt.md`, z zamenjanim `{{DANES}}`, v `critiquePrompt`).
 
 Preveri:
 - [ ] `get_workflow_execution` (vozlišče `Respond to Webhook`, `includeData: true`) vrne vsa štiri polja: `openai` in `gemini` neprazna, `openai_error` in `gemini_error` `null`

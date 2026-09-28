@@ -1,8 +1,12 @@
+import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SKILL = REPO / "plugins" / "content-factory" / "skills" / "frodx-image-run" / "SKILL.md"
 NASLOV = "## Faza C - slike blokov novičnika"
+
+sys.path.insert(0, str(REPO / "tests"))
+from test_uvoz_slike import id_uvoza
 
 
 def _faza_c():
@@ -65,12 +69,6 @@ def test_opis_skilla_omeni_novicnik():
     glava = SKILL.read_text(encoding="utf-8").split("---")[1]
     assert "Phase C" in glava
     assert "newsletter" in glava
-
-
-import sys
-
-sys.path.insert(0, str(REPO / "tests"))
-from test_uvoz_slike import id_uvoza
 
 
 def test_ponovna_raba_gre_skozi_uvoz():
