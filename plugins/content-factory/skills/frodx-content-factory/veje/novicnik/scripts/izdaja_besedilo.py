@@ -8,8 +8,10 @@ Uporaba:
 Vpis spremeni samo besedilna polja izdaje: subject, preheader, greeting,
 hook.paragraphs, blocks[].title/body/bullets/cta.label, closing.paragraphs,
 signoff.phrase in ps. Ob pokvarjenih oznakah vrne exit 1 in state.json
-pusti nedotaknjen. Vsak odstavek (element seznama ali polje) se mora
-začeti z besedilo, ki se ne ujema z rezerviranimi oznakami.
+pusti nedotaknjen. Rezervirane oznake se preverjajo samo pri odstavkih
+znotraj seznamov (hook.paragraphs, blocks[].body, blocks[].bullets,
+closing.paragraphs): vsak tak odstavek se mora začeti z besedilom, ki se
+ne ujema z rezervirano oznako.
 """
 import copy
 import json

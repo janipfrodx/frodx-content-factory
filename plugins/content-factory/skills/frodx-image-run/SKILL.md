@@ -219,7 +219,7 @@ Aplikacija Newsletter Hub potrebuje za vsak blok `image.url` z `https://`. Sliko
    2. **Ponovna raba po URL-ju:**
       - pri bloku `column`: naslovna slika objavljene kolumne s frodx.com (`og:image` strani iz `cta.url`, prebrana z `WebFetch`);
       - pri bloku `webinar`: slika s prijavne strani (`og:image` strani iz `cta.url`).
-      URL mora biti absoluten in `https://`. Relativnega (`/hubfs/...`) dopolni z domeno strani, `//cdn...` s `https:`, `http://` zamenjaj z `https://` in preveri, da se odpre (`curl -sI`). Če se ne, predloga ni.
+      URL mora biti absoluten in `https://`. Relativnega (`/hubfs/...`) dopolni z domeno strani, `//cdn...` s `https:`, `http://` zamenjaj z `https://`. Absoluten `https://` URL, ki ga vrne `WebFetch` (og:image), sprejmeš kot predlog brez prenosa in brez `curl` preverbe - sliko z URL-ja ob pošiljanju prenese sama aplikacija oz. n8n. Neuspešen `curl` v Cowork okolju ni dokaz, da slike ni: bash tu ne doseže zunanjih URL-jev (`vendor/frodx-newsletter/references/image-compositing.md`). Relativen ali ne-https URL predloga ni.
    3. **Generiranje** samo za konceptualne bloke, brez resničnih oseb, strank, partnerjev ali lokacij:
       - prompt sestavi po `frodx-key-visual` (vizualni slog in recepti), iz naslova in telesa bloka;
       - n8n workflow `lHc3NdejxehMyc9O` prek `execute_workflow`, z `size: "1024x1024"`, dve kandidatki (OpenAI in Gemini), tako kot v fazi A; odgovor vrne javna URL-ja v `content-images`;

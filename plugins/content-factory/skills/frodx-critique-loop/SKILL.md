@@ -123,7 +123,7 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`):
   python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si
   ```
   (pot relativna na mapo debla). To je `besedilo` za krog 1.
-- **Prompt:** `veje/novicnik/references/critique-prompt.md`, z isto zamenjavo `{{DANES}}`.
+- **Prompt:** `veje/novicnik/references/critique-prompt.md` (relativno na mapo debla `frodx-content-factory/`), z isto zamenjavo `{{DANES}}`.
 - **`body.context`:** `novičnik | tip izdaje: <_run.tip_izdaje>`. `body.language` ostane `"sl"`.
 - **Zapis:** popravljeno besedilo po vsakem krogu zapiši v datoteko in ga vpiši z
   ```bash

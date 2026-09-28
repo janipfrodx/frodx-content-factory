@@ -197,6 +197,7 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na map
 - **Prevod (`target_text`):** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> <jezik>`
 - **Popravek:** ne kličeš `frodx-transcreation` znova, ker bi vrnil golo besedilo brez oznak in strukture izdaje. Popravi le mesta, ki jih ocenjevalca upravičeno očitata, po pravilih transkreacije pisca novičnika (njegov korak 4, ki si izposodi pravila `frodx-transcreation`), in besedilo vpiši z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`. Ob `NAPAKA:` je `state.json` nespremenjen: popravek ponovi, ne vpisuj ga mimo skripte.
 - `_run.transcreation_check` in zadolžitev za hrvaški native pregled v `_run.open_tasks` se zapišeta enako kot pri kolumni.
+- Besedilo je zapisano z oznakami `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, `NASLOV:`, `TELO:`, `ALINEJE:`, `CTA:`, `ZAKLJUČEK:`, `PODPIS:`, `PS:` (glava bloka `[block-01 · type]`). Oznake so oblika, ne vsebina: ne ocenjuješ jih in ne predlagaš, da bi jih spremenili, v nobenem jeziku ostanejo take, kot so. Pripombo, ki cilja na oznako samo, zavrni.
 
 ## Kaj ne delaš
 
