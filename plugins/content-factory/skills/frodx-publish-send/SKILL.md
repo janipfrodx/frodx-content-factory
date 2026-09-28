@@ -1,11 +1,13 @@
 ---
 name: frodx-publish-send
-description: Validate a finished FrodX content package and hand it to the publishing app. Runs the binary contract check, then delivers the package through the n8n workflow cf-deliver-draft, which creates a draft in the app and returns an edit link for Igor. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish date - Igor picks that in the app.
+description: Validate a finished FrodX content package and hand it to the right app. A column goes through the binary contract check and the n8n workflow cf-deliver-draft into the publishing app; a newsletter edition goes through its branch check and the n8n workflow cf-deliver-newsletter into Newsletter Hub. Both return an edit link for Igor. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish or send date - Igor picks that in the app.
 metadata:
-  version: 0.3.0
+  version: 0.4.0
 ---
 
 # Predaja paketa
+
+Postopek spodaj je za kolumno. Novičnik ima svoj razdelek »Veja novičnik«.
 
 Zadnji korak. Validira in preda.
 
@@ -90,6 +92,50 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    - `_run.status` = `sent`, `_run.step` = `7`
 
    Telo predaje zapiši tudi v `outbox/<slug>.json` in ga izpiši v pogovor. To ni več pot predaje, ampak zapis poslanega - edini, ki ga človek vidi, če predaja pade. Velja še naprej, da `outbox/` seje ne preživi.
+
+## Veja novičnik
+
+Preverba paketa in n8n workflow sta stvar veje. Za novičnik (`frodx-content-factory/veje/novicnik/`, poti relativne na mapo debla):
+
+1. **Preverba.**
+
+   ```bash
+   python3 veje/novicnik/scripts/preveri_paket.py <state.json> --telo outbox/<run_slug>.json
+   ```
+
+   Skripta odstrani `_run`, preveri telo in ga zapiše v `outbox/` samo, če kršitev ni. Ob kršitvah (exit 1) ne pošiljaj: pokaži Igorju vrstice `KRŠITEV:` in za vsako povej pristojni korak, ki ga skripta navede. Vrstice `Opozorilo:` (blok brez slike) preberi Igorju, oddaje ne ustavijo. Odprte zadolžitve iz `_run.open_tasks` preberi na glas kot pri kolumni in vprašaj, ali oddaja kljub temu.
+
+2. **Oddaja** prek `cf-deliver-newsletter`. Telo je vsebina datoteke iz točke 1 (paket brez `_run`, brez `send_datetime`):
+
+   ```json
+   {
+     "workflowId": "Wd1gVtK77b29ePrJ",
+     "executionMode": "manual",
+     "triggerNodeName": "Trigger",
+     "inputs": {
+       "webhookData": {
+         "method": "POST",
+         "body": {"run_slug": "", "editions": []}
+       }
+     }
+   }
+   ```
+
+   Workflow je neaktiven in ostane tak. Klic `manual` ga ne izpostavi javno. Ključa do Newsletter Huba nimaš in ga ne potrebuješ; nosi ga n8n credential.
+
+3. **Odgovor:**
+
+   | `status` | Kaj narediš |
+   |---|---|
+   | `created` | `_run.delivery` = `{status, draft_id, edit_url, delivered_at}`, `_run.status = sent`, `_run.step = 6`. Igorju daj `edit_url`: tam pregleda osnutek, doda manjkajoče slike, nastavi čas in ga razporedi sam |
+   | `duplicate` | ta tek je že oddan. Zapiši isti `draft_id` in Igorju daj `edit_url` z opombo, da osnutek že obstaja in se ni spremenil |
+   | `rejected` | izpiši `detail` (očitki po polju). Ne poskušaj znova samodejno; vrni Igorja na pristojni korak |
+   | `misconfigured` | ustavi se in povej Janiju. Ne poskušaj znova |
+   | `retry` | ne poskušaj znova samodejno. Povej, kaj je vrnil, in vprašaj |
+
+4. **Telo oddaje izpiši tudi v pogovor**, ker `outbox/` ne preživi seje.
+
+Pri novičniku nikoli ne nastaviš `send_datetime` in v aplikaciji nikoli ne pritisneš »Razporedi«. Oboje je Igorjevo.
 
 ## Kaj ne delaš
 
