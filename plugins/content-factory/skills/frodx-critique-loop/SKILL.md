@@ -38,14 +38,13 @@ Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `r
      "executionMode": "manual",
      "triggerNodeName": "Trigger",
      "inputs": {
-       "type": "webhook",
        "webhookData": {
          "method": "POST",
          "body": {
            "text": "<besedilo>",
            "context": "<_run.brief.topic> | ciljani prompt: <_run.brief.target_prompt>",
            "language": "sl",
-           "critiquePrompt": "<vsebina references/critique-prompt.md>"
+           "critiquePrompt": "<prompt pod prvo vrstico ---, z datumom; v krogu 2-3 z zavrnjenimi pripombami>"
          }
        }
      }
@@ -72,9 +71,9 @@ Postopek spodaj je zapisan za kolumno: vhod je `languages.sl.content`, prompt `r
    - **Če je padel eden:** nadaljuj s tistim, ki je odgovoril. V zapisu kroga in Igorju izrecno povej, da je polovica presoje manjkala - da ni videti, kot da sta se ocenjevalca strinjala.
    - **Če sta padla oba:** zanko ustavi takoj. Ne popravljaj besedila po nobeni pripombi (nobene ni) in kroga ne štej v `_run.critique_rounds`. Povej Igorju in Janiju, katero vozlišče je padlo in s katero napako. Popravek je v n8n, ne v besedilu - Jani ga naredi, potem se korak ponovi.
 
-   **Prazna sodba ni glas.** Odgovor, ki nima sodbe v prvi vrstici ali nima vrstice za vsako merilo iz prompta (npr. golo `OBJAVLJIVO`), obravnavaš kot padlo vozlišče: v `<model>_error` zapišeš `prazna sodba: <dobesedni odgovor>`, kritika v `openai` oziroma `gemini` je `null`, in veljata obe zgornji pravili. Tek 28. 9. 2026: Gemini je trikrat vrnil golo `OBJAVLJIVO` in spregledal navaden presledek pred % na 12 mestih, ki ga je OpenAI ujel.
+   **Prazna sodba ni glas.** Odgovor, ki nima sodbe v prvi vrstici ali nima vrstice za vsako merilo iz prompta (npr. golo `OBJAVLJIVO`), obravnavaš kot padlo vozlišče: v `<model>_error` zapišeš `prazna sodba: <dobesedni odgovor>`, kritika v `openai` oziroma `gemini` je `null`, in veljata obe zgornji pravili. Tek 28. 9. 2026: Gemini je trikrat vrnil golo `OBJAVLJIVO` in spregledal navaden presledek pred % na 12 mestih, ki ga je OpenAI ujel. Če sta oba "padla" zaradi prazne sodbe, vzrok ni n8n: to povej Igorju in Janiju kot neupoštevanje prompta, ne kot padlo vozlišče, in dovoli, da se krog enkrat ponovi, preden zanko ustaviš.
 
-   c. Presodi obe kritiki. Nista enakovredni glasovi - ti si urednik. Pripombo, ki je napačna ali gre proti Igorjevemu glasu, zavrni in to zapiši (v `changes` ali v pogovoru z Igorjem, ne v `state.json` kot uradno spremembo).
+   c. Presodi obe kritiki. Nista enakovredni glasovi - ti si urednik. Pripombo, ki je napačna ali gre proti Igorjevemu glasu, zavrni in zapiši v `rejected` z utemeljitvijo, ne v `changes`.
 
    d. Ugotovi `verdict` za ta krog. Šteje samo tisti ocenjevalec, ki je **odgovoril** - padlo vozlišče ni glas:
       - **Če vsi ocenjevalci, ki so odgovorili, rečejo `OBJAVLJIVO`:** `verdict` = `"ok"`, `changes` = `[]`. Besedilo se ne spremeni. Če je odgovoril samo eden, je `verdict` `"ok"`, a v zapisu kroga in Igorju povej, da je sodba enoglasna zato, ker je drugi ocenjevalec padel - ne ker sta se strinjala.

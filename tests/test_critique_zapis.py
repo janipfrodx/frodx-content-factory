@@ -1,16 +1,20 @@
+import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 SKILL = REPO / "plugins" / "content-factory" / "skills" / "frodx-critique-loop" / "SKILL.md"
+DOSTAVNA_POT = REPO / "docs" / "dostavna-pot.md"
+PROMPTA = (
+    REPO / "plugins" / "content-factory" / "skills" / "frodx-critique-loop" / "references" / "critique-prompt.md",
+    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "veje" / "novicnik"
+    / "references" / "critique-prompt.md",
+)
 
 
 def test_zapis_kroga_vsebuje_poslani_prompt():
     """Brez zapisa prompta ni mogoče preveriti, ali je bil {{DANES}} zamenjan."""
     vsebina = SKILL.read_text(encoding="utf-8")
     assert '"critique_prompt"' in vsebina
-import re
-
-DOSTAVNA_POT = REPO / "docs" / "dostavna-pot.md"
 
 
 def _razdelek_dostavne_poti(ime):
@@ -30,13 +34,6 @@ def test_dostavna_pot_opisuje_odgovor_critique_text():
     assert "responseNode" in razdelek
     zadetek = re.search(r'"workflowId":\s*"([^"]+)"', SKILL.read_text(encoding="utf-8"))
     assert zadetek and zadetek.group(1) == "GZmnPGOcVANH2sfy"
-
-
-PROMPTA = (
-    REPO / "plugins" / "content-factory" / "skills" / "frodx-critique-loop" / "references" / "critique-prompt.md",
-    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "veje" / "novicnik"
-    / "references" / "critique-prompt.md",
-)
 
 
 def test_poslje_samo_prompt_pod_crto():
@@ -75,3 +72,11 @@ def test_prompt_se_med_krogi_ne_razglasa_za_enakega():
 
 def test_verzija_kritike():
     assert "version: 0.3.0" in SKILL.read_text(encoding="utf-8")
+
+
+def test_zavrnjena_pripomba_gre_v_rejected_ne_v_changes():
+    vsebina = SKILL.read_text(encoding="utf-8")
+    assert "v `changes` ali v pogovoru" not in vsebina
+    tocka_c = vsebina[vsebina.index("c. Presodi obe kritiki"):]
+    tocka_c = tocka_c[: tocka_c.index("\n\n")]
+    assert "`rejected`" in tocka_c
