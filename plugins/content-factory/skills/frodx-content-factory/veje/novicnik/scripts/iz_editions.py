@@ -7,11 +7,14 @@ editions.json je slovar {jezik: izdaja} v obliki EDITIONS iz
 vendor/frodx-newsletter/scripts/build_newsletter.py, zapisan kot JSON:
 pari ("KLJUČ", vrednost) so seznami ["KLJUČ", vrednost]. Izdaji hr in en
 sprejme šele, ko je Igor potrdil kritiko SI (_run.approvals.step3).
+V SI in HR vstavi nedeljivi presledek pred % (tipografija.py).
 """
 import json
 import os
 import sys
 from pathlib import Path
+
+from tipografija import nbsp_pred_odstotkom
 
 JEZIKI = ("si", "en", "hr")
 META = (
@@ -75,7 +78,7 @@ def izdaja_iz_editions(jezik: str, ed: dict) -> dict:
     if meta["LANGUAGE"] != jezik:
         raise NapakaPreslikave(f"{jezik}: META LANGUAGE je {meta['LANGUAGE']!r}")
     try:
-        return {
+        return nbsp_pred_odstotkom({
             "package_id": meta["PACKAGE_ID"],
             "edition_name": meta["EDITION_NAME"],
             "language": jezik,
@@ -95,7 +98,7 @@ def izdaja_iz_editions(jezik: str, ed: dict) -> dict:
             "signoff": {"phrase": ed["signoff_phrase"], "name": ed["signoff_name"]},
             "ps": ed.get("ps") or None,
             "footer_ref": meta["FOOTER_REF"] or None,
-        }
+        }, jezik)
     except KeyError as napaka:
         raise NapakaPreslikave(f"{jezik}: manjka {napaka.args[0]}")
 

@@ -11,7 +11,8 @@ signoff.phrase in ps. Ob pokvarjenih oznakah vrne exit 1 in state.json
 pusti nedotaknjen. Rezervirane oznake se preverjajo samo pri odstavkih
 znotraj seznamov (hook.paragraphs, blocks[].body, blocks[].bullets,
 closing.paragraphs): vsak tak odstavek se mora začeti z besedilom, ki se
-ne ujema z rezervirano oznako.
+ne ujema z rezervirano oznako. V SI in HR vpis vstavi nedeljivi presledek
+pred % (tipografija.py).
 """
 import copy
 import json
@@ -19,6 +20,8 @@ import os
 import re
 import sys
 from pathlib import Path
+
+from tipografija import nbsp_pred_odstotkom
 
 GLAVA_BLOKA = re.compile(r"^\[(block-\d{2}) · ([a-z_]+)\]$")
 GLAVNE = ("SUBJECT", "PREHEADER", "GREETING")
@@ -184,7 +187,7 @@ def main(argv) -> int:
             sys.stdout.write(izdaja_v_besedilo(stanje["editions"][i]))
             return 0
         besedilo = Path(argv[4]).read_text(encoding="utf-8")
-        stanje["editions"][i] = besedilo_v_izdajo(besedilo, stanje["editions"][i])
+        stanje["editions"][i] = nbsp_pred_odstotkom(besedilo_v_izdajo(besedilo, stanje["editions"][i]), argv[3])
     except NapakaOznak as napaka:
         print(f"NAPAKA: {napaka}")
         return 1
