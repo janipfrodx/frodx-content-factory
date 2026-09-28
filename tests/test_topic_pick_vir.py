@@ -1,7 +1,7 @@
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-SKILL = REPO / "plugins" / "content-factory" / "skills" / "frodx-topic-pick"
+SKILL = REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "veje" / "kolumna" / "topic-pick"
 
 
 def test_pogodba_o_viru_je_hubspot_ne_excel():

@@ -39,14 +39,14 @@ Iz HubSpot AEO portala pobere kandidate in Igorju predlaga največ tri.
      citation_count, picked_at}`; `hubspot_recommendation_id` je `null`, kadar priporočila ni
    - `_run.step` = 1, `_run.status` = `in_progress`
 
-   Dirigent koraka 1 ne postavlja pod ponovno potrditev - glej `frodx-content-factory/SKILL.md`,
+   Dirigent koraka 1 ne postavlja pod ponovno potrditev - glej `frodx-content-factory/veje/kolumna/VEJA.md`,
    razdelek »Koraki«. Igorjeva izbira v točki 8 je gate za ta korak.
 10. **Zapiši izbiro** v `AEO-Picks` z `add_data_table_rows`: `prompt_id`, `recommendation_id`
     (prazen niz, če ga ni), `topic`, `target_prompt`, `run_slug`, `picked_at`. Povej Igorju, da je
     zapisana.
 
     Če klic ne uspe, **tega ne zamolči**: povej, kaj se je zgodilo, in dodaj zadolžitev v
-    `_run.open_tasks` (glej `frodx-content-factory/references/state-schema.md`). Nezapisana izbira
+    `_run.open_tasks` (glej `frodx-content-factory/veje/kolumna/references/state-schema.md`). Nezapisana izbira
     pomeni, da bo ista tema spet med predlogi.
 
 ## Kaj ne delaš

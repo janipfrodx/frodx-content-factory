@@ -7,11 +7,12 @@ PROMPT = SKILL_DIR / "references" / "transcreation-check-prompt.md"
 SKILL = SKILL_DIR / "SKILL.md"
 
 DIRIGENT = (
-    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "SKILL.md"
+    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
+    / "veje" / "kolumna" / "VEJA.md"
 )
 SHEMA = (
     REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
-    / "references" / "state-schema.md"
+    / "veje" / "kolumna" / "references" / "state-schema.md"
 )
 
 

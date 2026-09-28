@@ -10,6 +10,7 @@ VENDORED = ("igor-column-writer", "frodx-transcreation", "frodx-key-visual", "fr
 # Pisec, ki ga rabi ena sama veja, živi v vendor/ te veje. Ključi manifesta
 # ostanejo "<ime>/<pot>", da test dokaže: premaknila se je lokacija, ne vsebina.
 POTI = {
+    "igor-column-writer": "frodx-content-factory/veje/kolumna/vendor/igor-column-writer",
     "frodx-newsletter": "frodx-content-factory/veje/novicnik/vendor/frodx-newsletter",
 }
 

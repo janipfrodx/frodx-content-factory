@@ -9,6 +9,8 @@
 | `frodx-key-visual` | frodx-content-kit.zip | 6. 8. 2026 |
 | `frodx-newsletter` | frodx-content-kit.zip | 6. 8. 2026 |
 
+`igor-column-writer` živi v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`. Datoteki sta nespremenjeni; lokacijo pozna `tools/vendor_hash.py` (`POTI`).
+
 ## Pravilo
 
 Teh datotek ne urejaj neposredno. `tests/test_vendor_integrity.py` primerja sha256 vsake datoteke z `vendor-manifest.json` in pade, če se karkoli spremeni.
@@ -29,7 +31,7 @@ Te izhajajo iz živega teka 14.-15. 8. 2026. Vendoriranih datotek se ne dotikamo
 
 Pravilo v vrstici 20 zahteva »SAP Engagement Cloud« in odsvetuje »Emarsys« kot samostojno ime izdelka. Kadar je ciljni AEO prompt dobesedno »Emarsys vs HubSpot«, kolumna brez te besede zgreši edini razlog, da je bila napisana. Izjema (»unless the source context explicitly requires reference to the former name«) to sicer že dopušča, a jo je treba brati posredno.
 
-Predlog za Igorja: zapisati AEO ciljni prompt kot izrecno imenovan primer te izjeme. Do takrat je pravilo za našo stran verige zapisano v `skills/frodx-content-factory/SKILL.md`, razdelek »Terminologija in AEO ciljni prompt«.
+Predlog za Igorja: zapisati AEO ciljni prompt kot izrecno imenovan primer te izjeme. Do takrat je pravilo za našo stran verige zapisano v `skills/frodx-content-factory/veje/kolumna/VEJA.md`, razdelek »Terminologija in AEO ciljni prompt«.
 
 ### 2. `references/critique-prompt.md` je začasen
 
@@ -37,7 +39,7 @@ Prompt za kritiko sta napisala Jani in Claude, da veriga lahko teče. Ni Igorjev
 
 ### 3. `igor-column-writer` sam ne vrne socialnih objav
 
-V osnovnem teku jih je bilo treba izrecno naročiti po `references/social-posts.md`. Preslikava je opisana v `skills/frodx-content-factory/references/igor-output-mapping.md`. Vprašanje za Igorja: ali naj jih skill vrača sam kot del izhoda koraka 2.
+V osnovnem teku jih je bilo treba izrecno naročiti po `references/social-posts.md`. Preslikava je opisana v `skills/frodx-content-factory/veje/kolumna/references/igor-output-mapping.md`. Vprašanje za Igorja: ali naj jih skill vrača sam kot del izhoda koraka 2.
 
 ## Znana napaka v izvoru
 

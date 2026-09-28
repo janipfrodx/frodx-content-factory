@@ -7,7 +7,10 @@ sys.path.insert(0, str(SCRIPTS))
 
 from taxonomy import load_campaigns, load_tags
 
-TAXONOMY = REPO / "plugins" / "content-factory" / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
+TAXONOMY = (
+    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
+    / "veje" / "kolumna" / "publishing-meta" / "references" / "hubspot-taxonomy.md"
+)
 
 PRICAKOVANE_KAMPANJE = {
     "Interest - AI agenti in Voice AI": "83ff3b4a-b380-4ed1-ab81-afb9a5704685",

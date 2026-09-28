@@ -31,7 +31,10 @@ SLIKA_HOST = "umvjwjzdrtamfrcqhopa.supabase.co"
 
 _TU = Path(__file__).resolve()
 _PLUGIN = _TU.parents[3]
-TAXONOMY = _PLUGIN / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
+TAXONOMY = (
+    _PLUGIN / "skills" / "frodx-content-factory" / "veje" / "kolumna"
+    / "publishing-meta" / "references" / "hubspot-taxonomy.md"
+)
 
 
 def _podpis_je_povezava(vsebina: str) -> bool:

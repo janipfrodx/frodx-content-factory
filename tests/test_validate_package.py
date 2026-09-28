@@ -7,7 +7,10 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 
 SKRIPTA = REPO / "plugins" / "content-factory" / "skills" / "frodx-publish-send" / "scripts" / "validate_package.py"
-TAXONOMY = REPO / "plugins" / "content-factory" / "skills" / "frodx-publishing-meta" / "references" / "hubspot-taxonomy.md"
+TAXONOMY = (
+    REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
+    / "veje" / "kolumna" / "publishing-meta" / "references" / "hubspot-taxonomy.md"
+)
 FIXTURES = REPO / "tests" / "fixtures"
 
 sys.path.insert(0, str(SKRIPTA.parent))

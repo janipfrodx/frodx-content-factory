@@ -4,9 +4,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SKILLI = REPO / "plugins" / "content-factory" / "skills"
 IMAGE_RUN = SKILLI / "frodx-image-run" / "SKILL.md"
-DIRIGENT = SKILLI / "frodx-content-factory" / "SKILL.md"
-MAPPING = SKILLI / "frodx-content-factory" / "references" / "igor-output-mapping.md"
-SHEMA_STANJA = SKILLI / "frodx-content-factory" / "references" / "state-schema.md"
+VEJA_KOLUMNA = SKILLI / "frodx-content-factory" / "veje" / "kolumna" / "VEJA.md"
+MAPPING = SKILLI / "frodx-content-factory" / "veje" / "kolumna" / "references" / "igor-output-mapping.md"
+SHEMA_STANJA = SKILLI / "frodx-content-factory" / "veje" / "kolumna" / "references" / "state-schema.md"
 SHEMA = REPO / "schema" / "content-json.schema.json"
 APP_DOKUMENT = REPO / "docs" / "social-slike-v-aplikaciji.md"
 
@@ -120,7 +120,7 @@ def test_image_run_nima_vec_placeholderja_za_id_workflowa():
 
 
 def test_dirigent_zahteva_stiri_objave_in_predlog_dveh():
-    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    korak_2 = _korak_2(VEJA_KOLUMNA.read_text(encoding="utf-8"))
     assert "igor-column-writer" in korak_2
     assert "štiri objave" in korak_2
     assert "dve najboljši" in korak_2
@@ -128,7 +128,7 @@ def test_dirigent_zahteva_stiri_objave_in_predlog_dveh():
 
 def test_dirigent_zapise_vse_stiri_pred_vprasanjem():
     """Popravek po teku 14. 9. 2026: rezultat gre v state.json ob nastanku, ne ob potrditvi."""
-    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    korak_2 = _korak_2(VEJA_KOLUMNA.read_text(encoding="utf-8"))
     assert "_run.social_candidates" in korak_2
     korak_2_brez_prelomov = " ".join(korak_2.split())
     assert "preden Igorja" in korak_2_brez_prelomov
@@ -136,7 +136,7 @@ def test_dirigent_zapise_vse_stiri_pred_vprasanjem():
 
 def test_dirigent_pozna_obliko_kandidatk_iz_speca():
     """Spec doloca stiri polja na kandidatko; chosen pove, katero je Igor potrdil."""
-    korak_2 = _korak_2(DIRIGENT.read_text(encoding="utf-8"))
+    korak_2 = _korak_2(VEJA_KOLUMNA.read_text(encoding="utf-8"))
     assert "_run.social_candidates" in korak_2
     for polje in ("text", "lever", "score", "chosen"):
         assert f'"{polje}"' in korak_2

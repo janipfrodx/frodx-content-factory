@@ -68,7 +68,7 @@ jih v koraku 4 ne prevaja.
 
 ## Korak 4 - `frodx-transcreation`
 
-Skill se pokliče dvakrat (SL→EN, SL→HR - glej `frodx-content-factory/SKILL.md`, »Korak 4 kliči
+Skill se pokliče dvakrat (SL→EN, SL→HR - glej `frodx-content-factory/veje/kolumna/VEJA.md`, »Korak 4 kliči
 dvakrat«). Njegov delovni tok (`frodx-transcreation/SKILL.md`, korak 8) pravi: »Return the final
 transcreated text only« - vrne **samo končno prevedeno/transkreirano besedilo**, brez ločenega
 naslova, brez meta opisa, brez predstavitvenega besedila (»Here is the translation« je izrecno

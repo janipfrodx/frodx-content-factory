@@ -6,7 +6,7 @@ DOSTAVNA_POT = REPO / "docs" / "dostavna-pot.md"
 SKILL = REPO / "plugins" / "content-factory" / "skills" / "frodx-publish-send" / "SKILL.md"
 SHEMA = (
     REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
-    / "references" / "state-schema.md"
+    / "veje" / "kolumna" / "references" / "state-schema.md"
 )
 
 

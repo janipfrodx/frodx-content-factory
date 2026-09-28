@@ -9,7 +9,7 @@ PREIZKUSI = (
 )
 SHEMA = (
     REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory"
-    / "references" / "state-schema.md"
+    / "veje" / "kolumna" / "references" / "state-schema.md"
 )
 
 

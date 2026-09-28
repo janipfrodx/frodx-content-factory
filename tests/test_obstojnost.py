@@ -2,7 +2,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 DIRIGENT = REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "SKILL.md"
-SHEMA = DIRIGENT.parent / "references" / "state-schema.md"
+SHEMA = DIRIGENT.parent / "veje" / "kolumna" / "references" / "state-schema.md"
 
 
 def test_zapis_pred_potrditvijo():
