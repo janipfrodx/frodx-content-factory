@@ -22,7 +22,7 @@ Izdaja je zapisana z oznakami: `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, g
 2. **STRUKTURA (kar se vidi v besedilu).** 1-3 bloki; vsak ima naslov, telo in natanko en CTA; v telesu ni povezav; noben teaser se ne ponovi v dveh blokih.
 3. **FRODX EDINSTVENOST.** Ali je vsaka ključna trditev podprta s številko ali konkretnim primerom? Ali je kje votla izjava brez dokaza? Ali je vsaj en pošten obrat, ki konstruktivno pove neprijetno resnico?
 4. **JEZIK IN GLAS.** Kratki, sekani stavki (povprečje okoli 11 besed); aktiv namesto trpnika; brez prepovedanih fraz (npr. »tu je trik«, »v današnjem digitalnem svetu«, »seveda«, »če sem iskren«); brez angleškega žargona (leverage, synergy, game changer); največ dva one-linerja v izdaji.
-5. **PRAVOPIS.** Slovnica in ločila; nedeljivi presledek pred % (`92 %`); narekovaji »…«; datum `18. 6. 2026` ali ISO; premor v stavku je en dash (–), nikoli dolgi pomišljaj.
+5. **PRAVOPIS.** Slovnica in ločila; nedeljivi presledek pred % (`92 %`); narekovaji »…«; datum `18. 6. 2026` ali ISO; premor v stavku je en dash (–), nikoli dolgi pomišljaj.
 6. **SUBJECT + PREHEADER.** Subject je eden od štirih arhetipov (dvotaktni obrat, številka kot vaba, provokativno vprašanje, izposoja znanega imena), kratek, in ne diagnosticira bralčevega neuspeha. Preheader subjecta ne ponovi, ampak doda številko ali dokaz ali konča z vprašanjem; pri večbločni izdaji našteje vsebine.
 
 ## Kako odgovoriš

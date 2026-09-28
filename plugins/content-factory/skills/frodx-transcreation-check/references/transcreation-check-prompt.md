@@ -53,7 +53,7 @@ ki se bere kot prevod, je padlo - tudi če je pomensko točno.
 
 - valuta: število in beseda - `14 eura`, `1.200 eura`. Ne `14 €`, ne `€14`
 - narekovaji: privzeto “ … ”. Tudi „ … " je dovoljen. Napaka je samo mešanje obeh v istem besedilu
-- odstotek s presledkom - `59 %`; decimalna vejica - `8,5`; tisočice s piko - `10.000`
+- odstotek z nedeljivim presledkom - `59 %`; decimalna vejica - `8,5`; tisočice s piko - `10.000`
 
 **Angleščina:**
 
