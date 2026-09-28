@@ -5,7 +5,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from tools.vendor_hash import VENDORED, hash_tree
+from tools.vendor_hash import POTI, VENDORED, hash_tree, pot_skilla
 
 SKILLS = REPO / "plugins" / "content-factory" / "skills"
 
@@ -20,11 +20,19 @@ def test_vendorirane_datoteke_niso_spremenjene():
     manifest = json.loads((REPO / "vendor-manifest.json").read_text(encoding="utf-8"))
     dejansko = {}
     for name in VENDORED:
-        for rel, digest in hash_tree(SKILLS / name).items():
+        for rel, digest in hash_tree(pot_skilla(SKILLS, name)).items():
             dejansko[f"{name}/{rel}"] = digest
     assert dejansko == manifest["files"], "Vendorirani skill je bil spremenjen - spremembe gredo skozi PR na Igorjev vir."
 
 
 def test_vsak_vendoriran_skill_ima_skill_md():
     for name in VENDORED:
-        assert (SKILLS / name / "SKILL.md").is_file()
+        assert (pot_skilla(SKILLS, name) / "SKILL.md").is_file(), name
+
+
+def test_preseljeni_pisci_niso_vec_na_vrhu_skills():
+    """Cowork vidi kot skill samo SK/<ime>/SKILL.md. Pisec v vendor/ ne tekmuje z deblom."""
+    assert "frodx-newsletter" in POTI
+    for name in POTI:
+        assert not (SKILLS / name).exists(), f"{name} je še vedno samostojen skill"
+        assert "/vendor/" in POTI[name], POTI[name]

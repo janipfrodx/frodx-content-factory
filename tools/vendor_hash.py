@@ -7,6 +7,16 @@ from pathlib import Path
 
 VENDORED = ("igor-column-writer", "frodx-transcreation", "frodx-key-visual", "frodx-newsletter")
 
+# Pisec, ki ga rabi ena sama veja, živi v vendor/ te veje. Ključi manifesta
+# ostanejo "<ime>/<pot>", da test dokaže: premaknila se je lokacija, ne vsebina.
+POTI = {
+    "frodx-newsletter": "frodx-content-factory/veje/novicnik/vendor/frodx-newsletter",
+}
+
+
+def pot_skilla(skills_dir: Path, name: str) -> Path:
+    return skills_dir / POTI.get(name, name)
+
 
 def hash_tree(root: Path) -> dict:
     result = {}
@@ -21,7 +31,7 @@ def hash_tree(root: Path) -> dict:
 def build_manifest(skills_dir: Path, source: str, package_version: str) -> dict:
     files = {}
     for name in VENDORED:
-        for rel, digest in hash_tree(skills_dir / name).items():
+        for rel, digest in hash_tree(pot_skilla(skills_dir, name)).items():
             files[f"{name}/{rel}"] = digest
     return {"generated_from": source, "package_version": package_version, "files": files}
 
