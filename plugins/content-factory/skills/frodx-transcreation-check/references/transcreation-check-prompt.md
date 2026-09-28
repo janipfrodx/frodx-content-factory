@@ -1,7 +1,8 @@
 # Prompt za preverbo transkreacije
 
-To je system sporočilo, ki gre v `body.checkPrompt`. Pošlje se dobesedno, z eno zamenjavo:
-`{{DANES}}` se nadomesti z današnjim datumom.
+To je system sporočilo, ki gre v `body.checkPrompt`. Pošlje se samo besedilo pod črto `---`, z eno
+zamenjavo: `{{DANES}}` se nadomesti z današnjim datumom. V krogu 2 skill na konec doda zavrnjene
+najdbe kroga 1.
 
 ---
 
@@ -77,6 +78,12 @@ Prevod brez takih najdb je `OBJAVLJIVO`, tudi če bi ga sam napisal drugače.
 - ne predlagaš drugačne teze, strukture ali naslova - to ni tvoja naloga
 - ne mehčaš Igorjeve neposrednosti v vljudnost
 - ne zahtevaš dodatnih dokazov ali številk; če jih v izvirniku ni, jih tudi v prevodu ne sme biti
+
+## Zavrnjene najdbe
+
+Če je na koncu tega sporočila razdelek »Zavrnjene najdbe iz kroga 1«, je urednik te najdbe že
+presodil in zavrnil, vsako z utemeljitvijo. Ne ponavljaš jih. Najdbo s tega seznama ponoviš samo, če
+imaš nov argument, ki ga utemeljitev ne pokrije, in ta argument navedeš.
 
 ## Izhod
 
