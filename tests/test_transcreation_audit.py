@@ -111,3 +111,9 @@ def test_veje_brez_dolgega_pomisljaja():
     for veja in ("kolumna", "novicnik"):
         for pot in (VEJE / veja / "VEJA.md", VEJE / veja / "references" / "state-schema.md"):
             assert "—" not in pot.read_text(encoding="utf-8"), pot
+
+
+def test_dokument_preizkusa_opisuje_audit():
+    vsebina = (SK / "frodx-transcreation-check" / "docs" / "preizkusi-preverbo.md").read_text(encoding="utf-8")
+    for pojem in ("transcreation_audit", "preveri_iznicenje.py", "accepted", "enkrat na jezik"):
+        assert pojem in vsebina, pojem

@@ -120,3 +120,15 @@ Ugotovitve:
 - Lažnih alarmov na tipografiji (`14 eura`, “ … ”) ni več v nobeni od treh izvedb.
 - Gemini je končni različici potrdil brez najdb. OpenAI še vedno najde 1-2 drobnariji, zato je
   sodba po skillu (točka d) nujna - brez nje bi bila sodba spet `revise`.
+
+## Audit po preverbi (plugin 0.6.2, 29. 9. 2026)
+
+Živi preizkus na kolumni iz 28. 9. 2026, korak 4 za `hr` in `en`. Izvede ga Jani v Coworku.
+
+- [ ] Audit teče **enkrat na jezik**, po zanki preverbe - ne ob ponovnih klicih `frodx-transcreation` v točki e.
+- [ ] Datoteke krogov `transcreation-check/<jezik>-round-<N>.json` imajo polje `accepted` z `navedek`, `popravek`, `razlog` za vsako sprejeto najdbo.
+- [ ] Obstajajo `transcreation-audit/<jezik>.md`, `<jezik>-pred.txt`, `<jezik>-po.txt`; prva vrstica poročila je `VERDICT: ... | .../100 | ... | house`.
+- [ ] `preveri_iznicenje.py` je tekel in vrnil 0 (ali 1 in so mesta v `povrnjeno`).
+- [ ] `_run.transcreation_audit` ima `hr` in `en`; Igor na gateu vidi oceno in sodbo za oba jezika.
+- [ ] Gate v koraku 7 ne izpiše opozorila o manjkajočem auditu.
+- [ ] Hrvaška končna verzija uporablja narekovaje „ … ".
