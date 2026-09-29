@@ -102,7 +102,7 @@ neprazna, zato paket, ki bi šel v oddajo pred korakom 5, tam pade. To je namern
 Zavrnjenih dveh ne brišeš iz `_run.social_candidates`; ostaneta z `"chosen": false`. Zapis, med čim
 se je izbiralo, je enako koristen kot izbira.
 
-Korak 2 in del koraka 4 (Igorjeva vendorirana skilla `igor-column-writer` in `frodx-transcreation`) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov. `frodx-transcreation-check`, ki v koraku 4 teče za `frodx-transcreation`, je izjema - piše sam: `languages.<jezik>.content` (po popravku), `_run.transcreation_check` in `_run.open_tasks`.
+Korak 2 in del koraka 4 (Igorjeva vendorirana skilla `igor-column-writer` in `frodx-transcreation`) ne pišeta sama v `state.json` - vrneta besedilo v pogovoru, ti ga prepišeš v ustrezno rezino. Natančna preslikava (kaj gre v `meta.title`, `languages.sl.content`, `social_posts[]`, `languages.en/hr.content`) je v `references/igor-output-mapping.md`. Preberi jo pred prvim zagonom teh dveh korakov. `frodx-transcreation-check`, ki v koraku 4 teče za `frodx-transcreation`, je izjema - piše sam: `languages.<jezik>.content` (po popravku), `_run.transcreation_check`, `_run.transcreation_audit` in `_run.open_tasks`.
 
 ## Skupni koraki
 
@@ -112,6 +112,13 @@ Po obeh transkreacijah in **pred Igorjevim gateom** pokliči `frodx-transcreatio
 dvakrat - za `hr` in za `en`. Ta skill da prevod v pregled GPT-ju in Geminiju, popravke naroči nazaj
 `frodx-transcreation` in zapiše izid v `_run.transcreation_check`. Korak 4 se s tem ne razdeli na dva
 koraka; gate ostane en sam, po preverbi.
+
+Za preverbo za vsak jezik teče še Igorjev `frodx-transcreation-audit`, **enkrat na jezik**, kot
+zadnji korak - postopek je v `frodx-transcreation-check/SKILL.md`, točka 6. Vendorirani
+`frodx-transcreation` ima na vrhu »Obvezno izročilo« na audit; izpolni ga ta točka, zato audita
+po `frodx-transcreation` ne kličeš sam in ga ne kličeš ob ponovnih klicih transkreacije v zanki
+preverbe. Končna verzija audita je besedilo jezika. Igorju ob gateu povej oceno in sodbo audita za
+oba jezika in mesta, ki jih je varovalo vrnilo.
 
 Zadolžitev za hrvaški native pregled se odslej zapiše v `_run.open_tasks` **vedno**, tudi kadar sta
 oba ocenjevalca rekla `OBJAVLJIVO` - zapiše jo `frodx-transcreation-check` sam. Igorju ob gateu

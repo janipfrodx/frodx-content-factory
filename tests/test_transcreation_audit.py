@@ -81,3 +81,33 @@ def test_hrvaski_narekovaji_so_hisni_slog():
 def test_brez_dolgega_pomisljaja():
     assert "—" not in _skill()
     assert "—" not in PROMPT.read_text(encoding="utf-8")
+
+
+VEJE = SK / "frodx-content-factory" / "veje"
+
+
+def test_obe_veji_v_koraku_4_omenita_audit_in_oceno_na_gateu():
+    for veja in ("kolumna", "novicnik"):
+        vsebina = (VEJE / veja / "VEJA.md").read_text(encoding="utf-8")
+        assert "frodx-transcreation-audit" in vsebina, veja
+        assert "ocen" in vsebina.lower(), veja
+        assert "enkrat na jezik" in vsebina, veja
+
+
+def test_kolumna_pove_da_izrocilo_izpolni_preverba():
+    vsebina = (VEJE / "kolumna" / "VEJA.md").read_text(encoding="utf-8")
+    assert "Obvezno izročilo" in vsebina
+
+
+def test_obe_shemi_poznata_transcreation_audit():
+    for veja in ("kolumna", "novicnik"):
+        vsebina = (VEJE / veja / "references" / "state-schema.md").read_text(encoding="utf-8")
+        assert "transcreation_audit" in vsebina, veja
+        for polje in ("score", "verdict", "povrnjeno"):
+            assert polje in vsebina, (veja, polje)
+
+
+def test_veje_brez_dolgega_pomisljaja():
+    for veja in ("kolumna", "novicnik"):
+        for pot in (VEJE / veja / "VEJA.md", VEJE / veja / "references" / "state-schema.md"):
+            assert "—" not in pot.read_text(encoding="utf-8"), pot

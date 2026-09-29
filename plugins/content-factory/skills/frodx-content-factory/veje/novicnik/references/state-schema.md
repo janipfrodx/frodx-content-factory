@@ -31,6 +31,7 @@ Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi 
 | `approvals` | `{step1: <ISO čas>, ...}` |
 | `critique_rounds` | koliko krogov kritike SI je bilo |
 | `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 |
+| `transcreation_audit` | `{hr: {score, verdict, variant, traces, povrnjeno, report}, en: {...}}` iz koraka 4 - kot pri kolumni |
 | `block_images` | `[{block_id, vir, url, razlog, kandidatke}]` iz koraka 5; `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez` |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 6 |
 | `open_tasks` | odprte zadolžitve, ista pravila kot pri kolumni (`veje/kolumna/references/state-schema.md`) |
