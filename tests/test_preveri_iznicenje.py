@@ -83,6 +83,18 @@ def test_pokvarjen_json_je_napaka(tmp_path):
     assert _cli(tmp_path, "hr", pred, po).returncode == 2
 
 
+def test_koren_ni_objekt_je_napaka(tmp_path):
+    (tmp_path / "hr-round-1.json").write_text("[]", encoding="utf-8")
+    with pytest.raises(ValueError):
+        nalozi_sprejete(tmp_path, "hr")
+    pred, po = tmp_path / "pred.txt", tmp_path / "po.txt"
+    pred.write_text("a", encoding="utf-8")
+    po.write_text("a", encoding="utf-8")
+    izid = _cli(tmp_path, "hr", pred, po)
+    assert izid.returncode == 2
+    assert "NAPAKA" in izid.stdout
+
+
 def test_manjkajoca_mapa_je_napaka(tmp_path):
     pred, po = tmp_path / "pred.txt", tmp_path / "po.txt"
     pred.write_text("a", encoding="utf-8")

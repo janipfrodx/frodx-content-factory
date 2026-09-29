@@ -28,6 +28,8 @@ def nalozi_sprejete(mapa: Path, jezik: str) -> list:
     sprejete = []
     for pot in sorted(mapa.glob(f"{jezik}-round-*.json")):
         podatki = json.loads(pot.read_text(encoding="utf-8"))
+        if not isinstance(podatki, dict):
+            raise ValueError(f"{pot.name}: koren ni objekt")
         accepted = podatki.get("accepted", [])
         if not isinstance(accepted, list):
             raise ValueError(f"{pot.name}: accepted ni seznam")
