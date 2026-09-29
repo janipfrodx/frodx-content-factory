@@ -2,7 +2,8 @@
 """Preveri, ali je audit transkreacije izničil sprejet popravek preverbe GPT + Gemini.
 
 Popravek je izničen, če navedka sprejete najdbe v besedilu pred auditom ni, v besedilu po
-auditu pa je. Primerja se brez razlike med velikimi in malimi črkami in s strnjenimi presledki.
+auditu pa je. Primerja se brez razlike med velikimi in malimi črkami, s strnjenimi presledki in s tipografskimi
+narekovaji ter opuščaji preslikanimi v ASCII.
 
 Exit 0 = noben popravek ni izničen. Exit 1 = vsaj eden je. Exit 2 = napaka vhoda.
 
@@ -15,10 +16,14 @@ from pathlib import Path
 
 JEZIKI = ("hr", "en")
 _PRESLEDKI = re.compile(r"\s+")
+_TIPOGRAFIJA = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u2039": "'", "\u203a": "'",
+    "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u00ab": '"', "\u00bb": '"',
+})
 
 
 def _normaliziraj(besedilo: str) -> str:
-    return _PRESLEDKI.sub(" ", besedilo).strip().casefold()
+    return _PRESLEDKI.sub(" ", besedilo.translate(_TIPOGRAFIJA)).strip().casefold()
 
 
 def nalozi_sprejete(mapa: Path, jezik: str) -> list:

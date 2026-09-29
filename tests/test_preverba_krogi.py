@@ -20,7 +20,7 @@ def test_krog_2_dobi_zavrnjene_najdbe_kroga_1():
 
 
 def test_verzija_preverbe():
-    assert "version: 0.2.0" in SKILL.read_text(encoding="utf-8")
+    assert "version: 0.3.0" in SKILL.read_text(encoding="utf-8")
 
 
 def test_brez_dolgega_pomisljaja():

@@ -2,7 +2,7 @@
 name: frodx-transcreation-check
 description: Second-opinion review of a finished Croatian or English transcreation. Sends the Slovenian source and the translation to GPT and Gemini through the n8n workflow cf-transcreation-check, judges their findings, and has frodx-transcreation redo the passages that fail. Use after a transcreation is produced and before it is approved, or when Igor asks "preveri hrvaščino", "je prevod v redu", "daj prevod v pregled". Catches Slovenian calques, Serbian vocabulary in Croatian, and over-idiomatic English for CEE readers.
 metadata:
-  version: 0.2.0
+  version: 0.3.0
 ---
 
 # Preverba transkreacije
@@ -111,7 +111,7 @@ Za dani jezik (`hr` ali `en`):
    Vsako najdbo, ki jo **sprejmeš**, zapiši v `accepted` (točka f): `navedek` je dobesedni navedek
    spornega mesta iz ocenjevalčeve vrstice `Navedek: "..."`, `popravek` je besedilo, ki ga naročiš,
    `razlog` je kratek naziv napake. Brez `navedek` varovalo v točki 6 ne more preveriti, ali je
-   audit popravek izničil.
+   audit popravek izničil. Preden zapišeš, preveri, da se `navedek` dobesedno pojavi v `input` kroga; če se ne (ocenjevalec je citiral nenatančno), ga prepiši dobesedno iz besedila.
 
    d. Sodba kroga je tvoja, ne modelov. Odloča, ali po točki c ostane **vsaj ena sprejeta najdba**:
       - ne ostane nobena → `verdict` = `"ok"`, `changes` = `[]`, besedilo se ne spremeni - tudi
@@ -207,7 +207,7 @@ Za dani jezik (`hr` ali `en`):
    d. Poročilo v celoti zapiši v `transcreation-audit/<jezik>.md`. Končno verzijo audita zapiši
    kot novo besedilo jezika (kolumna: `languages.<jezik>.content`) in v
    `transcreation-audit/<jezik>-po.txt`. Končna verzija ne gre nazaj skozi `frodx-transcreation`:
-   audit je Igorjev skill.
+   audit je Igorjev skill. Če audit končne verzije ne vrne (besedilo prestane nespremenjeno), je končna verzija besedilo iz točke a: zapiši ga v `<jezik>-po.txt`, besedila jezika ne spreminjaj.
 
    e. **Varovalo.** Iz `plugins/content-factory/skills/` poženi:
 
@@ -218,8 +218,9 @@ Za dani jezik (`hr` ali `en`):
    - exit 0: nadaljuj.
    - exit 1: za vsako vrstico `IZNIČENO:` poved, ki v končni verziji vsebuje navedek, zamenjaj s
      povedjo iz `<jezik>-pred.txt`, ki vsebuje popravek. Zapiši novo besedilo jezika in
-     `<jezik>-po.txt`, skripto poženi znova, dokler ne vrne 0. Vsako vrnjeno mesto dodaj v
-     `povrnjeno` (`{"navedek", "popravek", "razlog"}`).
+     `<jezik>-po.txt`, skripto poženi znova, dokler ne vrne 0 ali dokler ne ostanejo samo taka nevrnljiva mesta (spodaj). Vsako vrnjeno mesto dodaj v
+     `povrnjeno` (`{"navedek", "popravek", "razlog", "vrnjeno": true}`).
+     Če v `<jezik>-pred.txt` ni povedi s popravkom, ki bi ustrezala (audit je mesto povsem preoblikoval), mesta ne ugibaj: pusti končno verzijo, zapiši ga v `povrnjeno` z `"vrnjeno": false` in Igorju na gateu povej, kje je napaka ostala.
    - exit 2: napako pokaži Janiju; besedila ne spreminjaj.
    - Če preverba ni zapisala nobenega kroga (`rounds: 0`), skripte ne poganjaš; `povrnjeno` je `[]`.
 
@@ -245,7 +246,7 @@ Za dani jezik (`hr` ali `en`):
 
    g. **`FAIL` (pod 85) ne ustavi teka.** Tek gre na gate; Igorju izrecno povej, da je bil prevod
    pred auditom ocenjen `FAIL` in s kakšno oceno, in kaj je audit popravil. Pri vsakem jeziku mu
-   povej oceno, sodbo in `povrnjeno`, če ni prazen.
+   povej oceno, sodbo in `povrnjeno`, če ni prazen (`"vrnjeno": false` pomeni, da je izničeni popravek ostal v končni verziji).
 
 ## Odprta zadolžitev za človeka
 
@@ -295,7 +296,7 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na map
 ## Kaj ne delaš
 
 - Ne pošiljaš slovenske kolumne v ta pregled. Za slovenščino je `frodx-critique-loop`.
-- Ne popravljaš prevoda sam, mimo `frodx-transcreation` (izjema: veja novičnik, glej »Vhod po veji«).
+- Ne popravljaš prevoda sam, mimo `frodx-transcreation` (izjema: veja novičnik, glej »Vhod po veji«, in točka 6 - končna verzija audita in vračanje povedi varovala).
 - Ne urejaš `frodx-transcreation` ne njegovih referenc - Igorjev vendoriran skill je, njegova
   merila samo bereš.
 - Ne kličeš tretjega kroga, tudi če bi bilo skušnjava. Po dveh krogih odloči Igor.

@@ -45,6 +45,13 @@ def test_iznicenje_ne_skrije_velika_zacetnica_in_presledki():
     assert iznicene([TACNO], "Točno tako je bilo.", po) == [TACNO]
 
 
+def test_iznicenje_ne_skrije_tipograficnih_narekovajev():
+    najdba = {"navedek": 'rekao je "tačno"', "popravek": 'rekao je "točno"', "razlog": "srbizem"}
+    pred = "Ona je rekla nekaj drugega."
+    po = "Ona je rekao je \u201etačno\u201d."
+    assert iznicene([najdba], pred, po) == [najdba]
+
+
 def test_nalozi_sprejete_zdruzi_vse_kroge_jezika(tmp_path):
     druga = {"navedek": "za vrijeme", "popravek": "tijekom", "razlog": "kalk"}
     _krog(tmp_path, "hr", 1, [TACNO])

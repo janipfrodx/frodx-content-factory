@@ -131,4 +131,4 @@ Ugotovitve:
 - [ ] `preveri_iznicenje.py` je tekel in vrnil 0 (ali 1 in so mesta v `povrnjeno`).
 - [ ] `_run.transcreation_audit` ima `hr` in `en`; Igor na gateu vidi oceno in sodbo za oba jezika.
 - [ ] Gate v koraku 7 ne izpiše opozorila o manjkajočem auditu.
-- [ ] Hrvaška končna verzija uporablja narekovaje „ … ".
+- [ ] Hrvaška končna verzija uporablja narekovaje „ … ”.
