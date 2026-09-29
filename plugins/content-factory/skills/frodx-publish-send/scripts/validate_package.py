@@ -77,6 +77,25 @@ def opozorila(run: dict) -> list:
     return vrstice
 
 
+def opozorila_audit(run) -> list:
+    """Igorjevo pravilo: brez audita EN in HR nista pripravljena za objavo.
+
+    Janijeva odločitev 29. 9. 2026: opozori, ne blokiraj. Samostojen paket brez `_run`
+    ni tek in opozorila nima.
+    """
+    if not isinstance(run, dict):
+        return []
+    audit = run.get("transcreation_audit")
+    audit = audit if isinstance(audit, dict) else {}
+    manjka = [j for j in ("en", "hr") if not (isinstance(audit.get(j), dict) and audit[j].get("verdict"))]
+    if not manjka:
+        return []
+    return [
+        f"korak 4: audit transkreacije ni opravljen za {', '.join(manjka)} - "
+        "po Igorjevem pravilu prevod ni pripravljen za objavo"
+    ]
+
+
 def preveri_sliko(run, state_pot: Path) -> list:
     """Trde napake o naslovni sliki.
 
@@ -299,6 +318,8 @@ def main() -> int:
         print(f"Opozorilo: odprte zadolžitve ({len(odprte)}) - oddaja ni blokirana:")
         for vrstica in odprte:
             print(f"  ! {vrstica}")
+    for vrstica in opozorila_audit(run):
+        print(f"Opozorilo: {vrstica} - oddaja ni blokirana")
 
     if napake:
         print(f"Paket ni pripravljen. {len(napake)} kršitev:")

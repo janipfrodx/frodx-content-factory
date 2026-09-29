@@ -48,6 +48,8 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
 
    Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena), prevod je sicer strojno pregledan v koraku 4 (`frodx-transcreation-check`), a brez tega opozorila gre v objavo, ne da bi ga videl native govorec hrvaščine.
 
+   **Opozorilo o manjkajočem auditu** (`Opozorilo: korak 4: audit transkreacije ni opravljen za ...`) prav tako ne blokira (Janijeva odločitev 29. 9. 2026). Po Igorjevem pravilu prevod brez audita ni pripravljen za objavo - preberi ga Igorju na glas in vprašaj, ali oddaja kljub temu.
+
 4. **Če gate gre skozi (exit 0):** sestavi telo predaje.
 
    - `content` = `state.json` **brez ključa `_run`**
@@ -103,7 +105,7 @@ Preverba paketa in n8n workflow sta stvar veje. Za novičnik (`frodx-content-fac
    python3 veje/novicnik/scripts/preveri_paket.py <state.json> --telo outbox/<run_slug>.json
    ```
 
-   Skripta odstrani `_run`, preveri telo in ga zapiše v `outbox/` samo, če kršitev ni. Ob kršitvah (exit 1) ne pošiljaj: pokaži Igorju vrstice `KRŠITEV:` in za vsako povej pristojni korak, ki ga skripta navede. Vrstice `Opozorilo:` (blok brez slike) preberi Igorju, oddaje ne ustavijo. Odprte zadolžitve iz `_run.open_tasks` preberi na glas kot pri kolumni in vprašaj, ali oddaja kljub temu.
+   Skripta odstrani `_run`, preveri telo in ga zapiše v `outbox/` samo, če kršitev ni. Ob kršitvah (exit 1) ne pošiljaj: pokaži Igorju vrstice `KRŠITEV:` in za vsako povej pristojni korak, ki ga skripta navede. Vrstice `Opozorilo:` (blok brez slike) preberi Igorju, oddaje ne ustavijo. Enako velja za opozorilo o manjkajočem auditu. Odprte zadolžitve iz `_run.open_tasks` preberi na glas kot pri kolumni in vprašaj, ali oddaja kljub temu.
 
 2. **Oddaja** prek `cf-deliver-newsletter`. Telo je vsebina datoteke iz točke 1 (paket brez `_run`, brez `send_datetime`):
 

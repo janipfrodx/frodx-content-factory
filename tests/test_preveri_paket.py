@@ -260,3 +260,29 @@ def test_slika_zunaj_shrambe_je_krsitev():
 
 def test_slika_v_shrambi_ni_krsitev():
     assert _krsitve(_telo()) == []
+
+
+# --- 29. 9. 2026: brez audita opozori, ne blokira ---
+
+from preveri_paket import opozorila_audit
+
+
+def test_novicnik_opozorilo_audit_tiho_ko_sta_oba_jezika():
+    ok = {"verdict": "PASS"}
+    assert opozorila_audit({"transcreation_audit": {"en": ok, "hr": ok}}) == []
+
+
+def test_novicnik_opozorilo_navede_manjkajoca_jezika():
+    vrstice = opozorila_audit({})
+    assert len(vrstice) == 1
+    assert "ni opravljen za en, hr -" in vrstice[0]
+
+
+def test_novicnik_cli_brez_audita_vrne_0_z_opozorilom(tmp_path):
+    stanje = _telo()
+    stanje["_run"] = {"step": 5}
+    pot = tmp_path / "state.json"
+    pot.write_text(json.dumps(stanje, ensure_ascii=False), encoding="utf-8")
+    izid = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
+    assert izid.returncode == 0, izid.stdout
+    assert "audit" in izid.stdout

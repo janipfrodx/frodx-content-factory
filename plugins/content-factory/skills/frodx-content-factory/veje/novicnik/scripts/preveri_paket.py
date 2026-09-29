@@ -167,6 +167,25 @@ def _preveri_izdajo(izdaja, opozorila):
     return krsitve
 
 
+def opozorila_audit(run) -> list:
+    """Igorjevo pravilo: brez audita EN in HR nista pripravljena za objavo.
+
+    Janijeva odločitev 29. 9. 2026: opozori, ne blokiraj. Samostojen paket brez `_run`
+    ni tek in opozorila nima.
+    """
+    if not isinstance(run, dict):
+        return []
+    audit = run.get("transcreation_audit")
+    audit = audit if isinstance(audit, dict) else {}
+    manjka = [j for j in ("en", "hr") if not (isinstance(audit.get(j), dict) and audit[j].get("verdict"))]
+    if not manjka:
+        return []
+    return [
+        f"korak 4: audit transkreacije ni opravljen za {', '.join(manjka)} - "
+        "po Igorjevem pravilu prevod ni pripravljen za objavo"
+    ]
+
+
 def preveri(telo: dict):
     krsitve, opozorila = [], []
     if not isinstance(telo, dict):
@@ -225,6 +244,8 @@ def main(argv) -> int:
     krsitve, opozorila = preveri(telo)
     for besedilo in opozorila:
         print(f"Opozorilo: {besedilo}")
+    for besedilo in opozorila_audit(stanje.get("_run")):
+        print(f"Opozorilo: {besedilo} - oddaja ni blokirana")
     if krsitve:
         for besedilo in krsitve:
             print(f"KRŠITEV: {besedilo}")

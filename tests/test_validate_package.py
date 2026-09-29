@@ -564,3 +564,41 @@ def test_vec_objav_gate_ne_zavrne():
 
 def test_veljaven_paket_z_dvema_objavama_gre_skozi():
     assert _validate("package_valid.json") == []
+
+
+# --- 29. 9. 2026: brez audita opozori, ne blokira ---
+
+AUDIT_OK = {"verdict": "PASS", "score": 96}
+
+
+def test_opozorilo_audit_tiho_ko_sta_oba_jezika():
+    from validate_package import opozorila_audit
+    assert opozorila_audit({"transcreation_audit": {"en": AUDIT_OK, "hr": AUDIT_OK}}) == []
+
+
+def test_opozorilo_audit_tiho_za_samostojen_paket():
+    from validate_package import opozorila_audit
+    assert opozorila_audit(None) == []
+
+
+def test_opozorilo_navede_samo_manjkajoc_jezik():
+    from validate_package import opozorila_audit
+    vrstice = opozorila_audit({"transcreation_audit": {"en": AUDIT_OK, "hr": {"score": 80}}})
+    assert len(vrstice) == 1
+    assert "ni opravljen za hr -" in vrstice[0]
+    assert "korak 4" in vrstice[0]
+
+
+def test_opozorilo_audit_ob_napacnem_tipu():
+    from validate_package import opozorila_audit
+    vrstice = opozorila_audit({"transcreation_audit": "ni slovar"})
+    assert len(vrstice) == 1
+    assert "ni opravljen za en, hr -" in vrstice[0]
+
+
+def test_cli_brez_audita_vrne_0_z_opozorilom(tmp_path):
+    pot = _s_zadolzitvami(tmp_path, [])
+    izid = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
+    assert izid.returncode == 0, izid.stdout
+    assert "audit" in izid.stdout
+    assert "ni pripravljen za objavo" in izid.stdout
