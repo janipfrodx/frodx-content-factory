@@ -104,8 +104,14 @@ Za dani jezik (`hr` ali `en`):
    proti Igorjevemu glasu, zavrni in to zapiši v `rejected` z utemeljitvijo.
 
    Zavrni tudi najdbo, ki je samo druga, enako dobra rešitev (sinonim, drug vrstni red, »bolj
-   tekoče«), in najdbo, ki gre proti hišni tipografiji v promptu (npr. `14 eura` ali “ … ” v
-   hrvaščini). Živi tek 24. 9. 2026 je pokazal, da oba modela take najdbe dajeta v vsakem krogu.
+   tekoče«), in najdbo, ki gre proti hišni tipografiji v promptu (npr. `14 eura` v hrvaščini ali
+   `€14` v angleščini). Živi tek 24. 9. 2026 je pokazal, da oba modela take najdbe dajeta v vsakem
+   krogu. Hrvaški narekovaji so „ … ”; najdba, ki v hrvaščini označi “ … ”, je pravilna.
+
+   Vsako najdbo, ki jo **sprejmeš**, zapiši v `accepted` (točka f): `navedek` je dobesedni navedek
+   spornega mesta iz ocenjevalčeve vrstice `Navedek: "..."`, `popravek` je besedilo, ki ga naročiš,
+   `razlog` je kratek naziv napake. Brez `navedek` varovalo v točki 6 ne more preveriti, ali je
+   audit popravek izničil.
 
    d. Sodba kroga je tvoja, ne modelov. Odloča, ali po točki c ostane **vsaj ena sprejeta najdba**:
       - ne ostane nobena → `verdict` = `"ok"`, `changes` = `[]`, besedilo se ne spremeni - tudi
@@ -134,6 +140,7 @@ Za dani jezik (`hr` ali `en`):
      "openai_error": null,
      "gemini_error": null,
      "changes": ["zamenjal 'podjetje' s 'tvrtka' na treh mestih"],
+     "accepted": [{"navedek": "tačno tako", "popravek": "točno tako", "razlog": "srbizem"}],
      "rejected": ["<najdba, ki si jo zavrnil> - <zakaj>"],
      "verdict": "revise"
    }
@@ -170,6 +177,75 @@ Za dani jezik (`hr` ali `en`):
    Če sta oba ocenjevalca padla, preden je bil dokončan sploh en krog, je `rounds` `0` in
    `verdict` je `"napaka"` - ne `"ok"`, ne `"revise"`, ker sodbe o prevodu ni bilo, samo napaka
    klica. `openai_error`/`gemini_error` v tem primeru nosita zadnjo napako vsakega vozlišča.
+
+6. **Igorjev audit - zadnji korak za ta jezik.** Teče **enkrat na jezik**, po zanki preverbe,
+   tudi kadar je preverba padla (`verdict: "napaka"`). Vendorirani `frodx-transcreation` 1.0.0 ima
+   na vrhu »Obvezno izročilo« na `frodx-transcreation-audit`. Ponovni klic `frodx-transcreation` v
+   točki e ni konec transkreacije in izročila ne sproži - izročilo izpolni ta točka.
+
+   a. Shrani trenutno besedilo jezika v `transcreation-audit/<jezik>-pred.txt` (mapa teka, zraven
+   `state.json`).
+
+   b. Preberi `vendor/frodx-transcreation-audit/SKILL.md` in referenco jezika:
+   `vendor/frodx-transcreation-audit/references/croatian.md` za `hr`,
+   `vendor/frodx-transcreation-audit/references/english.md` za `en`. Izvedi audit, kot ga
+   predpisuje, v celoti. Ne krajšaj ga in ga ne pošiljaj v n8n.
+
+   c. Vhod audita: slovenski izvirnik, besedilo iz točke a in seznam sprejetih najdb iz vseh
+   krogov tega jezika (`accepted`), z navodilom:
+
+   ```
+   Ta mesta sta GPT in Gemini označila, urednik je najdbo sprejel in mesto je popravljeno.
+   Ne vračaj jih v prvotno obliko, razen iz razloga, ki ga referenca jezika označi [FAIL] -
+   takrat razlog navedi v poročilu.
+   - "<navedek>" -> "<popravek>" (<razlog>)
+   ```
+
+   Način je vedno `house` (vsebina FrodX). Pojasnila v poročilu piši v slovenščini, končno verzijo
+   v ciljnem jeziku.
+
+   d. Poročilo v celoti zapiši v `transcreation-audit/<jezik>.md`. Končno verzijo audita zapiši
+   kot novo besedilo jezika (kolumna: `languages.<jezik>.content`) in v
+   `transcreation-audit/<jezik>-po.txt`. Končna verzija ne gre nazaj skozi `frodx-transcreation`:
+   audit je Igorjev skill.
+
+   e. **Varovalo.** Iz `plugins/content-factory/skills/` poženi:
+
+   ```bash
+   python3 frodx-transcreation-check/scripts/preveri_iznicenje.py <mapa teka>/transcreation-check <jezik> <mapa teka>/transcreation-audit/<jezik>-pred.txt <mapa teka>/transcreation-audit/<jezik>-po.txt
+   ```
+
+   - exit 0: nadaljuj.
+   - exit 1: za vsako vrstico `IZNIČENO:` poved, ki v končni verziji vsebuje navedek, zamenjaj s
+     povedjo iz `<jezik>-pred.txt`, ki vsebuje popravek. Zapiši novo besedilo jezika in
+     `<jezik>-po.txt`, skripto poženi znova, dokler ne vrne 0. Vsako vrnjeno mesto dodaj v
+     `povrnjeno` (`{"navedek", "popravek", "razlog"}`).
+   - exit 2: napako pokaži Janiju; besedila ne spreminjaj.
+   - Če preverba ni zapisala nobenega kroga (`rounds: 0`), skripte ne poganjaš; `povrnjeno` je `[]`.
+
+   f. Zapiši v `state.json` pod `_run.transcreation_audit.<jezik>` (drugega jezika ne prepiši):
+
+   ```json
+   "transcreation_audit": {
+     "<jezik>": {
+       "score": 91,
+       "verdict": "PASS WITH MINOR EDITS",
+       "variant": "HR",
+       "traces": 4,
+       "povrnjeno": [],
+       "report": "transcreation-audit/<jezik>.md"
+     }
+   }
+   ```
+
+   `score`, `verdict` in `variant` so iz prve vrstice poročila
+   (`VERDICT: <verdict> | <score>/100 | <variant> | house`). Veljajo za **oddanega** kandidata
+   (besedilo iz točke a), ne za končno verzijo audita - tako je audit definiran. `traces` je
+   število najdb v razdelku »Translation traces«.
+
+   g. **`FAIL` (pod 85) ne ustavi teka.** Tek gre na gate; Igorju izrecno povej, da je bil prevod
+   pred auditom ocenjen `FAIL` in s kakšno oceno, in kaj je audit popravil. Pri vsakem jeziku mu
+   povej oceno, sodbo in `povrnjeno`, če ni prazen.
 
 ## Odprta zadolžitev za človeka
 
@@ -214,6 +290,7 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na map
 - **Popravek:** ne kličeš `frodx-transcreation` znova, ker bi vrnil golo besedilo brez oznak in strukture izdaje. Popravi le mesta, ki jih ocenjevalca upravičeno očitata, po pravilih transkreacije pisca novičnika (njegov korak 4, ki si izposodi pravila `frodx-transcreation`), in besedilo vpiši z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`. Ob `NAPAKA:` je `state.json` nespremenjen: popravek ponovi, ne vpisuj ga mimo skripte.
 - `_run.transcreation_check` in zadolžitev za hrvaški native pregled v `_run.open_tasks` se zapišeta enako kot pri kolumni.
 - Besedilo je zapisano z oznakami `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, `NASLOV:`, `TELO:`, `ALINEJE:`, `CTA:`, `ZAKLJUČEK:`, `PODPIS:`, `PS:` (glava bloka `[block-01 · type]`). Oznake so oblika, ne vsebina: ne ocenjuješ jih in ne predlagaš, da bi jih spremenili, v nobenem jeziku ostanejo take, kot so. Pripombo, ki cilja na oznako samo, zavrni.
+- **Audit (točka 6):** besedilo za `<jezik>-pred.txt` je izpis `izdaja_besedilo.py izpis <state.json> <jezik>`. Auditu k vhodu dodaj, da so oznake (`SUBJECT:`, `HOOK:`, `[block-01 · type]` ...) oblika, ne vsebina, in morajo v končni verziji ostati nespremenjene. Končno verzijo (in vsak popravek iz točke 6.e) vpiši izključno z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`; ob `NAPAKA:` obnovi oznake in vpis ponovi. `_run.transcreation_audit` se zapiše enako kot pri kolumni.
 
 ## Kaj ne delaš
 

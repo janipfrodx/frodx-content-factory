@@ -52,7 +52,7 @@ ki se bere kot prevod, je padlo - tudi če je pomensko točno.
 **Hrvaščina:**
 
 - valuta: število in beseda - `14 eura`, `1.200 eura`. Ne `14 €`, ne `€14`
-- narekovaji: privzeto “ … ”. Tudi „ … " je dovoljen. Napaka je samo mešanje obeh v istem besedilu
+- narekovaji: „ … ” (U+201E, U+201D) - hišni slog, potrjen 31. 8. 2026. “ … ” ali ravni narekovaji v hrvaščini so napaka
 - odstotek z nedeljivim presledkom - `59 %`; decimalna vejica - `8,5`; tisočice s piko - `10.000`
 
 **Angleščina:**
