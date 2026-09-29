@@ -1,0 +1,8 @@
+interface:
+  display_name: "FrodX Transcreation Audit"
+  short_description: "Native-quality QA for SL→HR and SL→EN copy"
+  brand_color: "#2266CC"
+  default_prompt: "Use $frodx-transcreation-audit to audit this HR/EN candidate against its Slovenian source and return a scored verdict and publication-ready copy."
+
+policy:
+  allow_implicit_invocation: true

@@ -12,7 +12,7 @@ SKILLS = REPO / "plugins" / "content-factory" / "skills"
 
 def test_manifest_obstaja_in_ni_prazen():
     manifest = json.loads((REPO / "vendor-manifest.json").read_text(encoding="utf-8"))
-    assert manifest["package_version"] == "2026-08-06"
+    assert manifest["package_version"] == "2026-09-29"
     assert len(manifest["files"]) > 20
 
 
@@ -36,3 +36,25 @@ def test_preseljeni_pisci_niso_vec_na_vrhu_skills():
     for name in POTI:
         assert not (SKILLS / name).exists(), f"{name} je še vedno samostojen skill"
         assert "/vendor/" in POTI[name], POTI[name]
+
+
+def test_audit_je_vendoriran_pod_preverbo_ne_na_vrhu():
+    """Audit ima allow_implicit_invocation - kot samostojen skill bi ga Cowork sprožil še sam."""
+    assert "frodx-transcreation-audit" in VENDORED
+    assert POTI["frodx-transcreation-audit"] == "frodx-transcreation-check/vendor/frodx-transcreation-audit"
+    assert not (SKILLS / "frodx-transcreation-audit").exists()
+    koren = pot_skilla(SKILLS, "frodx-transcreation-audit")
+    for rel in ("SKILL.md", "references/croatian.md", "references/english.md",
+                "dist/transcreation-audit-hr.md", "dist/transcreation-audit-en.md"):
+        assert (koren / rel).is_file(), rel
+
+
+def test_pisec_kolumne_je_1_5_0():
+    vsebina = (pot_skilla(SKILLS, "igor-column-writer") / "SKILL.md").read_text(encoding="utf-8")
+    assert "version: 1.5.0" in vsebina
+
+
+def test_transkreacija_zahteva_audit():
+    vsebina = (pot_skilla(SKILLS, "frodx-transcreation") / "SKILL.md").read_text(encoding="utf-8")
+    assert "version: 1.0.0" in vsebina
+    assert "frodx-transcreation-audit" in vsebina

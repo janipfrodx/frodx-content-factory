@@ -16,7 +16,7 @@ Typography is one of the loudest "this was translated" tells. Get it right per t
 
 - Percent: **space** before the sign - `70 %`, `8,5 %`.
 - Decimals: **comma** - `8,5`. Thousands: **period** or thin space - `10.000`.
-- Quotation marks: FrodX's live HR blog is **inconsistent** - most columns use English-style “ … ” (curly high), some use the prescriptive Croatian „ … " (low-opening). They are mixed across posts. Default to “ … ” to match the EN versions and the dominant blog style; „ … " is the correct prescriptive alternative. Never mix the two within one piece; confirm FrodX house style and standardize.
+- Quotation marks: **house style (potrjeno 31. 8. 2026): „ … ” (U+201E / U+201D)** in ALL Croatian copy. The live blog historically mixed “ … ” and „ … "; new pieces always use „ … ”. Never mix conventions within one piece; no « … », no straight quotes.
 - Currency: euro (Croatia is on the euro), not kuna. Format: number then word - 1.200 eura, 6.000 eura (period thousands).
 - Dashes: same rule as EN - **no em dash (—)**; spaced hyphen " - " for asides on the blog ("ritam tvrtke - a taj ritam…"), en dash (–) in newsletters.
 - Clitics: keep enclitics (je, su, se, mu, ga, bi…) in second position. "Vaš CRM je dosad bio bilježnica", not "Vaš CRM bio je dosad bilježnica". Wrong clitic placement is a classic non-native tell.

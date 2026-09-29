@@ -106,6 +106,66 @@ def main() -> int:
             errors.append(f"'{lang}': placeholder [povezava] v kolumni — "
                           f"viri morajo biti žive markdown povezave.")
 
+    # 4b) SEO sekcija (v1.2, obvezna): med Hrvatski in Socialne objave,
+    #     natanko ### sl/en/hr, stirje kljuci, slug kebab-case
+    SEO_KEYS = ["seo_title", "meta_description", "slug", "image_alt"]
+    SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+    if "SEO" not in h2_titles:
+        errors.append("Manjka sekcija '## SEO' — od v1.2 obvezna na redakcijski strani.")
+    else:
+        seo_i = h2_titles.index("SEO")
+        if "Hrvatski" in h2_titles and seo_i < h2_titles.index("Hrvatski"):
+            errors.append("'## SEO' mora stati za '## Hrvatski'.")
+        if SOCIAL in h2_titles and seo_i > h2_titles.index(SOCIAL):
+            errors.append("'## SEO' mora stati pred '## Socialne objave'.")
+        body = sections.get("SEO", [""])[0]
+        subs = re.findall(r"(?m)^### (\S+)\s*$", body)
+        if subs != ["sl", "en", "hr"]:
+            errors.append(f"SEO: pričakovane podsekcije ### sl/en/hr v tem vrstnem redu, najdeno: {subs}")
+        chunks = re.split(r"(?m)^### \S+\s*$", body)[1:]
+        for lang, chunk in zip(subs, chunks):
+            for key in SEO_KEYS:
+                m = re.search(rf"(?m)^{key}:\s*(.*)$", chunk)
+                if not m:
+                    errors.append(f"SEO/{lang}: manjka ključ '{key}:'.")
+                elif not m.group(1).strip():
+                    errors.append(f"SEO/{lang}: ključ '{key}:' je prazen.")
+            for km in re.finditer(r"(?m)^([a-z_]+):", chunk):
+                if km.group(1) not in SEO_KEYS:
+                    warnings.append(f"SEO/{lang}: neznan ključ '{km.group(1)}:' — importer ga preskoči (tipkarska?).")
+            st = re.search(r"(?m)^seo_title:\s*(.*)$", chunk)
+            if st and len(st.group(1).strip()) > 70:
+                warnings.append(f"SEO/{lang}: seo_title {len(st.group(1).strip())} znakov (cilj do ~60).")
+            md_m = re.search(r"(?m)^meta_description:\s*(.*)$", chunk)
+            if md_m and md_m.group(1).strip() and not (120 <= len(md_m.group(1).strip()) <= 170):
+                warnings.append(f"SEO/{lang}: meta_description {len(md_m.group(1).strip())} znakov (cilj 120-170).")
+            sl_m = re.search(r"(?m)^slug:\s*(.*)$", chunk)
+            if sl_m and sl_m.group(1).strip() and not SLUG_RE.match(sl_m.group(1).strip()):
+                errors.append(f"SEO/{lang}: slug '{sl_m.group(1).strip()}' ni kebab-case (a-z, 0-9, vezaji).")
+
+    # 4c) Key visual (v1.2, obvezen): za SEO, pred Socialne objave,
+    #     s podsekcijama ### Prompt Gemini in ### Prompt OpenAI
+    if "Key visual" not in h2_titles:
+        errors.append("Manjka sekcija '## Key visual' — od v1.2 obvezna (koncept + oba prompta).")
+    else:
+        kv_i = h2_titles.index("Key visual")
+        if "SEO" in h2_titles and kv_i < h2_titles.index("SEO"):
+            errors.append("'## Key visual' mora stati za '## SEO'.")
+        if SOCIAL in h2_titles and kv_i > h2_titles.index(SOCIAL):
+            errors.append("'## Key visual' mora stati pred '## Socialne objave'.")
+        kbody = sections.get("Key visual", [""])[0]
+        kparts = re.split(r"(?m)^### (.+)$", kbody)
+        ksubs = dict(zip(kparts[1::2], kparts[2::2]))
+        for need in ("Prompt Gemini", "Prompt OpenAI"):
+            if need not in ksubs:
+                errors.append(f"Key visual: manjka podsekcija '### {need}'.")
+            elif len(ksubs[need].strip()) < 50:
+                errors.append(f"Key visual: '### {need}' je prazen ali prekratek.")
+
+    # 4d) featured_image_url je ukinjen — URL nastane v pipelinu
+    if re.search(r"(?m)^featured_image_url:", md):
+        errors.append("Ključ 'featured_image_url:' je ukinjen — URL naslovne slike nastane v pipelinu (korak 2).")
+
     # 5) Naslov SL → meta.title
     if "Slovenščina" in sections:
         m = re.search(r"(?m)^# (?!#)(.+)$", sections["Slovenščina"][0])
@@ -138,7 +198,7 @@ def main() -> int:
             warnings.append(f"'{t}': bold/italic se v JSON splošči — odstrani.")
 
     print("=" * 60)
-    print("CONTRACT CHECK — Publishing docx → Janijeva aplikacija (v1.1)")
+    print("CONTRACT CHECK — Publishing docx → Janijeva aplikacija (v1.2)")
     print("=" * 60)
     for e in errors:
         print(f"  NAPAKA   {e}")

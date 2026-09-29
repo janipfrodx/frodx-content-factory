@@ -5,13 +5,21 @@ import json
 import sys
 from pathlib import Path
 
-VENDORED = ("igor-column-writer", "frodx-transcreation", "frodx-key-visual", "frodx-newsletter")
+VENDORED = (
+    "igor-column-writer",
+    "frodx-transcreation",
+    "frodx-key-visual",
+    "frodx-newsletter",
+    "frodx-transcreation-audit",
+)
 
 # Pisec, ki ga rabi ena sama veja, živi v vendor/ te veje. Ključi manifesta
 # ostanejo "<ime>/<pot>", da test dokaže: premaknila se je lokacija, ne vsebina.
+# Audit rabita obe veji, sproži ga preverba prevoda, zato živi v njenem vendor/.
 POTI = {
     "igor-column-writer": "frodx-content-factory/veje/kolumna/vendor/igor-column-writer",
     "frodx-newsletter": "frodx-content-factory/veje/novicnik/vendor/frodx-newsletter",
+    "frodx-transcreation-audit": "frodx-transcreation-check/vendor/frodx-transcreation-audit",
 }
 
 
@@ -41,8 +49,8 @@ if __name__ == "__main__":
     repo = Path(__file__).resolve().parents[1]
     manifest = build_manifest(
         repo / "plugins" / "content-factory" / "skills",
-        source="frodx-content-kit.zip",
-        package_version="2026-08-06",
+        source="Igorjevi zipi 29. 9. 2026 (igor-column-writer 1.5.0, frodx-transcreation 1.0.0, frodx-transcreation-audit)",
+        package_version="2026-09-29",
     )
     (repo / "vendor-manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"

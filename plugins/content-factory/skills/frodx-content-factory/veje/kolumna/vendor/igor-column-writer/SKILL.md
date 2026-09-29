@@ -2,7 +2,7 @@
 name: igor-column-writer
 description: Write a B2B opinion column in Igor Pauletič's voice for the FrodX blog (frodx.com/sl/blog). Use whenever Igor wants to draft, write, develop, or rework a column, blog post, opinion piece, or essay for FrodX - typically on AI agents, voice AI, customer experience, sales, marketing, loyalty programmes, or digital transformation. Trigger this even when he only describes a topic idea or says "napiši kolumno", "nova kolumna", "ideja za kolumno", "osnutek kolumne" without naming the skill. Produces a finished Slovenian markdown column plus title options, an SEO meta description, and a visual theme suggestion, self-graded against a 9.2/10 quality bar.
 metadata:
-  version: 1.4.0
+  version: 1.5.0
 ---
 
 # Igor Column Writer
@@ -157,10 +157,17 @@ Pravila formata:
 
 ```bash
 python scripts/build_publishing.py --sl kolumna-SL.md --en kolumna-EN.md --hr kolumna-HR.md \
-  --social socialne.md --out Publishing_<tema>.docx
+  --seo seo.md --keyvisual keyvisual.md --social socialne.md --out Publishing_<tema>.docx
 ```
 
-`--en`, `--hr` in `--social` so neobvezni; `--sl` in `--out` obvezna. Skripta potrebuje `pandoc`.
+`--en`, `--hr` in `--social` so neobvezni; `--sl`, `--seo`, `--keyvisual` in `--out` obvezni (pogodba v1.2). Skripta potrebuje `pandoc`.
+
+**Sekcijski datoteki za v1.2** (pripravi ju pred pretvorbo):
+
+- `seo.md` se začne z `## SEO` in vsebuje natanko `### sl`, `### en`, `### hr` (ta vrstni red). Vsaka podsekcija ima štiri ključe, vsak v svojem odstavku, gol tekst: `seo_title:` (do ~60 znakov, lovi iskalni namen - ni nujno enak H1), `meta_description:` (120–170 znakov), `slug:` (kebab-case), `image_alt:` (en stavek, v jeziku objave, opisuje izbrani key visual).
+- `keyvisual.md` se začne z `## Key visual`: prosto besedilo koncepta, nato podsekciji z dobesednima naslovoma `### Prompt Gemini` in `### Prompt OpenAI`; telo vsake je prompt iz skilla frodx-key-visual.
+- Interne sekcije (npr. navodila Janiju) dodaš s ponovljivim `--extra interno.md`; vstavijo se med SEO in Key visual in jih parser preskoči.
+- Ključ `featured_image_url` v dokument NE sodi - URL naslovne slike nastane v pipelinu (contract_check ga zavrne).
 
 **Pogodbena vrata (obvezno pred oddajo).** Docx je vhod v Janijevo aplikacijo (docx → JSON → webhook → n8n), zato je njegova struktura API pogodba, dokumentirana v `references/publishing-contract.md`. Pred oddajo vedno poženi:
 
@@ -168,4 +175,4 @@ python scripts/build_publishing.py --sl kolumna-SL.md --en kolumna-EN.md --hr ko
 python scripts/contract_check.py Publishing_<tema>.docx
 ```
 
-Neničelni izhod pomeni kršitev pogodbe - oddaja se ustavi, ne glede na samooceno. Ključna pravila: jeziki v vrstnem redu SL → EN → HR, en H1 na jezik, viri kot žive markdown povezave, social objave samo v SL, brez URL-jev in brez `[povezava]` placeholderja (povezavo doda n8n), brez newslettra.
+Neničelni izhod pomeni kršitev pogodbe - oddaja se ustavi, ne glede na samooceno. Ključna pravila: jeziki v vrstnem redu SL → EN → HR, en H1 na jezik, viri kot žive markdown povezave, obvezni sekciji `## SEO` (4 ključi × 3 jeziki) in `## Key visual` (oba prompta), brez `featured_image_url`, social objave samo v SL, brez URL-jev in brez `[povezava]` placeholderja (povezavo doda n8n), brez newslettra.

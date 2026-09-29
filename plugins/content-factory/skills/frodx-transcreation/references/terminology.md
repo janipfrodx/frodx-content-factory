@@ -13,7 +13,7 @@ Use these names exactly:
 - Service Hub
 - Sales Hub
 - Marketing Hub
-- OpenLoyalty
+- Open Loyalty
 - GaaS
 - InstantFeedback
 
@@ -56,7 +56,7 @@ When relevant, preserve or map content into these solution areas:
 - Kinetara: voice AI.
 - AI Support / Service Hub + Breeze Customer Agent.
 - AI Lead / Prospecting: Sales Hub + Marketing Hub + Breeze Prospecting Agent.
-- Omnichannel / Loyalty: SAP Engagement Cloud + OpenLoyalty + GaaS.
+- Omnichannel / Loyalty: SAP Engagement Cloud + Open Loyalty + GaaS.
 - CX and InstantFeedback: use response-rate claims only when present in the source or explicitly provided.
 
 ## Preferred Slovenian to English mappings

@@ -1,11 +1,15 @@
 ---
 name: frodx-transcreation
 description: Use this skill whenever you must render existing FrodX or Igor Pauletič content into English or Croatian - translate, transcreate, localize, adapt, or rewrite a column, newsletter, outbound email, LinkedIn post, web page, sales offer, or any B2B / marketing / sales / CX / AI / HubSpot / SAP Engagement Cloud copy from Slovenian (or any source) into EN or HR. Trigger it even when Igor only says "naredi angleško/hrvaško verzijo", "prevedi to", "prilagodi za hrvaški/angleški trg", or pastes a finished piece and asks for another language. The output must NOT read like a translation. It must read like original native business copy written by a senior copywriter who knows Igor's thinking, FrodX positioning, and editorial habits. Preserve intent, argument, rhythm, numbers, and terminology while rewriting natively. NOT for originating a brand-new Slovenian column (use igor-column-writer) or for legal contracts/DPAs (use frodx-contract-writer).
+metadata:
+  version: 1.0.0
 ---
 
 # FrodX Transcreation
 
 Render existing content into English or Croatian so that a native B2B reader believes it was written in that language - in Igor's voice, not a translator's.
+
+**Obvezno izročilo (zadnji korak).** Ko je EN ali HR različica gotova in je prestala Cold tell-sweep v tem skillu, jo VEDNO predaj skillu `frodx-transcreation-audit` za neodvisno oceno in revizijo. Ta skill je samopregled avtorja; audit je ločen zapornik z interferenčnimi katalogi in ocenjenim verdiktom, zato ga ne nadomešča. Empirično: audit redno najde 5-10 nenativnih mest na jezik, ki jih je samopregled spustil. Brez opravljenega audita različica ni pripravljena za objavo.
 
 ## Core mandate
 

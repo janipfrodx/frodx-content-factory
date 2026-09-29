@@ -12,6 +12,9 @@ Struktura izhoda:
     <telo, podnaslovi kot ###>
     ## English  (če podan)
     ## Hrvatski (če podan)
+    ## SEO (--seo, obvezno od v1.2)
+    ## <interne sekcije> (--extra, neobvezno; parser jih preskoči)
+    ## Key visual (--keyvisual, obvezno od v1.2)
     ## Socialne objave (če podan --social)
         ## Objava 1 / 2 / 3
 
@@ -22,6 +25,7 @@ Pravila:
 
 Uporaba:
     python build_publishing.py --sl SL.md [--en EN.md] [--hr HR.md] \
+        --seo seo.md --keyvisual keyvisual.md [--extra interno.md] \
         [--social socialne.md] --out Publishing_tema.docx
 
 Zahteva: pandoc v PATH.
@@ -52,12 +56,20 @@ def read(path: str) -> str:
         return fh.read()
 
 
-def assemble(sl: str, en: str | None, hr: str | None, social: str | None) -> str:
+def assemble(sl: str, en: str | None, hr: str | None, social: str | None,
+             seo: str | None = None, extra: list[str] | None = None,
+             keyvisual: str | None = None) -> str:
     parts = [f"## Slovenščina\n\n{demote(sl)}"]
     if en:
         parts.append(f"## English\n\n{demote(en)}")
     if hr:
         parts.append(f"## Hrvatski\n\n{demote(hr)}")
+    if seo:
+        parts.append(seo.strip())
+    for ex in (extra or []):
+        parts.append(ex.strip())
+    if keyvisual:
+        parts.append(keyvisual.strip())
     if social:
         # Each post becomes its own H2 so downstream parsers that split by
         # H2 detect them as separate items ('### Objava' under one H2 merges).
@@ -89,6 +101,9 @@ def main() -> int:
     ap.add_argument("--en", help="Angleška kolumna (.md) — neobvezno")
     ap.add_argument("--hr", help="Hrvaška kolumna (.md) — neobvezno")
     ap.add_argument("--social", help="Blok socialnih objav (.md) z '### Objava N' — neobvezno")
+    ap.add_argument("--seo", required=True, help="Sekcija '## SEO' s ### sl/en/hr — obvezno od v1.2")
+    ap.add_argument("--keyvisual", required=True, help="Sekcija '## Key visual' s ### Prompt Gemini/OpenAI — obvezno od v1.2")
+    ap.add_argument("--extra", action="append", default=[], help="Interna sekcija (.md z lastnim '## ...'), vstavi se med SEO in Key visual — neobvezno, ponovljivo")
     ap.add_argument("--out", required=True, help="Izhodna .docx datoteka")
     args = ap.parse_args()
 
@@ -97,7 +112,9 @@ def main() -> int:
         return 2
 
     for label, path in [("--sl", args.sl), ("--en", args.en), ("--hr", args.hr),
-                        ("--social", args.social)]:
+                        ("--social", args.social), ("--seo", args.seo),
+                        ("--keyvisual", args.keyvisual),
+                        *[("--extra", p) for p in args.extra]]:
         if path and not os.path.exists(path):
             print(f"NAPAKA: datoteka za {label} ne obstaja: {path}", file=sys.stderr)
             return 2
@@ -106,8 +123,18 @@ def main() -> int:
     en = read(args.en) if args.en else None
     hr = read(args.hr) if args.hr else None
     social = read(args.social) if args.social else None
+    seo = read(args.seo)
+    keyvisual = read(args.keyvisual)
+    extra = [read(p) for p in args.extra]
 
-    combined = assemble(sl, en, hr, social)
+    if not seo.lstrip().startswith("## SEO"):
+        print("NAPAKA: --seo datoteka se mora začeti z '## SEO'.", file=sys.stderr)
+        return 2
+    if not keyvisual.lstrip().startswith("## Key visual"):
+        print("NAPAKA: --keyvisual datoteka se mora začeti z '## Key visual'.", file=sys.stderr)
+        return 2
+
+    combined = assemble(sl, en, hr, social, seo, extra, keyvisual)
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as tf:
         tf.write(combined)
         md_path = tf.name
@@ -124,7 +151,7 @@ def main() -> int:
 
     langs = ["SL"] + (["EN"] if en else []) + (["HR"] if hr else [])
     print(f"OK: {args.out}")
-    print(f"  jeziki: {', '.join(langs)}" + ("  + socialne objave" if social else ""))
+    print(f"  jeziki: {', '.join(langs)}  + SEO + Key visual" + ("  + socialne objave" if social else ""))
     print("  Preveri naslove (#/##/###) in žive povezave.")
     return 0
 
