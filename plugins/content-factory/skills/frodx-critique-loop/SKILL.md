@@ -143,6 +143,8 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`):
   (pot relativna na mapo debla). To je `besedilo` za krog 1.
 - **Prompt:** `veje/novicnik/references/critique-prompt.md` (relativno na mapo debla `frodx-content-factory/`), samo besedilo pod prvo vrstico `---`, z isto zamenjavo `{{DANES}}` in istim dodajanjem zavrnjenih pripomb v krogu 2 in 3.
 - **`body.context`:** `novičnik | tip izdaje: <_run.tip_izdaje>`. `body.language` ostane `"sl"`.
+- **Krogi:** največ dva. Kjer postopek zgoraj pravi »največ trikrat« oziroma »`krog` = 3«, za novičnik velja `krog` = 2: zanko ustaviš po drugem krogu, ne glede na `verdict`. Za kolumno ostanejo trije.
+- **Brez gate-a pred zanko:** veja kliče zanko takoj po SI izdaji. Igor SI vidi šele po zanki, na gate-u koraka 3; njegovi vsebinski popravki tam ne gredo v nov krog.
 - **Zapis:** popravljeno besedilo po vsakem krogu zapiši v datoteko in ga vpiši z
   ```bash
   python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> si <besedilo.txt>

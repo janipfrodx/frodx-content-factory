@@ -52,3 +52,10 @@ def test_preverba_prevoda_pozna_vhod_po_veji_in_ohrani_kolumno():
     assert "izdaja_besedilo.py" in vsebina
     assert "Pokliči `frodx-transcreation` znova" in vsebina
     assert "eGHQGAbgeQhfCcZu" in vsebina
+
+
+def test_kritika_novicnika_najvec_dva_kroga_kolumna_tri():
+    vsebina = KRITIKA.read_text(encoding="utf-8")
+    razdelek = vsebina.split("## Vhod po veji", 1)[1]
+    assert "**Krogi:** največ dva" in razdelek
+    assert "krog` = 3" in vsebina.split("## Vhod po veji", 1)[0]
