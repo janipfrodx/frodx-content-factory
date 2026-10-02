@@ -183,3 +183,9 @@ def test_brez_popravkov_tek_gre_naprej():
 def test_podniz_zetve_presodi_claude():
     koraki = _razdelek("Koraki")
     assert "del druge besede" in koraki
+
+
+def test_korak_1_zapise_gradivo_in_tip_izdaje():
+    vrstica = _vrstica_koraka(1)
+    assert "`_run.gradivo`" in vrstica
+    assert "_run.tip_izdaje" in vrstica
