@@ -77,7 +77,7 @@ def _blok(blok, odlocitev, jezik, mapa):
 def sestavi(stanje: dict, jezik: str, mapa: Path) -> tuple:
     run = stanje.get("_run") or {}
     if not (run.get("approvals") or {}).get("step3"):
-        raise ManjkaKorak("korak 3: Igor še ni potrdil SI издaje (_run.approvals.step3)")
+        raise ManjkaKorak("korak 3: Igor še ni potrdil SI izdaje (_run.approvals.step3)")
     si = _si(stanje)
     nacini = ((run.get("gradivo_odlocitve") or {}).get("jeziki") or {}).get(jezik)
     if not isinstance(nacini, dict):
