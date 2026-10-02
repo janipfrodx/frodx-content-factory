@@ -12,7 +12,7 @@ Rezultat koraka se zapiše **takoj ob nastanku**, ne ob potrditvi (splošno prav
 | `editions[]` `si` | korak 2 (`scripts/iz_editions.py`), korak 3 (`scripts/izdaja_besedilo.py vpis`) |
 | `editions[]` `en`, `hr` | korak 4 (`scripts/iz_editions.py`, po preverbi prevoda `scripts/izdaja_besedilo.py vpis`) |
 | `editions[].blocks[].image.file` | korak 2 (ime datoteke iz gradiva, če obstaja) |
-| `editions[].blocks[].image.url`, `.alt` | korak 5 |
+| `editions[].blocks[].image.url`, `.alt` | korak 5 (po odločitvah iz koraka 1 v `_run.block_images`) |
 
 Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi Igor v aplikaciji, časovni pas je v aplikaciji vedno `Europe/Ljubljana`.
 
@@ -27,12 +27,13 @@ Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi 
 | `status` | `awaiting_material`, `awaiting_approval`, `in_progress`, `sent` |
 | `gradivo` | `[{vrsta, vrednost}]` iz koraka 1; `vrsta` je `url`, `webinar`, `novica` ali `slika` |
 | `tip_izdaje` | tip izdaje po Igorjevem playbooku, iz koraka 1 |
-| `gradivo_odlocitve` | Igorjeve odločitve iz gate-a koraka 1: `{bloki: [block_id po vrstnem redu], pain_link: <URL ali null>, opombe: <niz>}` |
+| `gradivo_odlocitve` | Igorjeve odločitve z gate-a koraka 1: `{bloki: [{block_id, type, url}] po vrstnem redu (url je SI vsebina bloka), pain_link: <URL ali null>, opombe: <niz>, hook: {arhetip, besedilo, reakcija}, zgodba_kolumne: <niz ali null>, jeziki: {hr: {<block_id>: {nacin, url}}, en: {...}}}`. `nacin` je `transkreacija` (url = objavljena različica kot referenca ali prazen) ali `lokalni_vir` (url = stran tega trga ali prazen, če je gradivo v pogovoru) |
 | `approvals` | `{step1: <ISO čas>, ...}` |
 | `critique_rounds` | koliko krogov kritike SI je bilo |
 | `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 |
 | `transcreation_audit` | `{hr: {score, verdict, variant, traces, povrnjeno, report}, en: {...}}` iz koraka 4 - kot pri kolumni |
-| `block_images` | `[{block_id, vir, url, razlog, kandidatke}]` iz koraka 5; `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez` |
+| `zetev` | `[{jezik, prej, potem, razlog}]`: pari, ki jih je Igor na gate-u koraka 4 potrdil in so vpisani v n8n tabelo `CF-Zetev` (`references/zetev.md`). Prazen seznam, če popravkov ni bilo |
+| `block_images` | `[{block_id, jezik, vir, url, razlog, kandidatke}]`, en zapis na blok in jezik (`si`, `hr`, `en`); `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez`. Predlog in Igorjeva odločitev nastaneta v koraku 1, `url` za `generirana` v koraku 5 |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 6 |
 | `open_tasks` | odprte zadolžitve, ista pravila kot pri kolumni (`veje/kolumna/references/state-schema.md`) |
 | `skill_versions` | verzije skillov, ki so tek obdelali |

@@ -117,3 +117,24 @@ def test_shema_pozna_odlocitve_gradiva():
     vrstica = next(v for v in vsebina.splitlines() if v.startswith("| `gradivo_odlocitve`"))
     for polje in ("bloki", "pain_link"):
         assert polje in vrstica
+
+
+def _vrstica_sheme(kljuc):
+    vsebina = (NOVICNIK / "references" / "state-schema.md").read_text(encoding="utf-8")
+    return next(v for v in vsebina.splitlines() if v.startswith(f"| `{kljuc}`"))
+
+
+def test_shema_odlocitev_pozna_hook_zgodbo_in_jezike():
+    vrstica = _vrstica_sheme("gradivo_odlocitve")
+    for polje in ("hook", "zgodba_kolumne", "jeziki", "transkreacija", "lokalni_vir", "block_id", "url"):
+        assert polje in vrstica, polje
+
+
+def test_shema_slik_je_po_jeziku():
+    assert "jezik" in _vrstica_sheme("block_images")
+
+
+def test_shema_pozna_zetev():
+    vrstica = _vrstica_sheme("zetev")
+    for polje in ("prej", "potem", "CF-Zetev"):
+        assert polje in vrstica, polje

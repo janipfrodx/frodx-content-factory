@@ -248,3 +248,11 @@ def test_run_slug_novicnika_z_dolgim_naslovom_ustreza_aplikaciji(tmp_path):
     assert r.returncode == 0, r.stdout + r.stderr
     stanje = json.loads(Path(r.stdout.strip()).read_text(encoding="utf-8"))
     assert RUN_SLUG.match(stanje["run_slug"]), stanje["run_slug"]
+
+
+def test_novicnik_zacne_s_praznimi_odlocitvami_auditom_in_zetvijo():
+    from init_run import zgradi_stanje_novicnik
+    run = zgradi_stanje_novicnik("Oktobrski novičnik", "oktobrski-novicnik", "2026-10-02T09:00:00.000Z")["_run"]
+    assert run["gradivo_odlocitve"] == {}
+    assert run["transcreation_audit"] == {}
+    assert run["zetev"] == []
