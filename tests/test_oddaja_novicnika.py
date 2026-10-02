@@ -69,3 +69,21 @@ def test_opis_skilla_omeni_newsletter():
     glava = SKILL.read_text(encoding="utf-8").split("---")[1]
     assert "cf-deliver-newsletter" in glava
     assert "cf-deliver-draft" in glava
+
+
+def test_novicnik_ena_potrditev():
+    razdelek = _razdelek()
+    assert "v enem sporočilu" in razdelek
+    assert "Ne sprašuj drugič" in razdelek
+
+
+def test_novicnik_navodilo_za_hub_ob_created():
+    razdelek = _razdelek()
+    assert "Osnutek je v Hubu" in razdelek
+    assert "z gumbom pri bloku" in razdelek
+    assert "Šele »Razporedi« ustvari maile v HubSpotu" in razdelek
+
+
+def test_novicnik_ne_ustvarja_mailov_v_hubspotu():
+    razdelek = _razdelek()
+    assert "Ne ustvarjaš in ne kloniraš mailov v HubSpotu" in razdelek

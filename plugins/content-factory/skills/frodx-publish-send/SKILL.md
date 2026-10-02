@@ -105,7 +105,7 @@ Preverba paketa in n8n workflow sta stvar veje. Za novičnik (`frodx-content-fac
    python3 veje/novicnik/scripts/preveri_paket.py <state.json> --telo outbox/<run_slug>.json
    ```
 
-   Skripta odstrani `_run`, preveri telo in ga zapiše v `outbox/` samo, če kršitev ni. Ob kršitvah (exit 1) ne pošiljaj: pokaži Igorju vrstice `KRŠITEV:` in za vsako povej pristojni korak, ki ga skripta navede. Vrstice `Opozorilo:` (blok brez slike) preberi Igorju, oddaje ne ustavijo. Enako velja za opozorilo o manjkajočem auditu. Odprte zadolžitve iz `_run.open_tasks` preberi na glas kot pri kolumni in vprašaj, ali oddaja kljub temu.
+   Skripta odstrani `_run`, preveri telo in ga zapiše v `outbox/` samo, če kršitev ni. Ob kršitvah (exit 1) ne pošiljaj: pokaži Igorju vrstice `KRŠITEV:` in za vsako povej pristojni korak, ki ga skripta navede. Sicer Igorju v enem sporočilu pokaži vrstice `Opozorilo:` (blok brez slike, manjkajoč audit), odprte zadolžitve iz `_run.open_tasks`, prebrane na glas kot pri kolumni, in vprašaj »Oddam?«. Njegov odgovor je potrditev za oddajo. Ne sprašuj drugič.
 
 2. **Oddaja** prek `cf-deliver-newsletter`. Telo je vsebina datoteke iz točke 1 (paket brez `_run`, brez `send_datetime`):
 
@@ -129,7 +129,7 @@ Preverba paketa in n8n workflow sta stvar veje. Za novičnik (`frodx-content-fac
 
    | `status` | Kaj narediš |
    |---|---|
-   | `created` | `_run.delivery` = `{status, draft_id, edit_url, delivered_at}`, `_run.status = sent`, `_run.step = 6`. Igorju daj `edit_url`: tam pregleda osnutek, doda manjkajoče slike, nastavi čas in ga razporedi sam |
+   | `created` | `_run.delivery` = `{status, draft_id, edit_url, delivered_at}`, `_run.status = sent`, `_run.step = 6`. Igorju napiši: »Osnutek je v Hubu: `<edit_url>`. Tam (1) pri blokih `<seznam blokov brez slike>` dodaj sliko z gumbom pri bloku, (2) nastavi čas, (3) klikni »Razporedi«. Šele »Razporedi« ustvari maile v HubSpotu.« Če so vsi bloki s sliko, točko (1) izpusti |
    | `duplicate` | ta tek je že oddan. Zapiši isti `draft_id` in Igorju daj `edit_url` z opombo, da osnutek že obstaja in se ni spremenil |
    | `rejected` | izpiši `detail` (očitki po polju). Ne poskušaj znova samodejno; vrni Igorja na pristojni korak |
    | `misconfigured` | ustavi se in povej Janiju. Ne poskušaj znova |
@@ -138,6 +138,8 @@ Preverba paketa in n8n workflow sta stvar veje. Za novičnik (`frodx-content-fac
 4. **Telo oddaje izpiši tudi v pogovor**, ker `outbox/` ne preživi seje.
 
 Pri novičniku nikoli ne nastaviš `send_datetime` in v aplikaciji nikoli ne pritisneš »Razporedi«. Oboje je Igorjevo.
+
+Ne ustvarjaš in ne kloniraš mailov v HubSpotu, tudi če Igor reče, da mu je vseeno kako. Hub osnutek in HubSpot mail bi bila dva izvora iste izdaje, kar pomeni tveganje dvojnega pošiljanja (tek 1. 10. 2026). Napoti ga na Hub.
 
 ## Kaj ne delaš
 
