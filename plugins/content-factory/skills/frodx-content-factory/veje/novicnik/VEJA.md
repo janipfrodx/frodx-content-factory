@@ -70,11 +70,11 @@ Odločitve zapiši v `_run.gradivo_odlocitve` (`bloki`, `pain_link`, `opombe`, `
 
 ### Korak 4: HR in EN
 
-Za vsak jezik (`hr`, nato `en`):
+Točke a-d tečejo za vsak jezik (`hr`, nato `en`; točka b enkrat na tek), točka e enkrat za oba jezika, točki f-g spet za vsak jezik, točka h enkrat za oba:
 
 a. **Viri.** Za vsak blok z neprazno `url` v `_run.gradivo_odlocitve.jeziki.<jezik>` stran preberi z `web_fetch` in glavno besedilo (brez menijev in noge) zapiši v `runs/<slug>/prevod/viri/<jezik>-<block_id>.txt`. Pri `lokalni_vir` brez URL-ja zapiši tja gradivo, ki ga je Igor dal v pogovoru.
 
-b. **Žetev.** Enkrat na tek, pred prvim jezikom: `get_data_table_rows` nad `CF-Zetev` (`references/zetev.md`), odgovor zapiši v `runs/<slug>/prevod/zetev.json`. Prazna tabela je `[]`.
+b. **Žetev.** Enkrat na tek, pred prvim jezikom: `get_data_table_rows` nad `CF-Zetev` (`references/zetev.md`), odgovor zapiši v `runs/<slug>/prevod/zetev.json`. Branje po straneh in oblika odgovora sta v `references/zetev.md`; prazna tabela je `{"rows": [], "count": 0}`.
 
 c. **Vhod prevajalca.**
 
@@ -82,12 +82,13 @@ c. **Vhod prevajalca.**
 python3 veje/novicnik/scripts/prevod_vhod.py <state.json> <jezik>
 ```
 
-Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje. Skripta zapiše `prevod/<jezik>-vhod.json` in žetev za varovalo (`transcreation-check/<jezik>-round-zetev.json`).
+Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje. Ob `NAPAKA:` je `prevod/zetev.json` ali `state.json` pokvarjen: CF-Zetev preberi znova po `references/zetev.md` in skripto poženi še enkrat; če napaka ostane, izpis pokaži Igorju in se ustavi. Skripta zapiše `prevod/<jezik>-vhod.json` in žetev za varovalo (`transcreation-check/<jezik>-round-zetev.json`).
 
 d. **Prevod.** Pisec, njegova koraka 4-5, iz `prevod/<jezik>-vhod.json`:
 - blok `transkreacija`: transkreacija SI bloka. Referenca ni vir besedila. Zgodba, dolžina in struktura bloka pridejo iz SI. Iz reference vzameš že potrjene izraze, naslove, terminologijo in formulacije, da se blok ne razlikuje od strani, na katero vodi CTA;
 - blok `lokalni_vir`: napišeš ga iz vira, v tonu in osi te izdaje; hook ga mora povezati tako kot v SI. Pisčeva preverba »ali os med bloki drži« velja tudi za ta jezik;
-- nobena oblika iz stolpca `prej` v žetvi se ne pojavi; uporabiš obliko iz `potem`.
+- nobena oblika iz stolpca `prej` v žetvi se ne pojavi; uporabiš obliko iz `potem`;
+- CTA bloka v tem jeziku je URL iz `_run.gradivo_odlocitve.jeziki.<jezik>.<block_id>.url`, kadar ni prazen; sicer ostane URL SI bloka.
 
 e. **Vpis.** HR in EN v eni datoteki z `iz_editions.py` (glej »Pisec in preslikava«).
 

@@ -209,3 +209,31 @@ def test_posebnosti_prepovejo_obvode():
     for niz in ("mailov v HubSpotu", "dva izvora", "HubSpot strani", "brskalnik", "base64",
                 "Po oddaji", "workflowov"):
         assert niz in posebnosti, niz
+
+
+def _korak_4():
+    koraki = _razdelek("Koraki")
+    return koraki[koraki.index("### Korak 4"):]
+
+
+def test_korak_4_zanka_loci_tocke_po_jeziku_in_enkrat():
+    korak = _korak_4()
+    for niz in ("točka b enkrat na tek", "točka e enkrat za oba jezika", "točki f-g spet za vsak jezik",
+                "točka h enkrat za oba"):
+        assert niz in korak, niz
+    assert "Za vsak jezik (`hr`, nato `en`):" not in korak
+
+
+def test_korak_4_zetev_po_straneh_in_napaka():
+    korak = _korak_4()
+    assert '`{"rows": [], "count": 0}`' in korak
+    assert "NAPAKA:" in korak
+    assert "references/zetev.md" in korak
+
+
+def test_korak_4_cta_bloka_iz_jezikovne_razlicice():
+    assert "jeziki.<jezik>.<block_id>.url" in _korak_4()
+
+
+def test_shema_transcreation_check_ostane_prazen_pri_novicniku():
+    assert "pri novičniku ostane prazen" in _vrstica_sheme("transcreation_check")
