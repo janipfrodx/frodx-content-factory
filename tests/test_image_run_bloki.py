@@ -87,3 +87,24 @@ def test_alt_po_sliki_ki_si_jo_pogledal():
 
 def test_verzija_image_run():
     assert "version: 0.4.0" in SKILL.read_text(encoding="utf-8")
+
+
+def test_faza_c_je_razdeljena_na_korak_1_in_5():
+    faza = _faza_c()
+    assert faza.index("### Korak 1 veje") < faza.index("### Korak 5 veje")
+
+
+def test_faza_c_odloca_na_gateu_koraka_1_po_jeziku():
+    faza = _faza_c()
+    korak_1 = faza[faza.index("### Korak 1 veje"):faza.index("### Korak 5 veje")]
+    assert "gate-u koraka 1" in korak_1
+    assert "jezik" in korak_1
+    assert "sumljiva" in korak_1
+
+
+def test_faza_c_korak_5_brez_gatea_claude_izbere_kandidatko():
+    faza = _faza_c()
+    korak_5 = faza[faza.index("### Korak 5 veje"):]
+    assert "brez gate-a" in korak_5
+    assert "izbereš sam" in korak_5
+    assert "awaiting_approval" not in korak_5
