@@ -189,3 +189,23 @@ def test_korak_1_zapise_gradivo_in_tip_izdaje():
     vrstica = _vrstica_koraka(1)
     assert "`_run.gradivo`" in vrstica
     assert "_run.tip_izdaje" in vrstica
+
+
+def test_skupni_koraki_kritika_dva_kroga_preverba_samo_audit():
+    skupni = _razdelek("Skupni koraki")
+    assert "največ dva kroga" in skupni
+    assert "samo točka 6" in skupni
+    assert "round-zetev" in skupni
+
+
+def test_oddaja_da_igorju_navodilo_za_hub():
+    oddaja = _razdelek("Oddaja")
+    assert "Razporedi" in oddaja
+    assert "z gumbom" in oddaja
+
+
+def test_posebnosti_prepovejo_obvode():
+    posebnosti = _razdelek("Posebnosti")
+    for niz in ("mailov v HubSpotu", "dva izvora", "HubSpot strani", "brskalnik", "base64",
+                "Po oddaji", "workflowov"):
+        assert niz in posebnosti, niz

@@ -133,16 +133,16 @@ Ob vsakem gate-u Igorju pokaži izdajo z `python3 veje/novicnik/scripts/izdaja_b
 
 ## Skupni koraki
 
-- **`frodx-critique-loop`** (korak 3), razdelek »Vhod po veji« v skillu:
+- **`frodx-critique-loop`** (korak 3), razdelek »Vhod po veji« v skillu, največ dva kroga:
   - vhod: `izdaja_besedilo.py izpis <state.json> si`;
   - prompt: `references/critique-prompt.md` (začasen, sestavljen iz Igorjeve rubrike);
   - zapis: `izdaja_besedilo.py vpis <state.json> si <besedilo.txt>`.
-- **`frodx-transcreation-check`** (korak 4), za `hr` in za `en`, razdelek »Vhod po veji« v skillu:
+- **`frodx-transcreation-check`** (korak 4), za `hr` in za `en`, razdelek »Vhod po veji« v skillu. Za novičnik teče samo točka 6 (Igorjev audit), enkrat na jezik; zanka GPT/Gemini (točke 1-5) ne teče:
   - izvirnik: `izpis ... si`, prevod: `izpis ... <jezik>`;
-  - popravek na besedilu izdaje po pisčevih pravilih transkreacije, vpis z `vpis ... <jezik>`, ne s ponovnim klicem `frodx-transcreation`;
-  - zadolžitev za native HR pregled gre v `_run.open_tasks` vedno, kot pri kolumni. Igorju ob gate-u povej, da priporočaš native pregled.
-  - audit na koncu, enkrat na jezik, po razdelku »Vhod po veji« v skillu: oznake izdaje ostanejo nespremenjene, vpis samo z `vpis ... <jezik>`. Igorju ob gate-u povej oceno in sodbo audita za oba jezika.
-- **`frodx-image-run`** (korak 5): samo Faza C. Fazi A in B ne tečeta.
+  - vhod audita je žetev iz `transcreation-check/<jezik>-round-zetev.json` (zapiše jo `prevod_vhod.py`), varovalo jo preveri;
+  - oznake izdaje ostanejo nespremenjene, vpis samo z `vpis ... <jezik>`. Igorju ob gate-u povej oceno in sodbo audita za oba jezika;
+  - zadolžitev za native HR pregled se pri novičniku ne zapiše v `_run.open_tasks`: native pregled je Igorjev pregled na gate-u koraka 4.
+- **`frodx-image-run`** (korak 1 in korak 5): samo Faza C. Fazi A in B ne tečeta.
 - **`frodx-publish-send`** (korak 6): razdelek »Veja novičnik« v skillu.
 
 ## Preverba paketa
@@ -155,9 +155,11 @@ Preveri: trije jeziki, vsak natanko enkrat; 1-3 bloki z enakim `block_id` in `ty
 
 ## Oddaja
 
-n8n `cf-deliver-newsletter` (`Wd1gVtK77b29ePrJ`) prek `execute_workflow`, `executionMode: "manual"`. Workflow ostane neaktiven. Izidi (`created`, `duplicate`, `rejected`, `misconfigured`, `retry`) in zapis v `_run.delivery` so v `frodx-publish-send/SKILL.md`, razdelek »Veja novičnik«. Igor dobi `edit_url`.
+n8n `cf-deliver-newsletter` (`Wd1gVtK77b29ePrJ`) prek `execute_workflow`, `executionMode: "manual"`. Workflow ostane neaktiven. Izidi (`created`, `duplicate`, `rejected`, `misconfigured`, `retry`) in zapis v `_run.delivery` so v `frodx-publish-send/SKILL.md`, razdelek »Veja novičnik«.
 
-Po oddaji v pogovor izpiši pisčev scorecard za vse tri jezike, kaj ostaja Igorju (resničnost dejstev, živi URL-ji, odprtost webinarja, native pregled HR in EN, ton novic o strankah) in vrstico za arhiv po `vendor/frodx-newsletter/references/archive.md`.
+Ob `created` Igorju napiši navodilo iz `frodx-publish-send` (»Osnutek je v Hubu ...«): kje doda manjkajoče slike z gumbom pri bloku, da nastavi čas in da šele »Razporedi« ustvari maile v HubSpotu. Seznam blokov brez slike vzemi iz `_run.block_images` (`vir` `brez` ali `prilozena`).
+
+Po oddaji v pogovor izpiši pisčev scorecard za vse tri jezike, kaj ostaja Igorju (resničnost dejstev, živi URL-ji, odprtost webinarja, ton novic o strankah) in vrstico za arhiv po `vendor/frodx-newsletter/references/archive.md`.
 
 ## Posebnosti
 
@@ -166,4 +168,8 @@ Po oddaji v pogovor izpiši pisčev scorecard za vse tri jezike, kaj ostaja Igor
 - Igorjeva rubrika dovoli en dash (–) kot premor v stavku. Dolgi pomišljaj ne sme nikamor, razen v `SEGMENT_REF`, kot v Igorjevem vzorcu.
 - `scripts/eval_check.py` pisca je pomoč, ne gate: vedno vrne exit 0.
 - Blok `announcement` o resnični stranki ali partnerju: ton javne formulacije vedno označi Igorju.
-- Igorja **ne** kliči za potrditev kakršnekoli n8n spremembe. Ta veja ne spreminja workflowov.
+- Igorja **ne** kliči za potrditev kakršnekoli n8n spremembe. Ta veja ne gradi in ne spreminja workflowov: v teku 1. 10. 2026 je gradnja workflowa za slike po oddaji porabila 12 minut in velik del konteksta, Igor pa ga ni potreboval.
+- **Ne ustvarjaš, ne kloniraš in ne urejaš mailov v HubSpotu.** Če Igor to zahteva, mu povej, da bi nastala dva izvora iste izdaje (Hub osnutek in HubSpot mail) in s tem tveganje dvojnega pošiljanja, in ga napoti na Hub: »Razporedi« maile ustvari sam.
+- Ne objavljaš in ne urejaš HubSpot strani, tudi ne og:image. Napačen og:image na strani zapiši v `_run.open_tasks` za Janija.
+- Ne nalagaš slik prek brskalnika in ne sestavljaš base64. Priložena slika gre v Hub z gumbom pri bloku.
+- **Po oddaji** tek ne teče več. Kar Igor prinese po oddaji (slike, popravki besedila), uredi v Hubu; ti mu poveš, kje.
