@@ -28,18 +28,82 @@ Tek ustvari takoj, ko je veja potrjena, pred korakom 1:
 python3 scripts/init_run.py --veja novicnik "<tema izdaje ali 'novicnik'>" runs
 ```
 
+Gate-i so samo pri korakih 1, 3, 4 in 6. Koraka 2 in 5 tečeta brez vprašanja; rezultat se tudi tam zapiše v `state.json` takoj ob nastanku.
+
 | Korak | Kaj teče | Gate: kaj vprašaš Igorja |
 |---|---|---|
-| 1 Gradivo | Igor poda 1-3 URL-je kolumn ali vsebin, po želji webinar, novico in slike. Pisec, njegov korak 1 (Intake): vsebine z URL-jev prebereš z `web_fetch`, določiš tip izdaje. Igorjevo pravilo je natanko en pain link na izdajo (CTA na rešitev, demo, posvet ali prijavo; `self-eval-rubric.md`). Če v gradivu takega URL-ja ni, ga pri gate-u vprašaš. URL-ja ne izmišljaš. Zapiši `_run.gradivo`, `_run.tip_izdaje` in Igorjeve odločitve v `_run.gradivo_odlocitve`. | kateri bloki gredo noter, v kakšnem vrstnem redu in kateri CTA je pain link |
-| 2 SI izdaja | Pisec, njegova koraka 2-3 (SI original po `playbook.md`, sedem vrat po `self-eval-rubric.md`). Tu se ustaviš: HR in EN še ne nastaneta. | je SI izdaja v redu |
-| 3 Kritika | `frodx-critique-loop` na SI izdaji (glej Skupni koraki) | je popravljena verzija v redu |
-| 4 HR in EN | Pisec, njegova koraka 4-5 (transkreacija iz **popravljene** SI, sedem vrat z vrati 6). Nato `frodx-transcreation-check` za `hr` in za `en`. Na koncu, enkrat na jezik, Igorjev `frodx-transcreation-audit` (točka 6 v `frodx-transcreation-check/SKILL.md`). | sta HR in EN v redu (+ ocena audita za oba jezika, priporočilo za native pregled HR) |
-| 5 Slike | `frodx-image-run`, Faza C | so slike v redu (odloča blok za blokom) |
-| 6 Oddaja | preverba paketa, `cf-deliver-newsletter`, nato Igorjev scorecard in arhivska vrstica v pogovor | brez vprašanja o vsebini; odprte zadolžitve prebereš na glas in vprašaš, ali oddaja kljub temu (`frodx-publish-send`) |
+| 1 Gradivo | Igor poda 1-3 URL-je kolumn ali vsebin, po želji webinar, novico in slike. Pisec, njegov korak 1 (Intake): vsebine z URL-jev prebereš z `web_fetch`, določiš tip izdaje. Nato pripraviš vse iz podrazdelka »Korak 1« spodaj. Igorjevo pravilo je natanko en pain link na izdajo (CTA na rešitev, demo, posvet ali prijavo; `self-eval-rubric.md`). Če v gradivu takega URL-ja ni, ga pri gate-u vprašaš. URL-ja ne izmišljaš. Vse odločitve zapiši v `_run.gradivo_odlocitve` in `_run.block_images`. | **da**, en gate za vse: kateri bloki in v kakšnem vrstnem redu, pain link, način po bloku in jeziku, slika po bloku in jeziku, hook in zgodba za blok kolumne |
+| 2 SI izdaja | Pisec, njegova koraka 2-3 (SI original po `playbook.md` z izbranim hookom in zgodbo, sedem vrat po `self-eval-rubric.md`). HR in EN še ne nastaneta. | **ne**: takoj korak 3 |
+| 3 Kritika | `frodx-critique-loop` na SI izdaji, največ dva kroga (glej Skupni koraki) | **da**: je SI izdaja v redu. Igor jo vidi prvič, že popravljeno po kritiki |
+| 4 HR in EN | Pisec, njegova koraka 4-5, z vhodom iz `scripts/prevod_vhod.py` (podrazdelek »Korak 4« spodaj). Nato enkrat na jezik Igorjev `frodx-transcreation-audit` (točka 6 v `frodx-transcreation-check/SKILL.md`), brez GPT/Gemini preverbe. Nato Igorjev pregled in žetev. | **da**: Igorjevi popravki HR in EN, ocena audita za oba jezika, kateri popravki gredo v žetev |
+| 5 Slike | `frodx-image-run`, Faza C, podrazdelek »Korak 5 veje«: izvede odločitve iz koraka 1 | **ne**: takoj korak 6 |
+| 6 Oddaja | preverba paketa, nato v enem sporočilu kršitve, opozorila in odprte zadolžitve: odprte zadolžitve prebereš na glas in vprašaš, ali oddaja kljub temu (`frodx-publish-send`). Nato `cf-deliver-newsletter`, navodilo za Hub, Igorjev scorecard in arhivska vrstica v pogovor | **da**, ena potrditev |
 
 **Pisčev korak 6 (docx build za Janija) se ne izvede nikoli.** Ne piši v `EDITIONS` znotraj `build_newsletter.py`, ne poganjaj ga in ne kliči `present_files`. Pisčev korak 7 (scorecard, kaj ostaja Igorju, vrstica za arhiv po `archive.md`) izvedeš ob oddaji, v pogovor, brez docxov.
 
 Pisec v koraku 1 sme vprašati eno kratko vprašanje o gradivu. To je pričakovano - pusti ga.
+
+### Korak 1: kaj pripraviš pred gate-om
+
+Igorju pokažeš vse v enem sporočilu, po točkah a-e. Igor lahko odgovori v več sporočilih; gate je zaprt, ko je odločeno vse. Šele nato zapiši `_run.approvals.step1`.
+
+**a) Jezikovne različice.** Za vsak URL s frodx.com poišči HR in EN različico iste strani, po vrsti:
+1. preklopnik jezikov v rezultatu `web_fetch` strani: povezavi iste strani na `/hr/` in `/en/`. Povezav hreflang iz glave strani `web_fetch` ne vrne, zato jih ne iščeš;
+2. če preklopnika ni: HubSpot konektor. Konektor različic ne poveže sam. Z `LIST_BLOG_POSTS` (pri straneh s seznamom strani) poišči objavo v jeziku `hr` oziroma `en`, katere slug ustreza SI slugu po pomenu. To je predlog, ne dejstvo: Igorju povej, da si ga našel po slugu;
+3. če ju ne najdeš: vprašaj Igorja. URL-ja ne ugibaš in ne sestavljaš iz SI naslova. Poti niso enotne: domača stran je `/hr/homepage`, a `/en/home-page`.
+
+Vsak najden URL preberi z `web_fetch`: stran se mora naložiti in biti v pravem jeziku, sicer različica ni najdena. Rezultat `web_fetch` obdela manjši model, zato velja samo URL, ki v rezultatu stoji dobesedno. Igorju na gate-u za vsak URL povej, od kod je (preklopnik, konektor).
+
+**b) Tabela blokov po jezikih.** Za vsak blok in vsak jezik (`hr`, `en`) določi način:
+- `transkreacija` (privzeto): blok ima isto vsebino kot v SI in nastane s transkreacijo SI bloka. Če ima vsebina bloka objavljeno različico v tem jeziku (točka a), je njen URL **referenca**;
+- `lokalni_vir`: blok je v tem jeziku vsebinsko drug in v SI nima izvirnika (npr. HR radionica namesto SI webinarja). URL je stran tega trga; če je Igor gradivo prilepil v pogovor, ostane prazen.
+
+Hook, zaključek, podpis in PS so vedno transkreacija, brez reference. V vseh jezikih ostane isto število blokov z istim `block_id` in `type` (pogodba paketa). Če Igor hoče v enem jeziku drugačno število blokov, mu to povej na tem gate-u: paket tega ne dopušča.
+
+**c) Slike.** `frodx-image-run`, Faza C, podrazdelek »Korak 1 veje«: za vsak blok in jezik preberi og:image strani tega jezika, ga uvozi in Igorju poročaj, kaj si našel.
+
+**d) Hook in zgodba za blok kolumne.** Po protokolu kandidatov v `vendor/frodx-newsletter/references/playbook.md` (razdelek »Pet hook arhetipov«) predlagaj 2-3 kandidate za hook, vsakega z arhetipom, in enega priporoči. Arhetip E velja Igorjevo pravilo rotacije (največ 1× na 4-6 izdaj); E ni privzet. Pri kandidatu E Igor vrne svoj resničen stavek reakcije; tega si ne izmisliš. Če ima izdaja blok `column`, vprašaj, katero osebno zgodbo ali izkušnjo Igor da vanj.
+
+**e) Pain link** po pravilu iz tabele.
+
+Odločitve zapiši v `_run.gradivo_odlocitve` (`bloki`, `pain_link`, `opombe`, `hook`, `zgodba_kolumne`, `jeziki`; oblika v `references/state-schema.md`) in v `_run.block_images`, preden vprašaš.
+
+### Korak 4: HR in EN
+
+Za vsak jezik (`hr`, nato `en`):
+
+a. **Viri.** Za vsak blok z neprazno `url` v `_run.gradivo_odlocitve.jeziki.<jezik>` stran preberi z `web_fetch` in glavno besedilo (brez menijev in noge) zapiši v `runs/<slug>/prevod/viri/<jezik>-<block_id>.txt`. Pri `lokalni_vir` brez URL-ja zapiši tja gradivo, ki ga je Igor dal v pogovoru.
+
+b. **Žetev.** Enkrat na tek, pred prvim jezikom: `get_data_table_rows` nad `CF-Zetev` (`references/zetev.md`), odgovor zapiši v `runs/<slug>/prevod/zetev.json`. Prazna tabela je `[]`.
+
+c. **Vhod prevajalca.**
+
+```bash
+python3 veje/novicnik/scripts/prevod_vhod.py <state.json> <jezik>
+```
+
+Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje. Skripta zapiše `prevod/<jezik>-vhod.json` in žetev za varovalo (`transcreation-check/<jezik>-round-zetev.json`).
+
+d. **Prevod.** Pisec, njegova koraka 4-5, iz `prevod/<jezik>-vhod.json`:
+- blok `transkreacija`: transkreacija SI bloka. Referenca ni vir besedila. Zgodba, dolžina in struktura bloka pridejo iz SI. Iz reference vzameš že potrjene izraze, naslove, terminologijo in formulacije, da se blok ne razlikuje od strani, na katero vodi CTA;
+- blok `lokalni_vir`: napišeš ga iz vira, v tonu in osi te izdaje; hook ga mora povezati tako kot v SI. Pisčeva preverba »ali os med bloki drži« velja tudi za ta jezik;
+- nobena oblika iz stolpca `prej` v žetvi se ne pojavi; uporabiš obliko iz `potem`.
+
+e. **Vpis.** HR in EN v eni datoteki z `iz_editions.py` (glej »Pisec in preslikava«).
+
+f. **Preverba žetve.** Izpis jezika (`izdaja_besedilo.py izpis <state.json> <jezik>`) zapiši v `prevod/<jezik>-izpis.txt` in poženi iz `plugins/content-factory/skills/`:
+
+```bash
+python3 frodx-transcreation-check/scripts/preveri_iznicenje.py <mapa teka>/transcreation-check <jezik> /dev/null <mapa teka>/prevod/<jezik>-izpis.txt
+```
+
+Vsaka vrstica `IZNIČENO:` je oblika iz žetve, ki je v prevodu. Zamenjaj jo z obliko `potem` in vpiši z `izdaja_besedilo.py vpis`. Varovalo primerja podnize: če je najdena oblika samo del druge besede, je ne menjaj in to povej Igorju na gate-u.
+
+g. **Audit.** `frodx-transcreation-check`, točka 6, po »Vhod po veji« za novičnik.
+
+h. **Gate.** Igorju pokaži HR in EN z `izdaja_besedilo.py izpis` ter oceno in sodbo audita za oba jezika. Igor pove popravke; vneseš jih z `izdaja_besedilo.py vpis`. Iz njegovih popravkov izlušči kandidate za žetev po pravilih v `references/zetev.md` (samo splošni pari) in jih pokaži kot seznam `prej → potem (razlog)`. Igor izrecno potrdi, kateri gredo v žetev. Potrjene pare vpiši z `add_data_table_rows` v `CF-Zetev`, tabelo preberi nazaj in jih zapiši v `_run.zetev`. Nato `_run.approvals.step4`.
+
+Če Igor nima popravkov, ni kandidatov in ni vprašanja o žetvi: `_run.zetev` ostane `[]`, zapiši `_run.approvals.step4` in pojdi na korak 5.
 
 ## Pisec in preslikava
 

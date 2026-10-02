@@ -138,3 +138,48 @@ def test_shema_pozna_zetev():
     vrstica = _vrstica_sheme("zetev")
     for polje in ("prej", "potem", "CF-Zetev"):
         assert polje in vrstica, polje
+
+
+def _vrstica_koraka(n):
+    return next(v for v in _razdelek("Koraki").splitlines() if v.startswith(f"| {n} "))
+
+
+def test_gate_samo_pri_korakih_1_3_4_6():
+    for n in (1, 3, 4, 6):
+        assert "**da**" in _vrstica_koraka(n), n
+    for n in (2, 5):
+        assert "**ne**" in _vrstica_koraka(n), n
+
+
+def test_korak_1_pripravi_vse_pred_gateom():
+    koraki = _razdelek("Koraki")
+    podrazdelek = koraki[koraki.index("### Korak 1"):koraki.index("### Korak 4")]
+    for niz in ("preklopnik jezikov", "web_fetch", "HubSpot konektor", "LIST_BLOG_POSTS", "po slugu",
+                "pravem jeziku", "URL-ja ne ugibaš",
+                "transkreacija", "lokalni_vir", "Korak 1 veje", "rotacij", "reakcij",
+                "block_id", "_run.gradivo_odlocitve"):
+        assert niz in podrazdelek, niz
+
+
+def test_korak_4_prevaja_iz_si_z_referenco_in_zetvijo():
+    koraki = _razdelek("Koraki")
+    podrazdelek = koraki[koraki.index("### Korak 4"):]
+    for niz in ("prevod_vhod.py", "zetev.json", "get_data_table_rows", "add_data_table_rows",
+                "referenc", "Zgodba, dolžina in struktura", "preveri_iznicenje.py", "/dev/null",
+                "izrecno potrdi", "step4", "_run.zetev"):
+        assert niz in podrazdelek, niz
+
+
+def test_korak_4_ne_klice_gpt_gemini_preverbe():
+    vrstica = _vrstica_koraka(4)
+    assert "brez GPT/Gemini preverbe" in vrstica
+
+
+def test_brez_popravkov_tek_gre_naprej():
+    koraki = _razdelek("Koraki")
+    assert "Če Igor nima popravkov" in koraki
+
+
+def test_podniz_zetve_presodi_claude():
+    koraki = _razdelek("Koraki")
+    assert "del druge besede" in koraki
