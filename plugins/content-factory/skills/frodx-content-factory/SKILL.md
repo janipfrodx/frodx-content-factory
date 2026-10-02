@@ -54,6 +54,16 @@ Vrstni red ni kozmetičen. V teku 14. 9. 2026 so se `social_posts[]` izgubili, k
 
 Obstojna rešitev (sinhronizacija mape teka na SharePoint prek n8n) je odprta točka, ne del tega skilla.
 
+### Kontekst
+
+Tek mora v eni seji priti do oddaje. V teku novičnika 1. 10. 2026 je kontekst zmanjkal sredi teka, zato velja:
+
+- Izid n8n izvedbe bereš vedno z `get_workflow_execution` in `nodeNames: ["Respond to Webhook"]`, nikoli cele izvedbe.
+- Ne bereš `get_workflow_sdk_reference`, `get_node_types`, `search_nodes` ali `tool_guidance`. Tek ne gradi workflowov.
+- Ne bereš base64 in ne delaš posnetkov zaslona brskalnika.
+- Ne izpisuješ celih izdaj ali paketov v JSON-u. Igorju izdajo pokažeš z `izdaja_besedilo.py izpis` (novičnik) oziroma z besedilom kolumne.
+- Datoteke, ki si jo enkrat prebral in se ni spremenila, ne bereš znova.
+
 ## Nadaljevanje prekinjenega teka
 
 Če Igor reče »nadaljuj <naslov>«, poišči `runs/*-<slug>/state.json`, preberi `_run.veja` in `_run.step`, odpri `veje/<_run.veja>/VEJA.md` in nadaljuj z naslednjim korakom. Ne ponavljaj korakov, ki so že opravljeni, razen če Igor to izrecno zahteva.
