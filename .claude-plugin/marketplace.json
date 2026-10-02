@@ -9,7 +9,7 @@
     {
       "name": "content-factory",
       "source": "./plugins/content-factory",
-      "version": "0.6.2",
+      "version": "0.7.0",
       "description": "Veriga skillov za produkcijo FrodX vsebin v dveh vejah: kolumna (izbira teme, pisanje, kritika, transkreacija, slike, meta podatki, predaja v objavo) in novičnik (gradivo, SI izdaja, kritika, HR in EN s preverbo, slike blokov, predaja v Newsletter Hub)."
     }
   ]
