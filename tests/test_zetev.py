@@ -24,4 +24,4 @@ def test_opis_zetve_doloci_pravila():
 
 
 def test_opis_zetve_brez_dolgega_pomisljaja():
-    assert "—" not in ZETEV.read_text(encoding="utf-8")
+    assert "\u2014" not in ZETEV.read_text(encoding="utf-8")
