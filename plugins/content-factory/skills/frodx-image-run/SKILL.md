@@ -16,7 +16,7 @@ Skill ima dve fazi. **Faza A** naredi naslovno sliko kolumne - dve kandidatki, O
 1536x1024. **Faza B** naredi po eno sliko za vsako potrjeno socialno objavo - ena kandidatka,
 samo OpenAI, 1024x1024. Fazi sta ločeni, ker gresta na različna workflowa in imata različni merili.
 
-**Faza C** je samo za vejo novičnik: za vsak blok izdaje predlaga vir slike in Igor pri vsakem bloku odloči. Kolumna je ne uporablja.
+**Faza C** je samo za vejo novičnik: za vsak blok izdaje predlaga vir slike; predlog in Igorjeva odločitev sta na gate-u koraka 1, izvedba v koraku 5 je brez gate-a. Kolumna je ne uporablja.
 
 ## Faza A - naslovna slika
 
@@ -264,12 +264,13 @@ Faza C teče v dveh delih: predlog in Igorjeva odločitev na gate-u koraka 1 vej
 
 ### Korak 5 veje: izvedba brez gate-a
 
-5. **Generiranje** za vsak zapis z `vir` `generirana`:
+5. **Generiranje** enkrat na blok: za vsak `block_id`, ki ima vsaj en zapis z `vir` `generirana`:
    - prompt sestavi po `frodx-key-visual` (vizualni slog in recepti), iz končnega naslova in telesa bloka;
    - n8n workflow `lHc3NdejxehMyc9O` prek `execute_workflow`, z `size: "1024x1024"`, dve kandidatki (OpenAI in Gemini), tako kot v fazi A; odgovor vrne javna URL-ja v `content-images`;
    - obe kandidatki prenesi s `curl`, izmeri z `dimenzije.py` in poglej, kot v fazi A (točki 4 in 5);
    - kvadrat, ker `gpt-image-1` 16:9 ne podpira, Igorjevo pravilo za slike blokov (`vendor/frodx-newsletter/references/image-compositing.md`) pa kvadrat dovoli;
-   - boljšo kandidatko izbereš sam in v pogovor v eni vrstici napišeš, zakaj. Obe gresta v `kandidatke`, izbrana v `url`. Igor jo lahko zamenja v Hubu.
+   - boljšo kandidatko izbereš sam in v pogovor v eni vrstici napišeš, zakaj. Obe gresta v `kandidatke`, izbrana v `url` vseh zapisov tega bloka z `vir` `generirana`. Igor jo lahko zamenja v Hubu;
+   - če workflow vrne napako ali nobene kandidatke: `url` ostane prazen, Igorju v eni vrstici povej, da sliko tega bloka doda v Hubu, in nadaljuj brez vprašanja.
 
 6. **Zapiši v vseh treh izdajah.** Za vsak blok v izdajah `si`, `en` in `hr`:
    - `image.url` = `url` iz zapisa `_run.block_images` za ta blok in jezik;

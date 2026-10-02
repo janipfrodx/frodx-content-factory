@@ -108,3 +108,11 @@ def test_faza_c_korak_5_brez_gatea_claude_izbere_kandidatko():
     assert "brez gate-a" in korak_5
     assert "izbereš sam" in korak_5
     assert "awaiting_approval" not in korak_5
+
+
+def test_faza_c_korak_5_generira_enkrat_na_blok_in_prenese_napako():
+    faza = _faza_c()
+    korak_5 = faza[faza.index("### Korak 5 veje"):]
+    assert "enkrat na blok" in korak_5
+    assert "vseh zapisov tega bloka" in korak_5
+    assert "doda v Hubu" in korak_5
