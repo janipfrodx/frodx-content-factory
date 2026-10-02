@@ -251,7 +251,7 @@ Za dani jezik (`hr` ali `en`):
 ## Odprta zadolžitev za človeka
 
 Po obeh jezikih zapiši v `_run.open_tasks` zadolžitev za hrvaščino - **vedno**, tudi kadar sta oba
-ocenjevalca rekla `OBJAVLJIVO`:
+ocenjevalca rekla `OBJAVLJIVO`, razen pri veji novičnik (glej »Vhod po veji«):
 
 ```json
 {"what": "hrvaška različica: GPT in Gemini sta jo pregledala (<verdict>, <rounds> krog/a), native pregled ni bil opravljen",
@@ -286,12 +286,20 @@ Veja v svojem `VEJA.md`, razdelek **Skupni koraki**, poda izvirnik, prevod in na
 
 Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na mapo debla:
 
-- **Izvirnik (`source_text`):** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si`
-- **Prevod (`target_text`):** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> <jezik>`
-- **Popravek:** ne kličeš `frodx-transcreation` znova, ker bi vrnil golo besedilo brez oznak in strukture izdaje. Popravi le mesta, ki jih ocenjevalca upravičeno očitata, po pravilih transkreacije pisca novičnika (njegov korak 4, ki si izposodi pravila `frodx-transcreation`), in besedilo vpiši z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`. Ob `NAPAKA:` je `state.json` nespremenjen: popravek ponovi, ne vpisuj ga mimo skripte.
-- `_run.transcreation_check` in zadolžitev za hrvaški native pregled v `_run.open_tasks` se zapišeta enako kot pri kolumni.
-- Besedilo je zapisano z oznakami `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, `NASLOV:`, `TELO:`, `ALINEJE:`, `CTA:`, `ZAKLJUČEK:`, `PODPIS:`, `PS:` (glava bloka `[block-01 · type]`). Oznake so oblika, ne vsebina: ne ocenjuješ jih in ne predlagaš, da bi jih spremenili, v nobenem jeziku ostanejo take, kot so. Pripombo, ki cilja na oznako samo, zavrni.
-- **Audit (točka 6):** besedilo za `<jezik>-pred.txt` je izpis `izdaja_besedilo.py izpis <state.json> <jezik>`. Auditu k vhodu dodaj, da so oznake (`SUBJECT:`, `HOOK:`, `[block-01 · type]` ...) oblika, ne vsebina, in morajo v končni verziji ostati nespremenjene. Končno verzijo (in vsak popravek iz točke 6.e) vpiši izključno z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`; ob `NAPAKA:` obnovi oznake in vpis ponovi. `_run.transcreation_audit` se zapiše enako kot pri kolumni.
+- **Točke 1-5 ne tečejo.** Za novičnik ni zanke GPT/Gemini: teče samo točka 6 (audit), enkrat na jezik. `_run.transcreation_check` ostane prazen.
+- **Izvirnik:** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si`; **prevod:** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> <jezik>`.
+- Besedilo je zapisano z oznakami `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, `NASLOV:`, `TELO:`, `ALINEJE:`, `CTA:`, `ZAKLJUČEK:`, `PODPIS:`, `PS:` (glava bloka `[block-01 · type]`). Oznake so oblika, ne vsebina: ne ocenjuješ jih in ne predlagaš, da bi jih spremenili, v nobenem jeziku ostanejo take, kot so.
+- **Audit (točka 6):** besedilo za `<jezik>-pred.txt` je izpis `izdaja_besedilo.py izpis <state.json> <jezik>`. Auditu k vhodu dodaj, da so oznake oblika, ne vsebina, in morajo v končni verziji ostati nespremenjene. V točki c namesto sprejetih najdb GPT/Gemini podaš Igorjeve potrjene popravke iz žetve (`transcreation-check/<jezik>-round-zetev.json`, polje `accepted`, zapiše ga `veje/novicnik/scripts/prevod_vhod.py`), z navodilom:
+
+  ```
+  To so Igorjevi potrjeni popravki iz prejšnjih izdaj. Oblike na levi so napačne.
+  Ne uvajaj jih in ne vračaj mest v obliko na levi, razen iz razloga, ki ga referenca
+  jezika označi [FAIL] - takrat razlog navedi v poročilu.
+  - "<navedek>" -> "<popravek>" (<razlog>)
+  ```
+
+  V točki e varovalo poženeš vedno, tudi ko je žetev prazna (skripta takrat vrne 0). Končno verzijo (in vsak popravek iz točke 6.e) vpiši izključno z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`; ob `NAPAKA:` obnovi oznake in vpis ponovi. `_run.transcreation_audit` se zapiše enako kot pri kolumni.
+- **Native pregled:** zadolžitve za hrvaščino iz razdelka »Odprta zadolžitev za človeka« ne zapišeš. Igor HR pregleda sam na gate-u koraka 4 veje.
 
 ## Kaj ne delaš
 

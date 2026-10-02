@@ -59,3 +59,26 @@ def test_kritika_novicnika_najvec_dva_kroga_kolumna_tri():
     razdelek = vsebina.split("## Vhod po veji", 1)[1]
     assert "**Krogi:** največ dva" in razdelek
     assert "krog` = 3" in vsebina.split("## Vhod po veji", 1)[0]
+
+
+def _vhod_preverbe():
+    return PREVERBA.read_text(encoding="utf-8").split("## Vhod po veji", 1)[1].split("\n## ", 1)[0]
+
+
+def test_preverba_novicnika_samo_audit():
+    razdelek = _vhod_preverbe()
+    assert "Točke 1-5 ne tečejo" in razdelek
+    assert "eGHQGAbgeQhfCcZu" not in razdelek
+
+
+def test_audit_novicnika_dobi_zetev_in_varovalo_tece():
+    razdelek = _vhod_preverbe()
+    assert "round-zetev.json" in razdelek
+    assert "Igorjeve potrjene popravke iz žetve" in razdelek
+    assert "varovalo poženeš vedno" in razdelek
+
+
+def test_native_zadolzitev_novicnika_se_ne_zapise():
+    vsebina = PREVERBA.read_text(encoding="utf-8")
+    odprta = vsebina.split("## Odprta zadolžitev za človeka", 1)[1].split("\n## ", 1)[0]
+    assert "razen pri veji novičnik" in odprta
