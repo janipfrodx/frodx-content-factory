@@ -18,7 +18,7 @@ n8n Data Table `CF-Zetev`, projekt `Content Factory` (`projectId: "FucXmQlDiWLVs
 
 ## Branje
 
-V koraku 4, pred prevodom: `get_data_table_rows` nad `CF-Zetev`. Odgovor zapiši, kot je, v `runs/<slug>/prevod/zetev.json`. Če je tabela prazna, zapiši `[]`. `scripts/prevod_vhod.py` iz tega vzame vrstice za jezik.
+V koraku 4, pred prevodom: `get_data_table_rows` nad `CF-Zetev` z `limit: 100`. Odgovor je `{"rows": [...], "count": N}`. Če je `count` večji od števila vrstic, beri naprej s `skip: 100`, `skip: 200` ... in vrstice vseh strani združi v en odgovor iste oblike. Odgovor zapiši, kot je, v `runs/<slug>/prevod/zetev.json`, tudi prazen (`{"rows": [], "count": 0}`). `scripts/prevod_vhod.py` iz tega vzame vrstice za jezik.
 
 ## Pisanje
 

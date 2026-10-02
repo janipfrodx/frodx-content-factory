@@ -133,11 +133,32 @@ def test_zetev_filtrira_jezik_in_odstrani_dvojnike(tmp_path):
                         "accepted": [{"navedek": "udvoje", "popravek": "dođu dvije osobe", "razlog": "kalk"}]}
 
 
+def _vrstica_hr():
+    return {"jezik": "hr", "prej": "Vodimo je", "potem": "Radionicu vodimo", "razlog": "red besed"}
+
+
 def test_zetev_sprejme_surov_odgovor_orodja(tmp_path):
-    odgovor = {"data": [{"id": 7, "createdAt": "2026-10-02", "jezik": "hr", "prej": "Vodimo je",
-                         "potem": "Radionicu vodimo", "razlog": "red besed", "veja": "novicnik"}],
-               "nextCursor": None}
+    odgovor = {"rows": [{"id": 7, "createdAt": "2026-10-02T09:00:00.000Z", "updatedAt": "2026-10-02T09:00:00.000Z",
+                         "jezik": "hr", "prej": "Vodimo je", "potem": "Radionicu vodimo", "razlog": "red besed",
+                         "veja": "novicnik", "run_slug": "x", "datum": "2026-10-02"}],
+               "count": 1}
     vhod, _ = sestavi(_stanje(), "hr", _mapa(tmp_path, zetev=odgovor))
+    assert vhod["zetev"] == [{"prej": "Vodimo je", "potem": "Radionicu vodimo", "razlog": "red besed"}]
+
+
+def test_zetev_sprejme_prazen_odgovor_orodja(tmp_path):
+    vhod, _ = sestavi(_stanje(), "hr", _mapa(tmp_path, zetev={"rows": [], "count": 0}))
+    assert vhod["zetev"] == []
+
+
+def test_zetev_ki_ni_cela_manjka_korak_4(tmp_path):
+    odgovor = {"rows": [_vrstica_hr()], "count": 150}
+    with pytest.raises(ManjkaKorak, match="vse strani"):
+        sestavi(_stanje(), "hr", _mapa(tmp_path, zetev=odgovor))
+
+
+def test_zetev_sprejme_star_odgovor_z_data(tmp_path):
+    vhod, _ = sestavi(_stanje(), "hr", _mapa(tmp_path, zetev={"data": [_vrstica_hr()]}))
     assert vhod["zetev"] == [{"prej": "Vodimo je", "potem": "Radionicu vodimo", "razlog": "red besed"}]
 
 

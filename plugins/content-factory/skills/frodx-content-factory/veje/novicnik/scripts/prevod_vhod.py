@@ -4,7 +4,7 @@
 Uporaba: python3 prevod_vhod.py <state.json> <hr|en>
 
 Bere iz mape teka (mapa state.json):
-  prevod/zetev.json                     odgovor get_data_table_rows nad CF-Zetev ([] ob prazni tabeli)
+  prevod/zetev.json                     odgovor get_data_table_rows nad CF-Zetev ({"rows": [...], "count": N})
   prevod/viri/<jezik>-<block_id>.txt    referenca (transkreacija) ali vir (lokalni_vir) bloka
 Piše:
   prevod/<jezik>-vhod.json
@@ -43,10 +43,16 @@ def _zetev(mapa, jezik):
     if not pot.is_file():
         raise ManjkaKorak("korak 4: prevod/zetev.json manjka - preberi CF-Zetev z get_data_table_rows")
     vrstice = json.loads(pot.read_text(encoding="utf-8"))
+    stevilo = None
     if isinstance(vrstice, dict):
-        vrstice = vrstice.get("data")
+        stevilo = vrstice.get("count")
+        vrstice = vrstice["rows"] if "rows" in vrstice else vrstice.get("data")
     if not isinstance(vrstice, list):
-        raise ValueError("prevod/zetev.json: ni seznam vrstic ne objekt s poljem data")
+        raise ValueError("prevod/zetev.json: ni seznam vrstic ne objekt s poljem rows")
+    if isinstance(stevilo, int) and not isinstance(stevilo, bool) and stevilo > len(vrstice):
+        raise ManjkaKorak(
+            f"korak 4: prevod/zetev.json ima {len(vrstice)} od {stevilo} vrstic CF-Zetev - preberi vse strani (limit 100, skip)"
+        )
     izid, videno = [], set()
     for v in vrstice:
         if not isinstance(v, dict) or v.get("jezik") != jezik:
