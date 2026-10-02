@@ -58,7 +58,7 @@ Obstojna rešitev (sinhronizacija mape teka na SharePoint prek n8n) je odprta to
 
 Tek mora v eni seji priti do oddaje. V teku novičnika 1. 10. 2026 je kontekst zmanjkal sredi teka, zato velja:
 
-- Izid n8n izvedbe bereš vedno z `get_workflow_execution` in `nodeNames: ["Respond to Webhook"]`, nikoli cele izvedbe.
+- Izid n8n izvedbe bereš vedno z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Respond to Webhook"]`, nikoli cele izvedbe.
 - Ne bereš `get_workflow_sdk_reference`, `get_node_types`, `search_nodes` ali `tool_guidance`. Tek ne gradi workflowov.
 - Ne bereš base64 in ne delaš posnetkov zaslona brskalnika.
 - Ne izpisuješ celih izdaj ali paketov v JSON-u. Igorju izdajo pokažeš z `izdaja_besedilo.py izpis` (novičnik) oziroma z besedilom kolumne.

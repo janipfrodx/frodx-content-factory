@@ -30,7 +30,7 @@ Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi 
 | `gradivo_odlocitve` | Igorjeve odločitve z gate-a koraka 1: `{bloki: [{block_id, type, url}] po vrstnem redu (url je SI vsebina bloka), pain_link: <URL ali null>, opombe: <niz>, hook: {arhetip, besedilo, reakcija}, zgodba_kolumne: <niz ali null>, jeziki: {hr: {<block_id>: {nacin, url}}, en: {...}}}`. `nacin` je `transkreacija` (url = objavljena različica kot referenca ali prazen) ali `lokalni_vir` (url = stran tega trga ali prazen, če je gradivo v pogovoru) |
 | `approvals` | `{step1: <ISO čas>, ...}` |
 | `critique_rounds` | koliko krogov kritike SI je bilo |
-| `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4 |
+| `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4; pri novičniku ostane prazen (teče samo audit, točka 6) |
 | `transcreation_audit` | `{hr: {score, verdict, variant, traces, povrnjeno, report}, en: {...}}` iz koraka 4 - kot pri kolumni |
 | `zetev` | `[{jezik, prej, potem, razlog}]`: pari, ki jih je Igor na gate-u koraka 4 potrdil in so vpisani v n8n tabelo `CF-Zetev` (`references/zetev.md`). Prazen seznam, če popravkov ni bilo |
 | `block_images` | `[{block_id, jezik, vir, url, razlog, kandidatke}]`, en zapis na blok in jezik (`si`, `hr`, `en`); `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez`. Predlog in Igorjeva odločitev nastaneta v koraku 1, `url` za `generirana` v koraku 5 |

@@ -107,6 +107,6 @@ def test_nikjer_ni_starih_poti():
 def test_deblo_varcuje_s_kontekstom():
     vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
     podrazdelek = vsebina[vsebina.index("### Kontekst"):]
-    for niz in ('nodeNames: ["Respond to Webhook"]', "get_workflow_sdk_reference", "get_node_types",
+    for niz in ('nodeNames: ["Respond to Webhook"]', "includeData: true", "get_workflow_sdk_reference", "get_node_types",
                 "base64", "posnetk", "izdaja_besedilo.py izpis"):
         assert niz in podrazdelek, niz
