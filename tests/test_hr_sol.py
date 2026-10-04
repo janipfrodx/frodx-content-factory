@@ -12,7 +12,8 @@ SKRIPTA = SKRIPTE / "hr_sol.py"
 FIXTURE = REPO / "tests" / "fixtures" / "newsletter_draft_body.json"
 sys.path.insert(0, str(SKRIPTE))
 
-from hr_sol import NapakaIzida, PROMPTI, VENDOR, fnv1a, polja_si, preveri_izid, razpakiraj, sestavi_vhod
+from hr_sol import (META_HR, NapakaIzida, PROMPTI, VENDOR, fnv1a, polja_si, preveri_izid, razpakiraj,
+                    sestavi_editions, sestavi_vhod)
 from prevod_vhod import ManjkaKorak, sestavi
 
 
@@ -226,3 +227,133 @@ def test_razpakiraj_sprejme_tri_oblike():
     assert razpakiraj([{"json": jedro}]) == jedro
     with pytest.raises(NapakaIzida):
         razpakiraj([])
+
+
+def _meta():
+    return {"PACKAGE_ID": "nl-2026-10-test-hr", "EDITION_NAME": "TEST", "STATUS": "draft",
+            "SEGMENT_REF": "SEG-HR", "FROM_NAME": "Igor Pauletič", "FROM_EMAIL": "igor.pauletic@frodx.com",
+            "REPLY_TO": "igor.pauletic@frodx.com", "FOOTER_REF": "", "GREETING": "Pozdrav,",
+            "SIGNOFF_PHRASE": "Sve najbolje,", "SIGNOFF_NAME": "Igor",
+            "dogodki": {"block-02": {"EVENT_TIME": "13:00"}}}
+
+
+def _bloki_hr(stanje):
+    return [{"id": i, "text": f"HR {i}\n\n  drugi odstavek  \n"} for i, _ in polja_si(stanje["editions"][0])]
+
+
+def test_izdaja_struktura_iz_si_besedila_iz_izida():
+    stanje = _stanje()
+    ed = sestavi_editions(stanje, _bloki_hr(stanje), _meta())["hr"]
+    meta = dict(ed["meta"])
+    assert meta["LANGUAGE"] == "hr" and meta["GREETING"] == "Pozdrav,"
+    assert meta["SUBJECT"] == "HR SUBJECT drugi odstavek"
+    assert ed["blocks"][0]["title"] == "HR B1_TITLE drugi odstavek"
+    assert [b["id"] for b in ed["blocks"]] == ["block-01", "block-02"]
+    assert ed["blocks"][0]["cta_url"] == "https://frodx.com/hr/blog/kolumna"
+    assert ed["blocks"][0]["img_file"] == "" and ed["blocks"][0]["img_alt"] == ""
+    assert ed["signoff_phrase"] == "Sve najbolje,"
+    assert ed["hook_archetype"] == stanje["editions"][0]["hook"]["archetype"]
+
+
+def test_izdaja_razdeli_odstavke_brez_praznih():
+    stanje = _stanje()
+    ed = sestavi_editions(stanje, _bloki_hr(stanje), _meta())["hr"]
+    assert ed["hook"] == ["HR HOOK", "drugi odstavek"]
+    assert ed["blocks"][0]["bullets"] == ["HR B1_BULLETS", "drugi odstavek"]
+    assert ed["blocks"][1]["bullets"] == []
+
+
+def test_izdaja_cta_brez_hr_url_ostane_si():
+    stanje = _stanje()
+    stanje["_run"]["gradivo_odlocitve"]["jeziki"]["hr"]["block-02"]["url"] = ""
+    ed = sestavi_editions(stanje, _bloki_hr(stanje), _meta())["hr"]
+    assert ed["blocks"][1]["cta_url"] == stanje["editions"][0]["blocks"][1]["cta"]["url"]
+
+
+def test_izdaja_webinar_z_hr_uro():
+    stanje = _stanje()
+    dogodek = dict(sestavi_editions(stanje, _bloki_hr(stanje), _meta())["hr"]["blocks"][1]["event"])
+    assert dogodek == {"EVENT_DATE": "2026-11-12", "EVENT_TIME": "13:00", "EVENT_DURATION_MIN": "45"}
+
+
+def test_izdaja_webinar_brez_hr_ure_manjka():
+    stanje = _stanje()
+    meta = _meta()
+    meta["dogodki"] = {}
+    with pytest.raises(ManjkaKorak, match="dogodki.block-02.EVENT_TIME"):
+        sestavi_editions(stanje, _bloki_hr(stanje), meta)
+
+
+def test_izdaja_prazen_pozdrav_manjka():
+    stanje = _stanje()
+    meta = _meta()
+    meta["GREETING"] = " "
+    with pytest.raises(ManjkaKorak, match="GREETING"):
+        sestavi_editions(stanje, _bloki_hr(stanje), meta)
+
+
+def _pripravi_tek(tmp_path, bloki=None, izid="PASS"):
+    stanje = _stanje()
+    mapa = _mapa(tmp_path)
+    hr_vhod, _ = sestavi(stanje, "hr", mapa)
+    vhod = sestavi_vhod(stanje, hr_vhod)
+    (mapa / "prevod" / "hr-sol-vhod.json").write_text(json.dumps(vhod, ensure_ascii=False), encoding="utf-8")
+    (mapa / "prevod" / "hr-meta.json").write_text(json.dumps(_meta(), ensure_ascii=False), encoding="utf-8")
+    (mapa / "state.json").write_text(json.dumps(stanje, ensure_ascii=False), encoding="utf-8")
+    bloki = bloki or [{"id": b["id"], "text": f"HR {b['id']}"} for b in vhod["source_blocks"]]
+    zadeva = {"izid": izid, "krogi": 1, "blocks": bloki, "review_reasons": [],
+              "pregled": {"verdict": "PASS", "score": 96, "summary": "", "checks": {},
+                          "issues": [{"block_id": "HOOK", "category": "style", "blocking": False,
+                                      "quote": "x", "reason": "y", "replacement": None}]},
+              "prompt_fnv": {"pisec": "e0b4683d", "pregled": "8553ec9f"}}
+    (mapa / "izid.json").write_text(json.dumps([{"json": zadeva}], ensure_ascii=False), encoding="utf-8")
+    return mapa
+
+
+def _izdaja(mapa):
+    return subprocess.run([sys.executable, str(SKRIPTA), "izdaja", str(mapa / "state.json"),
+                           str(mapa / "izid.json"), "216761"], capture_output=True, text=True)
+
+
+def test_cli_izdaja_vpise_hr_in_prevod_hr(tmp_path):
+    mapa = _pripravi_tek(tmp_path)
+    izid = _izdaja(mapa)
+    assert izid.returncode == 0, izid.stdout
+    assert "Zapisana HR izdaja (izid PASS, krogi 1, ocena 96)" in izid.stdout
+    stanje = json.loads((mapa / "state.json").read_text(encoding="utf-8"))
+    hr = next(e for e in stanje["editions"] if e["language"] == "hr")
+    assert hr["subject"] == "HR SUBJECT"
+    assert hr["greeting"] == "Pozdrav,"
+    assert stanje["_run"]["prevod_hr"] == {"izid": "PASS", "krogi": 1, "score": 96, "verdict": "PASS",
+                                          "review_reasons": [], "nereseno": [], "execution_id": "216761"}
+    assert (mapa / "prevod" / "hr-editions.json").is_file()
+
+
+def test_izdaja_zavrne_rezervirano_oznako(tmp_path):
+    mapa = _pripravi_tek(tmp_path)
+    vhod = json.loads((mapa / "prevod" / "hr-sol-vhod.json").read_text(encoding="utf-8"))
+    bloki = [{"id": b["id"], "text": f"HR {b['id']}"} for b in vhod["source_blocks"]]
+    bloki[2]["text"] = "Prvi odstavek\nCTA: kliknite"
+    mapa = _pripravi_tek(tmp_path / "drugi", bloki=bloki)
+    pred = (mapa / "state.json").read_text(encoding="utf-8")
+    izid = _izdaja(mapa)
+    assert izid.returncode == 2
+    assert "NAPAKA:" in izid.stdout and "rezervirano oznako" in izid.stdout
+    assert (mapa / "state.json").read_text(encoding="utf-8") == pred
+
+
+def test_cli_izdaja_brez_meta_manjka(tmp_path):
+    mapa = _pripravi_tek(tmp_path)
+    (mapa / "prevod" / "hr-meta.json").unlink()
+    izid = _izdaja(mapa)
+    assert izid.returncode == 1
+    assert "MANJKA:" in izid.stdout and "hr-meta.json" in izid.stdout
+
+
+def test_cli_izdaja_napaka_workflowa_ne_pise(tmp_path):
+    mapa = _pripravi_tek(tmp_path, izid="NAPAKA")
+    pred = (mapa / "state.json").read_text(encoding="utf-8")
+    izid = _izdaja(mapa)
+    assert izid.returncode == 2
+    assert "NAPAKA:" in izid.stdout
+    assert (mapa / "state.json").read_text(encoding="utf-8") == pred

@@ -17,6 +17,8 @@ import re
 import sys
 from pathlib import Path
 
+from iz_editions import NapakaPreslikave, izdaja_iz_editions, vpisi
+from izdaja_besedilo import NapakaOznak, izdaja_v_besedilo
 from prevod_vhod import ManjkaKorak
 
 AUDIENCE = (
@@ -186,16 +188,109 @@ def _vhod(pot):
           f"{len(vhod['approved_adaptations'])} prilagoditev, {len(vhod['constraints']['zetev']['pari'])} parov žetve)")
 
 
-def main(argv) -> int:
-    if len(argv) != 3 or argv[1] != "vhod":
-        print(__doc__)
-        return 2
+META_HR = (
+    "PACKAGE_ID", "EDITION_NAME", "STATUS", "SEGMENT_REF", "FROM_NAME", "FROM_EMAIL",
+    "REPLY_TO", "FOOTER_REF", "GREETING", "SIGNOFF_PHRASE", "SIGNOFF_NAME",
+)
+
+
+def _razdeli(besedilo):
+    return [p.strip() for p in (besedilo or "").split("\n") if p.strip()]
+
+
+def _vrstica(besedilo):
+    return " ".join(_razdeli(besedilo))
+
+
+def _meta_hr(meta):
+    manjka = [k for k in META_HR if k not in meta or (k != "FOOTER_REF" and not str(meta[k] or "").strip())]
+    if manjka:
+        raise ManjkaKorak(f"korak 4: prevod/hr-meta.json nima {', '.join(manjka)}")
+
+
+def sestavi_editions(stanje: dict, bloki: list, meta: dict) -> dict:
+    _meta_hr(meta)
+    si = _si(stanje)
+    besedila = {b["id"]: b["text"] for b in bloki}
+    nacini = ((stanje.get("_run") or {}).get("gradivo_odlocitve") or {}).get("jeziki", {}).get("hr") or {}
+    dogodki = meta.get("dogodki") or {}
+    ed_bloki = []
+    for n, blok in enumerate(si["blocks"], 1):
+        bid = blok["block_id"]
+        url = str((nacini.get(bid) or {}).get("url") or "").strip() or blok["cta"]["url"]
+        b = {
+            "id": bid, "type": blok["type"], "img_file": "", "img_alt": "",
+            "title": _vrstica(besedila[f"B{n}_TITLE"]),
+            "body": _razdeli(besedila[f"B{n}_BODY"]),
+            "bullets": _razdeli(besedila.get(f"B{n}_BULLETS", "")),
+            "cta_label": _vrstica(besedila[f"B{n}_CTA"]),
+            "cta_url": url,
+        }
+        if blok.get("event"):
+            ura = str((dogodki.get(bid) or {}).get("EVENT_TIME") or "").strip()
+            if not ura:
+                raise ManjkaKorak(f"korak 4: prevod/hr-meta.json nima dogodki.{bid}.EVENT_TIME")
+            b["event"] = [["EVENT_DATE", blok["event"]["date"]], ["EVENT_TIME", ura],
+                          ["EVENT_DURATION_MIN", str(blok["event"]["duration_min"])]]
+        ed_bloki.append(b)
+    glava = [["LANGUAGE", "hr"], ["SUBJECT", _vrstica(besedila["SUBJECT"])],
+             ["PREHEADER", _vrstica(besedila["PREHEADER"])]]
+    glava += [[k, str(meta[k] or "")] for k in META_HR if k not in ("SIGNOFF_PHRASE", "SIGNOFF_NAME")]
+    return {"hr": {
+        "meta": glava,
+        "hook_archetype": si["hook"]["archetype"],
+        "hook": _razdeli(besedila["HOOK"]),
+        "blocks": ed_bloki,
+        "closing_type": si["closing"]["type"],
+        "closing": _razdeli(besedila["CLOSING"]),
+        "signoff_phrase": meta["SIGNOFF_PHRASE"],
+        "signoff_name": meta["SIGNOFF_NAME"],
+        "ps": _vrstica(besedila.get("PS", "")),
+    }}
+
+
+def _izdaja(pot, pot_izida, execution_id):
+    stanje = json.loads(pot.read_text(encoding="utf-8"))
+    vhod = _beri(pot.parent / "prevod" / "hr-sol-vhod.json", "korak 4 (poženi hr_sol.py vhod)")
+    izid = razpakiraj(json.loads(Path(pot_izida).read_text(encoding="utf-8")))
+    opozorila = preveri_izid(izid, vhod)
+    meta = _beri(pot.parent / "prevod" / "hr-meta.json", "korak 4 (zapiši prevod/hr-meta.json)")
+    editions = sestavi_editions(stanje, izid["blocks"], meta)
     try:
-        _vhod(Path(argv[2]))
+        izdaja_v_besedilo(izdaja_iz_editions("hr", editions["hr"]))
+    except NapakaOznak as napaka:
+        raise NapakaIzida(f"HR besedilo: {napaka}")
+    nova = vpisi(stanje, editions)
+    pregled = izid.get("pregled") or {}
+    nova.setdefault("_run", {})["prevod_hr"] = {
+        "izid": izid["izid"],
+        "krogi": izid.get("krogi"),
+        "score": pregled.get("score"),
+        "verdict": pregled.get("verdict"),
+        "review_reasons": izid.get("review_reasons") or [],
+        "nereseno": [i for i in pregled.get("issues") or [] if i.get("blocking") is True],
+        "execution_id": str(execution_id),
+    }
+    _zapisi(pot.parent / "prevod" / "hr-editions.json", editions)
+    _zapisi(pot, nova)
+    for o in opozorila:
+        print(f"OPOZORILO: {o}")
+    print(f"Zapisana HR izdaja (izid {izid['izid']}, krogi {izid.get('krogi')}, ocena {pregled.get('score')})")
+
+
+def main(argv) -> int:
+    try:
+        if len(argv) == 3 and argv[1] == "vhod":
+            _vhod(Path(argv[2]))
+        elif len(argv) == 5 and argv[1] == "izdaja":
+            _izdaja(Path(argv[2]), argv[3], argv[4])
+        else:
+            print(__doc__)
+            return 2
     except ManjkaKorak as napaka:
         print(f"MANJKA: {napaka}")
         return 1
-    except (OSError, ValueError, KeyError) as napaka:
+    except (OSError, ValueError, KeyError, NapakaPreslikave) as napaka:
         print(f"NAPAKA: {napaka}")
         return 2
     return 0
