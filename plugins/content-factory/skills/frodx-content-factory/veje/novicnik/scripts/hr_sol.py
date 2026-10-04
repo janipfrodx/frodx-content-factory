@@ -101,6 +101,8 @@ def preveri_izid(izid: dict, vhod: dict) -> list:
         )
     vir = [(b["id"], b["text"]) for b in vhod["source_blocks"]]
     bloki = izid.get("blocks")
+    if isinstance(bloki, list) and not all(isinstance(b, dict) for b in bloki):
+        raise NapakaIzida("bloki izida niso seznam objektov {id, text}")
     if not isinstance(bloki, list) or [b.get("id") for b in bloki] != [i for i, _ in vir]:
         dobljeno = [b.get("id") for b in bloki] if isinstance(bloki, list) else bloki
         raise NapakaIzida(f"id-ji blokov se ne ujemajo z izvirnikom: {dobljeno}")
@@ -219,6 +221,8 @@ def _vrstica(besedilo):
 
 
 def _meta_hr(meta):
+    if not isinstance(meta, dict):
+        raise ValueError("prevod/hr-meta.json ni objekt s ključi META za HR")
     manjka = [k for k in META_HR if k not in meta or (k != "FOOTER_REF" and not str(meta[k] or "").strip())]
     if manjka:
         raise ManjkaKorak(f"korak 4: prevod/hr-meta.json nima {', '.join(manjka)}")
@@ -306,7 +310,7 @@ def main(argv) -> int:
     except ManjkaKorak as napaka:
         print(f"MANJKA: {napaka}")
         return 1
-    except (OSError, ValueError, KeyError, NapakaPreslikave) as napaka:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, NapakaPreslikave) as napaka:
         print(f"NAPAKA: {napaka}")
         return 2
     return 0

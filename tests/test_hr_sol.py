@@ -403,3 +403,31 @@ def test_cli_izdaja_na_celem_odgovoru_217299(tmp_path):
     hr = next(e for e in nova["editions"] if e["language"] == "hr")
     assert hr["subject"].startswith("Zašto Britanci 12 milijuna puta")
     assert nova["_run"]["prevod_hr"]["execution_id"] == "217299"
+
+
+@pytest.mark.parametrize("meta", [[], ["PACKAGE_ID"], 5, "PACKAGE_ID"])
+def test_cli_izdaja_meta_ni_objekt_napaka(tmp_path, meta):
+    mapa = _pripravi_tek(tmp_path)
+    (mapa / "prevod" / "hr-meta.json").write_text(json.dumps(meta), encoding="utf-8")
+    pred = (mapa / "state.json").read_text(encoding="utf-8")
+    izid = _izdaja(mapa)
+    assert izid.returncode == 2, izid.stdout + izid.stderr
+    assert "NAPAKA:" in izid.stdout and "hr-meta.json" in izid.stdout
+    assert "Traceback" not in izid.stderr
+    assert (mapa / "state.json").read_text(encoding="utf-8") == pred
+
+
+@pytest.mark.parametrize("blok", ["HR besedilo", None, ["SUBJECT"]])
+def test_blok_izida_ni_objekt(blok):
+    izid = _izid_mini()
+    izid["blocks"][0] = blok
+    with pytest.raises(NapakaIzida, match="objekt"):
+        preveri_izid(izid, _vhod_mini())
+
+
+def test_cli_izdaja_blok_ni_objekt_brez_tracebacka(tmp_path):
+    mapa = _pripravi_tek(tmp_path, bloki=["SUBJECT"])
+    izid = _izdaja(mapa)
+    assert izid.returncode == 2, izid.stdout + izid.stderr
+    assert "NAPAKA:" in izid.stdout
+    assert "Traceback" not in izid.stderr
