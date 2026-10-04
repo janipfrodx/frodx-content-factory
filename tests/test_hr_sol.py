@@ -431,3 +431,35 @@ def test_cli_izdaja_blok_ni_objekt_brez_tracebacka(tmp_path):
     assert izid.returncode == 2, izid.stdout + izid.stderr
     assert "NAPAKA:" in izid.stdout
     assert "Traceback" not in izid.stderr
+
+
+def _vhod_lokalni(okvir_na_b1=False):
+    vhod = _vhod_mini()
+    vhod["source_blocks"].append({"id": "B2_BODY", "text": "Delavnica 14. 10. v Ljubljani, https://frodx.com/si/delavnica, info@frodx.si"})
+    vhod["approved_adaptations"] = [
+        {"block_ids": ["B2_BODY"], "navodilo": "lokalni", "vir": "Radionica u Zagrebu 21. 10."},
+        {"block_ids": ["PREHEADER", "HOOK", "CLOSING"] + (["B1_BODY"] if okvir_na_b1 else []), "navodilo": "okvir"},
+    ]
+    return vhod
+
+
+def _izid_lokalni(b2="Radionica u Zagrebu 21. 10., prijave na stranici."):
+    izid = _izid_mini()
+    izid["blocks"].append({"id": "B2_BODY", "text": b2})
+    return izid
+
+
+def test_lokalni_vir_brez_preverbe_url_naslova_in_stevilk():
+    assert preveri_izid(_izid_lokalni(), _vhod_lokalni()) == []
+
+
+def test_lokalni_vir_se_vedno_brez_dolgega_pomisljaja():
+    with pytest.raises(NapakaIzida, match="B2_BODY: dolgi"):
+        preveri_izid(_izid_lokalni("Radionica — Zagreb 21. 10."), _vhod_lokalni())
+
+
+def test_okvirni_vnos_ne_izklopi_preverbe():
+    izid = _izid_lokalni()
+    izid["blocks"][1]["text"] = "Pišite na igor.pauletic@frodx.com. U 17:12 vozi."
+    with pytest.raises(NapakaIzida, match="B1_BODY: manjka https://frodx.com/si/x"):
+        preveri_izid(izid, _vhod_lokalni(okvir_na_b1=True))

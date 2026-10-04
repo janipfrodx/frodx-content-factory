@@ -91,6 +91,11 @@ def _nizi(vzorec, besedilo):
     return [n.rstrip(".,;:!?") for n in vzorec.findall(besedilo)]
 
 
+def _lokalni_bloki(vhod: dict) -> set:
+    return {i for a in vhod.get("approved_adaptations") or []
+            if isinstance(a, dict) and a.get("vir") for i in a.get("block_ids") or []}
+
+
 def preveri_izid(izid: dict, vhod: dict) -> list:
     if izid.get("izid") not in ("PASS", "UREDNIK"):
         raise NapakaIzida(f"izid workflowa je {izid.get('izid')!r}: {izid.get('napaka') or 'brez pojasnila'}")
@@ -106,6 +111,7 @@ def preveri_izid(izid: dict, vhod: dict) -> list:
     if not isinstance(bloki, list) or [b.get("id") for b in bloki] != [i for i, _ in vir]:
         dobljeno = [b.get("id") for b in bloki] if isinstance(bloki, list) else bloki
         raise NapakaIzida(f"id-ji blokov se ne ujemajo z izvirnikom: {dobljeno}")
+    lokalni = _lokalni_bloki(vhod)
     opozorila = []
     for (bid, si_besedilo), blok in zip(vir, bloki):
         besedilo = blok.get("text")
@@ -115,6 +121,8 @@ def preveri_izid(izid: dict, vhod: dict) -> list:
             raise NapakaIzida(f"{bid}: dolgi pomišljaj U+2014")
         if "Pauletić" in besedilo:
             raise NapakaIzida(f"{bid}: Pauletić namesto Pauletič")
+        if bid in lokalni:
+            continue
         for niz in _nizi(URL, si_besedilo) + _nizi(EMAIL, si_besedilo):
             if niz not in besedilo:
                 raise NapakaIzida(f"{bid}: manjka {niz}")
