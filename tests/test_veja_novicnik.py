@@ -268,3 +268,31 @@ def test_shema_prevod_hr():
     vrstica = _vrstica_sheme("prevod_hr")
     for niz in ("izid", "krogi", "score", "nereseno", "execution_id"):
         assert niz in vrstica, niz
+
+
+def test_korak_4_f_zamenjava_samo_za_en_hr_na_gate():
+    korak = _korak_4()
+    f = korak[korak.index("f. **Preverba žetve.**"):korak.index("g. **Audit")]
+    assert "samo za `en`" in f
+    assert "Za `hr` ne zamenjaš ničesar" in f
+    assert "gate-u (točka h)" in f
+    h = korak[korak.index("h. **Gate.**"):]
+    assert "IZNIČENO" in h
+    assert "Točka f teče za vsak jezik (preverba), zamenjava samo za `en`" in korak
+
+
+def test_pisec_in_preslikava_hr_ne_prek_iz_editions():
+    razdelek = _razdelek("Pisec in preslikava")
+    assert "Po koraku 4 enako za `hr` in `en`" not in razdelek
+    assert "HR vpiše `hr_sol.py izdaja`" in razdelek
+
+
+def test_skupni_koraki_gate_audit_samo_en():
+    skupni = _razdelek("Skupni koraki")
+    assert "oceno in sodbo audita za oba jezika" not in skupni
+    assert "_run.prevod_hr" in skupni
+
+
+def test_e_hr_po_ponovitvi_znova_z_novim_izidom():
+    korak = _korak_4()
+    assert "e-hr znova z novim `prevod/hr-sol-izid.json` in novim `executionId`" in korak

@@ -267,15 +267,36 @@ def test_slika_v_shrambi_ni_krsitev():
 from preveri_paket import opozorila_audit
 
 
-def test_novicnik_opozorilo_audit_tiho_ko_sta_oba_jezika():
-    ok = {"verdict": "PASS"}
-    assert opozorila_audit({"transcreation_audit": {"en": ok, "hr": ok}}) == []
+def test_novicnik_opozorilo_audit_tiho_ko_je_en_audit_in_hr_iz_sola():
+    for izid in ("PASS", "UREDNIK"):
+        run = {"transcreation_audit": {"en": {"verdict": "PASS"}}, "prevod_hr": {"izid": izid}}
+        assert opozorila_audit(run) == [], izid
 
 
-def test_novicnik_opozorilo_navede_manjkajoca_jezika():
+def test_novicnik_opozorilo_navede_manjkajoca_en_in_hr():
     vrstice = opozorila_audit({})
+    assert len(vrstice) == 2
+    assert "ni opravljen za en -" in vrstice[0]
+    assert "HR iz cf-transkreacija-hr ni vpisan (_run.prevod_hr)" in vrstice[1]
+
+
+def test_novicnik_opozorilo_hr_audit_sam_ne_zadostuje():
+    run = {"transcreation_audit": {"en": {"verdict": "PASS"}, "hr": {"verdict": "PASS"}}}
+    vrstice = opozorila_audit(run)
     assert len(vrstice) == 1
-    assert "ni opravljen za en, hr -" in vrstice[0]
+    assert "prevod_hr" in vrstice[0]
+
+
+def test_novicnik_opozorilo_hr_izid_napaka_ni_vpisan():
+    run = {"transcreation_audit": {"en": {"verdict": "PASS"}}, "prevod_hr": {"izid": "NAPAKA"}}
+    assert any("prevod_hr" in v for v in opozorila_audit(run))
+
+
+def test_novicnik_opozorilo_en_brez_audita_hr_iz_sola():
+    run = {"prevod_hr": {"izid": "PASS"}}
+    vrstice = opozorila_audit(run)
+    assert len(vrstice) == 1
+    assert "ni opravljen za en -" in vrstice[0]
 
 
 def test_novicnik_cli_brez_audita_vrne_0_z_opozorilom(tmp_path):

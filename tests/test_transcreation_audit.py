@@ -141,3 +141,8 @@ def test_novicnik_audit_samo_za_en():
     razdelek = _skill().split("## Vhod po veji", 1)[1]
     assert "samo za `en`" in razdelek
     assert "cf-transkreacija-hr" in razdelek
+
+
+def test_novicnik_audit_jezik_je_samo_en():
+    razdelek = _skill().split("## Vhod po veji", 1)[1]
+    assert "`<jezik>` je pri novičniku vedno `en`" in razdelek

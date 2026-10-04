@@ -168,22 +168,27 @@ def _preveri_izdajo(izdaja, opozorila):
 
 
 def opozorila_audit(run) -> list:
-    """Igorjevo pravilo: brez audita EN in HR nista pripravljena za objavo.
+    """Igorjevo pravilo: brez preverbe prevoda EN in HR nista pripravljena za objavo.
 
-    Janijeva odločitev 29. 9. 2026: opozori, ne blokiraj. Samostojen paket brez `_run`
-    ni tek in opozorila nima.
+    EN zahteva `transcreation_audit.en.verdict`. HR audita Claude ne dela: HR napiše in
+    pregleda Sol v n8n `cf-transkreacija-hr`, zato je HR v redu, ko je `prevod_hr` objekt
+    z `izid` PASS ali UREDNIK. Janijeva odločitev 29. 9. 2026: opozori, ne blokiraj.
+    Samostojen paket brez `_run` ni tek in opozorila nima.
     """
     if not isinstance(run, dict):
         return []
     audit = run.get("transcreation_audit")
     audit = audit if isinstance(audit, dict) else {}
-    manjka = [j for j in ("en", "hr") if not (isinstance(audit.get(j), dict) and audit[j].get("verdict"))]
-    if not manjka:
-        return []
-    return [
-        f"korak 4: audit transkreacije ni opravljen za {', '.join(manjka)} - "
-        "po Igorjevem pravilu prevod ni pripravljen za objavo"
-    ]
+    vrstice = []
+    if not (isinstance(audit.get("en"), dict) and audit["en"].get("verdict")):
+        vrstice.append(
+            "korak 4: audit transkreacije ni opravljen za en - "
+            "po Igorjevem pravilu prevod ni pripravljen za objavo"
+        )
+    hr = run.get("prevod_hr")
+    if not (isinstance(hr, dict) and hr.get("izid") in ("PASS", "UREDNIK")):
+        vrstice.append("korak 4: HR iz cf-transkreacija-hr ni vpisan (_run.prevod_hr)")
+    return vrstice
 
 
 def preveri(telo: dict):
