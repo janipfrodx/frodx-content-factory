@@ -92,7 +92,33 @@ python3 veje/novicnik/scripts/hr_sol.py vhod <state.json>
 
 Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje; ob `NAPAKA:` izpis pokaži Igorju in se ustavi. Nato zapiši `prevod/hr-meta.json` iz `references/privzete-vrednosti.md` (Igorjeva `docx-pipeline.md`, META in SIGNOFF za HR): ključi `PACKAGE_ID`, `EDITION_NAME`, `STATUS`, `SEGMENT_REF`, `FROM_NAME`, `FROM_EMAIL`, `REPLY_TO`, `FOOTER_REF`, `GREETING`, `SIGNOFF_PHRASE`, `SIGNOFF_NAME` in `dogodki` z uro dogodka za HR za vsak blok z dogodkom (`{"block-02": {"EVENT_TIME": "13:00"}}`). Besedila v to datoteko ne pišeš.
 
-d-hr. **Prevod HR: n8n `cf-transkreacija-hr`** (`yerKUljx0ZsTTxvW`) prek `execute_workflow`, `executionMode: "manual"`, telo `prevod/hr-sol-vhod.json` pod `inputs.webhookData.body`. Workflow ostane neaktiven. Izvedba traja do nekaj minut; izid preberi z `get_workflow_execution`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`, in ga zapiši, kot je, v `prevod/hr-sol-izid.json`. `izid` je `PASS` (Igorjev pogoj izpolnjen), `UREDNIK` (besedilo gre Igorju z odprtimi vprašanji ali nerešenimi ugotovitvami) ali `NAPAKA` (HR ni nastal).
+d-hr. **Prevod HR: n8n `cf-transkreacija-hr`** (`yerKUljx0ZsTTxvW`) prek `execute_workflow`. Workflow ostane neaktiven, zato je `executionMode` `"manual"`. Telo je ves objekt iz `prevod/hr-sol-vhod.json`, nespremenjen, gnezden pod `inputs.webhookData.body`:
+
+```json
+{
+  "workflowId": "yerKUljx0ZsTTxvW",
+  "executionMode": "manual",
+  "triggerNodeName": "Trigger",
+  "inputs": {
+    "webhookData": {
+      "method": "POST",
+      "body": {
+        "content_type": "newsletter",
+        "audience": "<iz prevod/hr-sol-vhod.json>",
+        "source_blocks": [],
+        "candidate_blocks": [],
+        "glossary": [],
+        "approved_examples": [],
+        "approved_adaptations": [],
+        "constraints": {},
+        "audit_feedback": []
+      }
+    }
+  }
+}
+```
+
+`execute_workflow` vrne samo `executionId`, izida ne. Izvedba traja do nekaj minut (živa preverba 4. 10. 2026: 129 s). Na konec čakaj z `get_workflow_execution` (`workflowId`, `executionId`, `includeData: false`), dokler `status` ni `success` ali `error`. Šele nato izid preberi z `get_workflow_execution` (`workflowId`, `executionId`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`) in odgovor orodja zapiši v `prevod/hr-sol-izid.json` cel, tak, kot ga orodje vrne (`{"execution": {...}, "data": {"resultData": {"runData": {"Respond to Webhook": [...]}}}}`): skripta ga razpakira sama. Besedila HR blokov ne krajšaj in ne popravljaj. Status `error` pomeni, da HR ni nastal: ravnaj kot ob `NAPAKA` v e-hr. `izid` je `PASS` (Igorjev pogoj izpolnjen), `UREDNIK` (besedilo gre Igorju z odprtimi vprašanji ali nerešenimi ugotovitvami) ali `NAPAKA` (HR ni nastal).
 
 e-hr. **Vpis HR.**
 

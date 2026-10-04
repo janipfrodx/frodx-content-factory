@@ -308,3 +308,12 @@ def test_d_hr_ima_pravi_id_workflowa_iz_dokumentacije():
     v_dok = re.search(r"\*\*ID workflowa:\*\* `([A-Za-z0-9]{16})`", dok)
     assert v_veji and v_dok
     assert v_veji.group(1) == v_dok.group(1)
+
+
+def test_d_hr_klic_cakanje_in_zapis_odgovora():
+    korak = _korak_4()
+    d_hr = korak[korak.index("d-hr. **Prevod HR"):korak.index("e-hr. **Vpis HR.**")]
+    for niz in ('"workflowId": "yerKUljx0ZsTTxvW"', '"executionMode": "manual"', '"triggerNodeName": "Trigger"',
+                '"webhookData"', "vrne samo `executionId`", "`includeData: false`", "`success` ali `error`",
+                '`nodeNames: ["Respond to Webhook"]`', "skripta ga razpakira"):
+        assert niz in d_hr, niz
