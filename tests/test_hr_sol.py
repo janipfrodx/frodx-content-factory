@@ -168,7 +168,9 @@ def test_veljaven_izid_brez_opozoril():
 
 
 def test_url_s_piko_na_koncu():
-    assert preveri_izid(_izid_mini(), _vhod_mini()) == []
+    izid = _izid_mini()
+    izid["blocks"][1]["text"] = "Pišite na igor.pauletic@frodx.com ili https://frodx.com/si/x, u 17:12 vozi."
+    assert preveri_izid(izid, _vhod_mini()) == []
 
 
 def test_urednik_je_sprejemljiv_izid():
