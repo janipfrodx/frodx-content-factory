@@ -229,6 +229,33 @@ def test_razpakiraj_sprejme_tri_oblike():
         razpakiraj([])
 
 
+IZVEDBA_217299 = REPO / "tests" / "fixtures" / "hr_sol_izvedba_217299.json"
+VHOD_217299 = REPO / "tests" / "fixtures" / "hr_sol_vhod_217299.json"
+
+
+def test_razpakiraj_odgovor_get_workflow_execution():
+    odgovor = json.loads(IZVEDBA_217299.read_text(encoding="utf-8"))
+    izid = razpakiraj(odgovor)
+    assert izid["izid"] == "UREDNIK" and izid["krogi"] == 2
+    assert izid == odgovor["data"]["resultData"]["runData"]["Respond to Webhook"][0]["data"]["main"][0][0]["json"]
+
+
+def test_preveri_izid_na_resnicnem_odgovoru():
+    odgovor = json.loads(IZVEDBA_217299.read_text(encoding="utf-8"))
+    vhod = json.loads(VHOD_217299.read_text(encoding="utf-8"))
+    assert preveri_izid(razpakiraj(odgovor), vhod) == []
+
+
+@pytest.mark.parametrize("surovo", [
+    {"execution": {"id": "1", "status": "error"}, "data": {"resultData": {"runData": {}}}},
+    {"blocks": []},
+    [{"json": {"krogi": 1}}],
+])
+def test_razpakiraj_brez_izida_jasna_napaka(surovo):
+    with pytest.raises(NapakaIzida, match="nima ključa izid.*Respond to Webhook"):
+        razpakiraj(surovo)
+
+
 def _meta():
     return {"PACKAGE_ID": "nl-2026-10-test-hr", "EDITION_NAME": "TEST", "STATUS": "draft",
             "SEGMENT_REF": "SEG-HR", "FROM_NAME": "Igor Pauletič", "FROM_EMAIL": "igor.pauletic@frodx.com",
@@ -357,3 +384,22 @@ def test_cli_izdaja_napaka_workflowa_ne_pise(tmp_path):
     assert izid.returncode == 2
     assert "NAPAKA:" in izid.stdout
     assert (mapa / "state.json").read_text(encoding="utf-8") == pred
+
+
+def test_cli_izdaja_na_celem_odgovoru_217299(tmp_path):
+    stanje = _stanje()
+    stanje["editions"][0]["blocks"] = stanje["editions"][0]["blocks"][:1]
+    vhod = json.loads(VHOD_217299.read_text(encoding="utf-8"))
+    (tmp_path / "prevod").mkdir()
+    (tmp_path / "prevod" / "hr-sol-vhod.json").write_text(json.dumps(vhod, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "prevod" / "hr-meta.json").write_text(json.dumps(_meta(), ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "state.json").write_text(json.dumps(stanje, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "izid.json").write_text(IZVEDBA_217299.read_text(encoding="utf-8"), encoding="utf-8")
+    izid = subprocess.run([sys.executable, str(SKRIPTA), "izdaja", str(tmp_path / "state.json"),
+                           str(tmp_path / "izid.json"), "217299"], capture_output=True, text=True)
+    assert izid.returncode == 0, izid.stdout + izid.stderr
+    assert "Zapisana HR izdaja (izid UREDNIK, krogi 2, ocena 96)" in izid.stdout
+    nova = json.loads((tmp_path / "state.json").read_text(encoding="utf-8"))
+    hr = next(e for e in nova["editions"] if e["language"] == "hr")
+    assert hr["subject"].startswith("Zašto Britanci 12 milijuna puta")
+    assert nova["_run"]["prevod_hr"]["execution_id"] == "217299"

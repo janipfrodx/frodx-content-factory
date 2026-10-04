@@ -59,15 +59,31 @@ def fnv1a(besedilo: str) -> str:
     return f"{h:08x}"
 
 
+def _iz_izvedbe(surovo: dict):
+    try:
+        return surovo["data"]["resultData"]["runData"]["Respond to Webhook"][0]["data"]["main"][0][0]["json"]
+    except (KeyError, IndexError, TypeError):
+        return surovo
+
+
 def razpakiraj(surovo) -> dict:
     if isinstance(surovo, list):
         if not surovo:
             raise NapakaIzida("izid je prazen seznam")
         surovo = surovo[0]
+    if isinstance(surovo, dict):
+        surovo = _iz_izvedbe(surovo)
     if isinstance(surovo, dict) and isinstance(surovo.get("json"), dict):
         surovo = surovo["json"]
     if not isinstance(surovo, dict):
         raise NapakaIzida("izid ni objekt")
+    if "izid" not in surovo:
+        izvedba = surovo.get("execution") if isinstance(surovo.get("execution"), dict) else {}
+        stanje = f" (izvedba {izvedba.get('id')}, status {izvedba.get('status')})" if izvedba else ""
+        raise NapakaIzida(
+            f"izid.json nima ključa izid{stanje} - zapiši odgovor get_workflow_execution "
+            "z nodeNames [\"Respond to Webhook\"], ko je status izvedbe success"
+        )
     return surovo
 
 

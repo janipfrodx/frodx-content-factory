@@ -1,0 +1,134 @@
+{
+ "execution": {
+  "id": "217299",
+  "workflowId": "yerKUljx0ZsTTxvW",
+  "mode": "manual",
+  "status": "success",
+  "startedAt": "2026-10-04T17:29:21.209Z",
+  "stoppedAt": "2026-10-04T17:31:30.586Z",
+  "retryOf": null,
+  "retrySuccessId": null,
+  "waitTill": null
+ },
+ "data": {
+  "version": 1,
+  "startData": {},
+  "resultData": {
+   "runData": {
+    "Respond to Webhook": [
+     {
+      "startTime": 1791135090586,
+      "executionIndex": 18,
+      "source": [
+       {
+        "previousNode": "Odgovor",
+        "previousNodeOutput": 0,
+        "previousNodeRun": 0
+       }
+      ],
+      "hints": [],
+      "executionTime": 0,
+      "executionStatus": "success",
+      "data": {
+       "main": [
+        [
+         {
+          "json": {
+           "izid": "UREDNIK",
+           "krogi": 2,
+           "blocks": [
+            {
+             "id": "SUBJECT",
+             "text": "Zašto Britanci 12 milijuna puta godišnje zovu da čuju koliko je sati i koliko pacijenata želi čovjeka?"
+            },
+            {
+             "id": "PREHEADER",
+             "text": "Prvo je tema za pivo, drugo za sljedeći sastanak o AI-ju. Tu su i radionica u Zagrebu te kratka dijagnostika vašeg programa vjernosti."
+            },
+            {
+             "id": "GREETING",
+             "text": "Pozdrav,"
+            },
+            {
+             "id": "HOOK",
+             "text": "svi imamo sat na mobitelu, na ruci, na pećnici. A Britanci još od 1936. zovu 123 i stroj im kaže koliko je sati. Priznajem, to nisam znao. Provjerio sam dvaput: BT je 2016. zabilježio oko 12 milijuna poziva godišnje, po 45 penija, a BBC je pet godina prije izvijestio o čak 30 milijuna.\nNitko ne zove da bi čuo ljubazan glas. Zovu jer im stroj kaže točno ono što trebaju i ništa više. To je 5,4 milijuna funti godišnje za jedan točan broj. Sjetite se toga kad vam netko sljedeći put kaže da ljudi ne žele razgovarati s automatom.\nUpravo o tome govori nova kolumna. Deset smo mjeseci slušali što se događa kad u ordinaciji zazvoni telefon i javi se glasovna asistentica. U kolumni pročitajte koliko je pacijenata tijekom razgovora zatražilo čovjeka. Mala naznaka: na sastanku o AI-ju kladili biste se na veći broj."
+            },
+            {
+             "id": "B1_TITLE",
+             "text": "Glasovni agent ili čovjek dva dana prekasno? Što korisnik želi"
+            },
+            {
+             "id": "B1_BODY",
+             "text": "Prošli smo vikend supruga i ja spavali u Erjavčevoj koči na Vršiču. U subotu smo se Hanzovom stazom popeli na Malu Mojstrovku; prije tri godine nisam se mogao popeti ni na Šmarnu goru. U nedjelju nas je čekao spust u Trentu pokraj skloništa pod Špičkom, uz razgledavanje penjačkog dijela staze na Jalovec (cilj za sljedeću godinu). I jedno jedino pitanje: vozi li još autobus u 17.12 sa serpentine 49 natrag na Vršič.\nU subotu navečer nazvao sam prijevoznika. Zvonilo je u prazno. Napisao sam mail. U nedjelju sam pješačio u dolinu bez odgovora. Ljubazan, precizan odgovor stigao je u utorak prijepodne.\nTu priču sada pričam voditeljima kontaktnih centara koji mi kažu: „Naši korisnici neće htjeti razgovarati s robotom.” U kolumni objašnjavam zašto se varaju. I što bi mi te subote bilo dovoljno: metalni glas koji bi mi rekao datum i točno vrijeme."
+            },
+            {
+             "id": "B1_CTA",
+             "text": "Pročitajte kolumnu: zašto se voditelj kontaktnog centra vara"
+            },
+            {
+             "id": "CLOSING",
+             "text": "Dvanaest milijuna poziva godišnje stroju koji kaže jedan točan broj. Operatera ondje nema još od 1936. Vaši korisnici žele isto: odgovor koji vrijedi u ovom trenutku i nekoga tko prati taj sat čak i kad ne zovu. Ako ste ikad nazvali 123, pišite mi; zanima me što ste čuli.\nA za vaš program vjernosti tu su radionica u Zagrebu 14. listopada i petominutna dijagnostika u pet dimenzija. Ako dolazite na radionicu, ispunite dijagnostiku unaprijed i dođite s rezultatom u ruci."
+            }
+           ],
+           "review_reasons": [
+            {
+             "block_id": "SUBJECT",
+             "source_quote": "Zakaj 12 milijonov Britancev kliče uro",
+             "question": "Izvirna zadeva navaja 12 milijonov ljudi, telo pa 12 milijonov klicev na leto. V osnutku je uporabljen popravek iz audit_feedback, ki zadevo uskladi s številom klicev. Ali potrjujete ta vsebinski popravek izvirnika?"
+            }
+           ],
+           "pregled": {
+            "verdict": "PASS",
+            "score": 96,
+            "summary": "Kandidat je naravno, jasno in uredniško pripravljeno hrvaško besedilo. Ohranja osebni glas, argument in ključne podatke; naslov pravilno govori o številu klicev, ne o številu različnih ljudi. Napovedi in zaključek so skladni s potrjeno prilagoditvijo hrvaških blokov 2 in 3, terminologija prvega bloka pa z objavljeno hrvaško kolumno. Nujni popravki niso potrebni.",
+            "checks": {
+             "meaning_preserved": true,
+             "names_numbers_links_preserved": true,
+             "structure_and_constraints_preserved": true,
+             "source_ambiguities_resolved": true
+            },
+            "issues": []
+           },
+           "prompt_fnv": {
+            "pisec": "e0b4683d",
+            "pregled": "8553ec9f"
+           },
+           "napaka": null
+          },
+          "pairedItem": {
+           "item": 0
+          }
+         }
+        ]
+       ]
+      }
+     }
+    ]
+   },
+   "pinData": {},
+   "lastNodeExecuted": "Respond to Webhook"
+  },
+  "executionData": {
+   "contextData": {},
+   "nodeExecutionStack": [],
+   "metadata": {},
+   "waitingExecution": {},
+   "waitingExecutionSource": {},
+   "runtimeData": {
+    "version": 1,
+    "establishedAt": 1791134961174,
+    "source": "manual",
+    "triggerNode": {
+     "name": "Trigger",
+     "type": "n8n-nodes-base.webhook"
+    },
+    "redaction": {
+     "version": 2,
+     "production": false,
+     "manual": false
+    }
+   }
+  },
+  "resumeToken": "<odstranjeno>"
+ }
+}

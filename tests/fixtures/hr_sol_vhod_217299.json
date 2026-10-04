@@ -1,0 +1,39 @@
+{
+ "source_blocks": [
+  {
+   "id": "SUBJECT",
+   "text": "Zakaj 12 milijonov Britancev kliče uro in koliko pacientov hoče človeka?"
+  },
+  {
+   "id": "PREHEADER",
+   "text": "Prvo je za pivo, drugo za naslednji sestanek o AI. Zraven analiza klicev in test vašega programa zvestobe."
+  },
+  {
+   "id": "GREETING",
+   "text": "Pozdravljeni,"
+  },
+  {
+   "id": "HOOK",
+   "text": "vsi imamo uro na telefonu, na zapestju, na pečici. Britanci pa od leta 1936 kličejo 123 in jim stroj pove, koliko je ura. Priznam, tega nisem vedel. Preveril sem dvakrat: leta 2016 je BT naštel okrog 12 milijonov klicev na leto, po 45 penijev, BBC pa je pet let prej poročal celo o 30 milijonih.\nNihče ne kliče zato, da bi slišal prijazen glas. Kličejo, ker stroj pove natanko tisto, kar rabijo, in nič več. To je 5,4 milijona funtov na leto za eno točno številko. Pomislite na to, ko vam kdo naslednjič reče, da ljudje nočejo govoriti z avtomatom.\nRavno o tem je nova kolumna. Deset mesecev smo poslušali, kaj se zgodi, ko v ordinaciji zazvoni telefon in se oglasi glasovna asistentka. Koliko pacientov je med pogovorom zahtevalo človeka, piše spodaj. Namig: manj, kot bi stavili na sestanku o AI."
+  },
+  {
+   "id": "B1_TITLE",
+   "text": "Glasovni agent ali človek dva dni prepozno? Kaj hoče stranka"
+  },
+  {
+   "id": "B1_BODY",
+   "text": "Prejšnji vikend sva z ženo spala v Erjavčevi koči na Vršiču. V soboto sva preplezala Hanzovo pot na Malo Mojstrovko; pred tremi leti nisem zmogel niti na Šmarno goro. V nedeljo naju je čakal spust v Trento mimo zavetišča pod Špičkom in ogledom plezalnega dela poti na Jalovec (cilj za prihodnje leto) ter eno samo vprašanje: ali ob 17.12 s serpentine 49 še pelje avtobus nazaj na Vršič.\nV soboto zvečer sem poklical prevoznika. Zvonilo je v prazno. Napisal sem mail. V nedeljo sem hodil v dolino brez odgovora. Prijazen, natančen odgovor je prišel v torek dopoldne.\nTo zgodbo zdaj pripovedujem vodjem kontaktnih centrov, ki mi rečejo: naše stranke ne bodo hotele govoriti z robotom. V kolumni je, zakaj se motijo. In kaj bi mi tisto soboto zadoščalo: kovinski glas z datumom in točno uro."
+  },
+  {
+   "id": "B1_CTA",
+   "text": "Preberite kolumno: zakaj se vodja kontaktnega centra moti"
+  },
+  {
+   "id": "CLOSING",
+   "text": "Dvanajst milijonov klicev na leto stroju, ki pove eno točno številko. Operaterja tam ni že od leta 1936. Vaše stranke hočejo isto: odgovor, ki velja ta hip, in uro, ki jo nekdo gleda tudi, ko ne kličejo. Če ste 123 kdaj poklicali, mi napišite; zanima me, kaj ste slišali.\nČe bi radi tak pregled na svojih klicih, odgovorite na ta mail s »pregled klicev«. Trideset minut, brez predstavitve produkta."
+  }
+ ],
+ "approved_adaptations": [
+  "Bloka 2 in 3 sta v HR izdaji vsebinsko drugačna kot v SI in sta že končana (glej constraints.hr_bloka_2_in_3). PREHEADER, HOOK in CLOSING naj bodo skladni s tem, kar hrvaški bralec v izdaji dejansko dobi: ponudb, ki jih HR izdaja nima, ne omenjaj, in namesto njih napovej vsebino HR blokov 2 in 3."
+ ]
+}
