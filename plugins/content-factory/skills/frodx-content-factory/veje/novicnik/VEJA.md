@@ -35,7 +35,7 @@ Gate-i so samo pri korakih 1, 3, 4 in 6. Koraka 2 in 5 tečeta brez vprašanja; 
 | 1 Gradivo | Igor poda 1-3 URL-je kolumn ali vsebin, po želji webinar, novico in slike. Pisec, njegov korak 1 (Intake): vsebine z URL-jev prebereš z `web_fetch`, določiš tip izdaje. Nato pripraviš vse iz podrazdelka »Korak 1« spodaj. Igorjevo pravilo je natanko en pain link na izdajo (CTA na rešitev, demo, posvet ali prijavo; `self-eval-rubric.md`). Če v gradivu takega URL-ja ni, ga pri gate-u vprašaš. URL-ja ne izmišljaš. Zapiši `_run.gradivo`, `_run.tip_izdaje`, vse odločitve pa v `_run.gradivo_odlocitve` in `_run.block_images`. | **da**, en gate za vse: kateri bloki in v kakšnem vrstnem redu, pain link, način po bloku in jeziku, slika po bloku in jeziku, hook in zgodba za blok kolumne |
 | 2 SI izdaja | Pisec, njegova koraka 2-3 (SI original po `playbook.md` z izbranim hookom in zgodbo, sedem vrat po `self-eval-rubric.md`). HR in EN še ne nastaneta. | **ne**: takoj korak 3 |
 | 3 Kritika | `frodx-critique-loop` na SI izdaji, največ dva kroga (glej Skupni koraki) | **da**: je SI izdaja v redu. Igor jo vidi prvič, že popravljeno po kritiki |
-| 4 HR in EN | Pisec, njegova koraka 4-5, z vhodom iz `scripts/prevod_vhod.py` (podrazdelek »Korak 4« spodaj). Nato enkrat na jezik Igorjev `frodx-transcreation-audit` (točka 6 v `frodx-transcreation-check/SKILL.md`), brez GPT/Gemini preverbe. Nato Igorjev pregled in žetev. | **da**: Igorjevi popravki HR in EN, ocena audita za oba jezika, kateri popravki gredo v žetev |
+| 4 HR in EN | HR: n8n `cf-transkreacija-hr` (GPT-6.1 Sol piše, ločen Sol klic pregleda, največ dva kroga popravka); Claude HR besedila ne piše. EN: pisec, njegova koraka 4-5, z vhodom iz `scripts/prevod_vhod.py`, nato enkrat na jezik Igorjev `frodx-transcreation-audit` (točka 6 v `frodx-transcreation-check/SKILL.md`). Oba brez GPT/Gemini preverbe. Nato Igorjev pregled in žetev (podrazdelek »Korak 4«). | **da**: Igorjevi popravki HR in EN, izid Sol pregleda za HR in ocena audita za EN, odprta vprašanja za HR, kateri popravki gredo v žetev |
 | 5 Slike | `frodx-image-run`, Faza C, podrazdelek »Korak 5 veje«: izvede odločitve iz koraka 1 | **ne**: takoj korak 6 |
 | 6 Oddaja | preverba paketa, nato v enem sporočilu kršitve, opozorila in odprte zadolžitve: odprte zadolžitve prebereš na glas in vprašaš, ali oddaja kljub temu (`frodx-publish-send`). Nato `cf-deliver-newsletter`, navodilo za Hub, Igorjev scorecard in arhivska vrstica v pogovor | **da**, ena potrditev |
 
@@ -70,7 +70,7 @@ Odločitve zapiši v `_run.gradivo_odlocitve` (`bloki`, `pain_link`, `opombe`, `
 
 ### Korak 4: HR in EN
 
-Točke a-d tečejo za vsak jezik (`hr`, nato `en`; točka b enkrat na tek), točka e enkrat za oba jezika, točki f-g spet za vsak jezik, točka h enkrat za oba:
+Točke a-c tečejo za vsak jezik (`hr`, nato `en`; točka b enkrat na tek). Za `hr` nato tečejo c2, d-hr in e-hr; za `en` d in e. Točka f teče za vsak jezik, točka g samo za `en`, točka h enkrat za oba. Claude HR besedila ne piše in ne spreminja: HR napiše in pregleda GPT-6.1 Sol v n8n, Claude pripravi vhod, vpiše izid in ga pokaže Igorju.
 
 a. **Viri.** Za vsak blok z neprazno `url` v `_run.gradivo_odlocitve.jeziki.<jezik>` stran preberi z `web_fetch` in glavno besedilo (brez menijev in noge) zapiši v `runs/<slug>/prevod/viri/<jezik>-<block_id>.txt`. Pri `lokalni_vir` brez URL-ja zapiši tja gradivo, ki ga je Igor dal v pogovoru.
 
@@ -84,13 +84,31 @@ python3 veje/novicnik/scripts/prevod_vhod.py <state.json> <jezik>
 
 Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje. Ob `NAPAKA:` je `prevod/zetev.json` ali `state.json` pokvarjen: CF-Zetev preberi znova po `references/zetev.md` in skripto poženi še enkrat; če napaka ostane, izpis pokaži Igorju in se ustavi. Skripta zapiše `prevod/<jezik>-vhod.json` in žetev za varovalo (`transcreation-check/<jezik>-round-zetev.json`).
 
-d. **Prevod.** Pisec, njegova koraka 4-5, iz `prevod/<jezik>-vhod.json`:
+c2. **Vhod za Sola (samo `hr`).**
+
+```bash
+python3 veje/novicnik/scripts/hr_sol.py vhod <state.json>
+```
+
+Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje; ob `NAPAKA:` izpis pokaži Igorju in se ustavi. Nato zapiši `prevod/hr-meta.json` iz `references/privzete-vrednosti.md` (Igorjeva `docx-pipeline.md`, META in SIGNOFF za HR): ključi `PACKAGE_ID`, `EDITION_NAME`, `STATUS`, `SEGMENT_REF`, `FROM_NAME`, `FROM_EMAIL`, `REPLY_TO`, `FOOTER_REF`, `GREETING`, `SIGNOFF_PHRASE`, `SIGNOFF_NAME` in `dogodki` z uro dogodka za HR za vsak blok z dogodkom (`{"block-02": {"EVENT_TIME": "13:00"}}`). Besedila v to datoteko ne pišeš.
+
+d-hr. **Prevod HR: n8n `cf-transkreacija-hr`** (`ID_CF_TRANSKREACIJA_HR`) prek `execute_workflow`, `executionMode: "manual"`, telo `prevod/hr-sol-vhod.json` pod `inputs.webhookData.body`. Workflow ostane neaktiven. Izvedba traja do nekaj minut; izid preberi z `get_workflow_execution`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`, in ga zapiši, kot je, v `prevod/hr-sol-izid.json`. `izid` je `PASS` (Igorjev pogoj izpolnjen), `UREDNIK` (besedilo gre Igorju z odprtimi vprašanji ali nerešenimi ugotovitvami) ali `NAPAKA` (HR ni nastal).
+
+e-hr. **Vpis HR.**
+
+```bash
+python3 veje/novicnik/scripts/hr_sol.py izdaja <state.json> <mapa teka>/prevod/hr-sol-izid.json <executionId>
+```
+
+Skripta preveri izid (id-ji, U+2014, Pauletič, URL-ji in e-naslovi, kontrolna vsota promptov), HR izdajo vpiše in zapiše `_run.prevod_hr`. `OPOZORILO:` o številki preveri sam v izpisu in ga povej Igorju na gate-u. Ob `NAPAKA:` ali izidu `NAPAKA` HR **ne napišeš sam**: Igorju povej, da HR ni nastal, in d-hr ponovi enkrat. Pri drugi napaki se tek ustavi; napako zapiši v `_run.open_tasks` za Janija.
+
+d. **Prevod EN.** Pisec, njegova koraka 4-5, iz `prevod/en-vhod.json`:
 - blok `transkreacija`: transkreacija SI bloka. Referenca ni vir besedila. Zgodba, dolžina in struktura bloka pridejo iz SI. Iz reference vzameš že potrjene izraze, naslove, terminologijo in formulacije, da se blok ne razlikuje od strani, na katero vodi CTA;
 - blok `lokalni_vir`: napišeš ga iz vira, v tonu in osi te izdaje; hook ga mora povezati tako kot v SI. Pisčeva preverba »ali os med bloki drži« velja tudi za ta jezik;
 - nobena oblika iz stolpca `prej` v žetvi se ne pojavi; uporabiš obliko iz `potem`;
 - CTA bloka v tem jeziku je URL iz `_run.gradivo_odlocitve.jeziki.<jezik>.<block_id>.url`, kadar ni prazen; sicer ostane URL SI bloka.
 
-e. **Vpis.** HR in EN v eni datoteki z `iz_editions.py` (glej »Pisec in preslikava«).
+e. **Vpis EN.** EN z `iz_editions.py` (glej »Pisec in preslikava«).
 
 f. **Preverba žetve.** Izpis jezika (`izdaja_besedilo.py izpis <state.json> <jezik>`) zapiši v `prevod/<jezik>-izpis.txt` in poženi iz `plugins/content-factory/skills/`:
 
@@ -100,9 +118,9 @@ python3 frodx-transcreation-check/scripts/preveri_iznicenje.py <mapa teka>/trans
 
 Vsaka vrstica `IZNIČENO:` je oblika iz žetve, ki je v prevodu. Zamenjaj jo z obliko `potem` in vpiši z `izdaja_besedilo.py vpis`. Varovalo primerja podnize: če je najdena oblika samo del druge besede, je ne menjaj in to povej Igorju na gate-u.
 
-g. **Audit.** `frodx-transcreation-check`, točka 6, po »Vhod po veji« za novičnik.
+g. **Audit (samo `en`).** `frodx-transcreation-check`, točka 6, po »Vhod po veji« za novičnik; za `hr` audit ne teče.
 
-h. **Gate.** Igorju pokaži HR in EN z `izdaja_besedilo.py izpis` ter oceno in sodbo audita za oba jezika. Igor pove popravke; vneseš jih z `izdaja_besedilo.py vpis`. Iz njegovih popravkov izlušči kandidate za žetev po pravilih v `references/zetev.md` (samo splošni pari) in jih pokaži kot seznam `prej → potem (razlog)`. Igor izrecno potrdi, kateri gredo v žetev. Potrjene pare vpiši z `add_data_table_rows` v `CF-Zetev`, tabelo preberi nazaj in jih zapiši v `_run.zetev`. Nato `_run.approvals.step4`.
+h. **Gate.** Igorju pokaži HR in EN z `izdaja_besedilo.py izpis`. Za HR povej izid v eni vrstici iz `_run.prevod_hr` (npr. »Sol: PASS 96 po 1 krogu popravka« ali »Sol: za urednika (UREDNIK), 2 kroga, ocena 91«), nato vsako `review_reasons` kot vprašanje s citatom izvirnika in vsako ugotovitev iz `nereseno` s citatom, razlogom in predlogom. Za EN povej oceno in sodbo audita. Igor pove popravke; vneseš jih z `izdaja_besedilo.py vpis`. Iz njegovih popravkov izlušči kandidate za žetev po pravilih v `references/zetev.md` (samo splošni pari) in jih pokaži kot seznam `prej → potem (razlog)`. Igor izrecno potrdi, kateri gredo v žetev. Potrjene pare vpiši z `add_data_table_rows` v `CF-Zetev`, tabelo preberi nazaj in jih zapiši v `_run.zetev`. Nato `_run.approvals.step4`.
 
 Če Igor nima popravkov, ni kandidatov in ni vprašanja o žetvi: `_run.zetev` ostane `[]`, zapiši `_run.approvals.step4` in pojdi na korak 5.
 
@@ -138,7 +156,7 @@ Ob vsakem gate-u Igorju pokaži izdajo z `python3 veje/novicnik/scripts/izdaja_b
   - vhod: `izdaja_besedilo.py izpis <state.json> si`;
   - prompt: `references/critique-prompt.md` (začasen, sestavljen iz Igorjeve rubrike);
   - zapis: `izdaja_besedilo.py vpis <state.json> si <besedilo.txt>`.
-- **`frodx-transcreation-check`** (korak 4), za `hr` in za `en`, razdelek »Vhod po veji« v skillu. Za novičnik teče samo točka 6 (Igorjev audit), enkrat na jezik; zanka GPT/Gemini (točke 1-5) ne teče:
+- **`frodx-transcreation-check`** (korak 4), samo za `en`, razdelek »Vhod po veji« v skillu. HR teče prek `cf-transkreacija-hr` (Korak 4, d-hr). Za novičnik teče samo točka 6 (Igorjev audit), enkrat na jezik; zanka GPT/Gemini (točke 1-5) ne teče:
   - izvirnik: `izpis ... si`, prevod: `izpis ... <jezik>`;
   - vhod audita je žetev iz `transcreation-check/<jezik>-round-zetev.json` (zapiše jo `prevod_vhod.py`), varovalo jo preveri;
   - oznake izdaje ostanejo nespremenjene, vpis samo z `vpis ... <jezik>`. Igorju ob gate-u povej oceno in sodbo audita za oba jezika;

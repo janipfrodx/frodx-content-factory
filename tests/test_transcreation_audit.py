@@ -135,3 +135,9 @@ def test_navedek_se_preveri_dobesedno_proti_inputu():
     vsebina = _skill()
     assert "dobesedno pojavi v `input` kroga" in vsebina
     assert "izjema: veja novičnik, glej »Vhod po veji«, in točka 6" in vsebina
+
+
+def test_novicnik_audit_samo_za_en():
+    razdelek = _skill().split("## Vhod po veji", 1)[1]
+    assert "samo za `en`" in razdelek
+    assert "cf-transkreacija-hr" in razdelek

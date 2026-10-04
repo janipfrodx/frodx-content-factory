@@ -286,7 +286,7 @@ Veja v svojem `VEJA.md`, razdelek **Skupni koraki**, poda izvirnik, prevod in na
 
 Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na mapo debla:
 
-- **Točke 1-5 ne tečejo.** Za novičnik ni zanke GPT/Gemini: teče samo točka 6 (audit), enkrat na jezik. `_run.transcreation_check` ostane prazen.
+- **Točke 1-5 ne tečejo.** Za novičnik ni zanke GPT/Gemini: teče samo točka 6 (audit), enkrat na jezik, samo za `en`. HR novičnika napiše in pregleda GPT-6.1 Sol v n8n `cf-transkreacija-hr` (veja, Korak 4, d-hr); audit ga ne prepisuje. `_run.transcreation_check` ostane prazen.
 - **Izvirnik:** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> si`; **prevod:** `python3 veje/novicnik/scripts/izdaja_besedilo.py izpis <state.json> <jezik>`.
 - Besedilo je zapisano z oznakami `SUBJECT:`, `PREHEADER:`, `GREETING:`, `HOOK:`, `NASLOV:`, `TELO:`, `ALINEJE:`, `CTA:`, `ZAKLJUČEK:`, `PODPIS:`, `PS:` (glava bloka `[block-01 · type]`). Oznake so oblika, ne vsebina: ne ocenjuješ jih in ne predlagaš, da bi jih spremenili, v nobenem jeziku ostanejo take, kot so.
 - **Audit (točka 6):** besedilo za `<jezik>-pred.txt` je izpis `izdaja_besedilo.py izpis <state.json> <jezik>`. Auditu k vhodu dodaj, da so oznake oblika, ne vsebina, in morajo v končni verziji ostati nespremenjene. V točki c namesto sprejetih najdb GPT/Gemini podaš Igorjeve potrjene popravke iz žetve (`transcreation-check/<jezik>-round-zetev.json`, polje `accepted`, zapiše ga `veje/novicnik/scripts/prevod_vhod.py`), z navodilom:

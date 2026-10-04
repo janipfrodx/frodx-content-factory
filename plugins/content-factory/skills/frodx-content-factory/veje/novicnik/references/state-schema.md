@@ -31,7 +31,8 @@ Paket nikoli ne nosi `send_datetime`, `timezone` ali kazala (TOC). Čas nastavi 
 | `approvals` | `{step1: <ISO čas>, ...}` |
 | `critique_rounds` | koliko krogov kritike SI je bilo |
 | `transcreation_check` | `{hr: {rounds, verdict, openai_error, gemini_error}, en: {...}}` iz koraka 4; pri novičniku ostane prazen (teče samo audit, točka 6) |
-| `transcreation_audit` | `{hr: {score, verdict, variant, traces, povrnjeno, report}, en: {...}}` iz koraka 4 - kot pri kolumni |
+| `transcreation_audit` | `{hr: {score, verdict, variant, traces, povrnjeno, report}, en: {...}}` iz koraka 4 - kot pri kolumni; pri novičniku samo `en` |
+| `prevod_hr` | `{izid, krogi, score, verdict, review_reasons, nereseno, execution_id}` iz koraka 4 (d-hr, e-hr): izid n8n `cf-transkreacija-hr`; zapiše ga `scripts/hr_sol.py izdaja`. `nereseno` so blokirajoče ugotovitve zadnjega pregleda |
 | `zetev` | `[{jezik, prej, potem, razlog}]`: pari, ki jih je Igor na gate-u koraka 4 potrdil in so vpisani v n8n tabelo `CF-Zetev` (`references/zetev.md`). Prazen seznam, če popravkov ni bilo |
 | `block_images` | `[{block_id, jezik, vir, url, razlog, kandidatke}]`, en zapis na blok in jezik (`si`, `hr`, `en`); `vir` je `prilozena`, `ponovna_raba`, `generirana` ali `brez`. Predlog in Igorjeva odločitev nastaneta v koraku 1, `url` za `generirana` v koraku 5 |
 | `delivery` | `{status, draft_id, edit_url, delivered_at}` iz koraka 6 |

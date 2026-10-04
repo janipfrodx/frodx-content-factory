@@ -218,7 +218,7 @@ def _korak_4():
 
 def test_korak_4_zanka_loci_tocke_po_jeziku_in_enkrat():
     korak = _korak_4()
-    for niz in ("točka b enkrat na tek", "točka e enkrat za oba jezika", "točki f-g spet za vsak jezik",
+    for niz in ("točka b enkrat na tek", "Za `hr` nato tečejo c2, d-hr in e-hr", "točka g samo za `en`",
                 "točka h enkrat za oba"):
         assert niz in korak, niz
     assert "Za vsak jezik (`hr`, nato `en`):" not in korak
@@ -237,3 +237,34 @@ def test_korak_4_cta_bloka_iz_jezikovne_razlicice():
 
 def test_shema_transcreation_check_ostane_prazen_pri_novicniku():
     assert "pri novičniku ostane prazen" in _vrstica_sheme("transcreation_check")
+
+
+def test_korak_4_hr_na_solu():
+    korak = _korak_4()
+    for niz in ("hr_sol.py vhod", "cf-transkreacija-hr", "hr-meta.json", "hr_sol.py izdaja",
+                "_run.prevod_hr", "Claude HR besedila ne piše", "UREDNIK", "NAPAKA", "nereseno",
+                "review_reasons", "includeData"):
+        assert niz in korak, niz
+
+
+def test_korak_4_audit_samo_za_en():
+    korak = _korak_4()
+    assert "Audit (samo `en`)" in korak
+    assert "za `hr` audit ne teče" in korak
+
+
+def test_vrstica_koraka_4_omeni_sola():
+    vrstica = _vrstica_koraka(4)
+    assert "GPT-6.1 Sol" in vrstica
+    assert "brez GPT/Gemini preverbe" in vrstica
+
+
+def test_skupni_koraki_preverba_samo_za_en():
+    skupni = _razdelek("Skupni koraki")
+    assert "samo za `en`" in skupni
+
+
+def test_shema_prevod_hr():
+    vrstica = _vrstica_sheme("prevod_hr")
+    for niz in ("izid", "krogi", "score", "nereseno", "execution_id"):
+        assert niz in vrstica, niz
