@@ -13,6 +13,7 @@ Exit 0 = zapisano. Exit 1 = manjka korak (izpis ga imenuje). Exit 2 = napaka vho
 """
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -35,6 +36,73 @@ NAVODILO_ZETEV = (
     "Urednikovi potrjeni popravki iz prejšnjih izdaj. Oblika iz prej se v besedilu ne sme pojaviti; "
     "uporabi obliko iz potem. To velja pred splošnimi pravili."
 )
+
+VENDOR = Path(__file__).resolve().parents[1] / "vendor" / "igor-hr-sol"
+PROMPTI = {"pisec": "01-transkreacija-system.txt", "pregled": "02-pregled-system.txt"}
+URL = re.compile(r"https?://[^\s<>\"»”)]+")
+EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+STEVKE = re.compile(r"\d+")
+
+
+class NapakaIzida(ValueError):
+    pass
+
+
+def fnv1a(besedilo: str) -> str:
+    h = 0x811C9DC5
+    enote = besedilo.encode("utf-16-le")
+    for i in range(0, len(enote), 2):
+        h ^= enote[i] | (enote[i + 1] << 8)
+        h = (h * 0x01000193) & 0xFFFFFFFF
+    return f"{h:08x}"
+
+
+def razpakiraj(surovo) -> dict:
+    if isinstance(surovo, list):
+        if not surovo:
+            raise NapakaIzida("izid je prazen seznam")
+        surovo = surovo[0]
+    if isinstance(surovo, dict) and isinstance(surovo.get("json"), dict):
+        surovo = surovo["json"]
+    if not isinstance(surovo, dict):
+        raise NapakaIzida("izid ni objekt")
+    return surovo
+
+
+def _nizi(vzorec, besedilo):
+    return [n.rstrip(".,;:!?") for n in vzorec.findall(besedilo)]
+
+
+def preveri_izid(izid: dict, vhod: dict) -> list:
+    if izid.get("izid") not in ("PASS", "UREDNIK"):
+        raise NapakaIzida(f"izid workflowa je {izid.get('izid')!r}: {izid.get('napaka') or 'brez pojasnila'}")
+    pricakovano = {k: fnv1a((VENDOR / ime).read_text(encoding="utf-8")) for k, ime in PROMPTI.items()}
+    if izid.get("prompt_fnv") != pricakovano:
+        raise NapakaIzida(
+            f"prompt v n8n se razlikuje od vendor/igor-hr-sol: {izid.get('prompt_fnv')} namesto {pricakovano}"
+        )
+    vir = [(b["id"], b["text"]) for b in vhod["source_blocks"]]
+    bloki = izid.get("blocks")
+    if not isinstance(bloki, list) or [b.get("id") for b in bloki] != [i for i, _ in vir]:
+        dobljeno = [b.get("id") for b in bloki] if isinstance(bloki, list) else bloki
+        raise NapakaIzida(f"id-ji blokov se ne ujemajo z izvirnikom: {dobljeno}")
+    opozorila = []
+    for (bid, si_besedilo), blok in zip(vir, bloki):
+        besedilo = blok.get("text")
+        if not isinstance(besedilo, str) or not besedilo.strip():
+            raise NapakaIzida(f"{bid}: prazno besedilo")
+        if "\u2014" in besedilo:
+            raise NapakaIzida(f"{bid}: dolgi pomišljaj U+2014")
+        if "Pauletić" in besedilo:
+            raise NapakaIzida(f"{bid}: Pauletić namesto Pauletič")
+        for niz in _nizi(URL, si_besedilo) + _nizi(EMAIL, si_besedilo):
+            if niz not in besedilo:
+                raise NapakaIzida(f"{bid}: manjka {niz}")
+        stevke = set(STEVKE.findall(besedilo))
+        for st in dict.fromkeys(STEVKE.findall(si_besedilo)):
+            if st not in stevke:
+                opozorila.append(f"{bid}: številka {st} iz izvirnika ni v prevodu")
+    return opozorila
 
 
 def _si(stanje):

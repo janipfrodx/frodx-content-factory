@@ -12,7 +12,7 @@ SKRIPTA = SKRIPTE / "hr_sol.py"
 FIXTURE = REPO / "tests" / "fixtures" / "newsletter_draft_body.json"
 sys.path.insert(0, str(SKRIPTE))
 
-from hr_sol import polja_si, sestavi_vhod
+from hr_sol import NapakaIzida, PROMPTI, VENDOR, fnv1a, polja_si, preveri_izid, razpakiraj, sestavi_vhod
 from prevod_vhod import ManjkaKorak, sestavi
 
 
@@ -130,3 +130,97 @@ def test_cli_vhod_brez_hr_vhoda_manjka(tmp_path):
                           capture_output=True, text=True)
     assert izid.returncode == 1
     assert "MANJKA:" in izid.stdout and "prevod_vhod.py" in izid.stdout
+
+
+def test_fnv1a_vektorji_enaki_kot_v_js():
+    assert fnv1a("") == "811c9dc5"
+    assert fnv1a("a") == "e40c292c"
+    assert fnv1a("č") == "080aced8"
+    assert fnv1a("Pauletič – „x”") == "3fe7ae8c"
+
+
+def test_fnv1a_vendoriranih_promptov():
+    assert fnv1a((VENDOR / PROMPTI["pisec"]).read_text(encoding="utf-8")) == "e0b4683d"
+    assert fnv1a((VENDOR / PROMPTI["pregled"]).read_text(encoding="utf-8")) == "8553ec9f"
+
+
+def _vhod_mini():
+    return {"source_blocks": [
+        {"id": "SUBJECT", "text": "Zakaj 12 milijonov klicev?"},
+        {"id": "B1_BODY", "text": "Piši na igor.pauletic@frodx.com ali https://frodx.com/si/x. Ob 17.12 pelje."},
+    ]}
+
+
+def _izid_mini(**spremembe):
+    izid = {
+        "izid": "PASS", "krogi": 1,
+        "blocks": [{"id": "SUBJECT", "text": "Zašto 12 milijuna poziva?"},
+                   {"id": "B1_BODY", "text": "Pišite na igor.pauletic@frodx.com ili https://frodx.com/si/x. U 17:12 vozi."}],
+        "review_reasons": [], "pregled": {"verdict": "PASS", "score": 96, "summary": "", "checks": {}, "issues": []},
+        "prompt_fnv": {"pisec": "e0b4683d", "pregled": "8553ec9f"},
+    }
+    izid.update(spremembe)
+    return izid
+
+
+def test_veljaven_izid_brez_opozoril():
+    assert preveri_izid(_izid_mini(), _vhod_mini()) == []
+
+
+def test_url_s_piko_na_koncu():
+    assert preveri_izid(_izid_mini(), _vhod_mini()) == []
+
+
+def test_urednik_je_sprejemljiv_izid():
+    assert preveri_izid(_izid_mini(izid="UREDNIK"), _vhod_mini()) == []
+
+
+def test_napaka_workflowa_se_prenese():
+    with pytest.raises(NapakaIzida, match="NAPAKA.*pisec ni vrnil JSON"):
+        preveri_izid(_izid_mini(izid="NAPAKA", blocks=[], napaka="pisec ni vrnil JSON"), _vhod_mini())
+
+
+def test_razhod_prompta_v_n8n():
+    with pytest.raises(NapakaIzida, match="vendor/igor-hr-sol"):
+        preveri_izid(_izid_mini(prompt_fnv={"pisec": "00000000", "pregled": "8553ec9f"}), _vhod_mini())
+
+
+def test_napacen_vrstni_red_id():
+    izid = _izid_mini()
+    izid["blocks"].reverse()
+    with pytest.raises(NapakaIzida, match="id-ji"):
+        preveri_izid(izid, _vhod_mini())
+
+
+@pytest.mark.parametrize("besedilo, sporocilo", [
+    ("Zašto \u2014 12 milijuna poziva?", "U\\+2014"),
+    ("Igor Pauletić, 12 milijuna", "Pauletić"),
+    ("   ", "prazno"),
+])
+def test_krsitve_v_besedilu(besedilo, sporocilo):
+    izid = _izid_mini()
+    izid["blocks"][0]["text"] = besedilo
+    with pytest.raises(NapakaIzida, match=sporocilo):
+        preveri_izid(izid, _vhod_mini())
+
+
+def test_manjkajoc_url_ali_naslov():
+    izid = _izid_mini()
+    izid["blocks"][1]["text"] = "Pišite na igor.pauletic@frodx.com. U 17:12 vozi."
+    with pytest.raises(NapakaIzida, match="https://frodx.com/si/x"):
+        preveri_izid(izid, _vhod_mini())
+
+
+def test_manjkajoca_stevilka_je_opozorilo():
+    izid = _izid_mini()
+    izid["blocks"][0]["text"] = "Zašto dvanaest milijuna poziva?"
+    assert preveri_izid(izid, _vhod_mini()) == ["SUBJECT: številka 12 iz izvirnika ni v prevodu"]
+
+
+def test_razpakiraj_sprejme_tri_oblike():
+    jedro = _izid_mini()
+    assert razpakiraj(jedro) == jedro
+    assert razpakiraj({"json": jedro}) == jedro
+    assert razpakiraj([{"json": jedro}]) == jedro
+    with pytest.raises(NapakaIzida):
+        razpakiraj([])
