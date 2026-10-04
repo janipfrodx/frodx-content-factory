@@ -92,7 +92,7 @@ python3 veje/novicnik/scripts/hr_sol.py vhod <state.json>
 
 Ob `MANJKA:` se vrni na korak, ki ga izpis imenuje; ob `NAPAKA:` izpis pokaži Igorju in se ustavi. Nato zapiši `prevod/hr-meta.json` iz `references/privzete-vrednosti.md` (Igorjeva `docx-pipeline.md`, META in SIGNOFF za HR): ključi `PACKAGE_ID`, `EDITION_NAME`, `STATUS`, `SEGMENT_REF`, `FROM_NAME`, `FROM_EMAIL`, `REPLY_TO`, `FOOTER_REF`, `GREETING`, `SIGNOFF_PHRASE`, `SIGNOFF_NAME` in `dogodki` z uro dogodka za HR za vsak blok z dogodkom (`{"block-02": {"EVENT_TIME": "13:00"}}`). Besedila v to datoteko ne pišeš.
 
-d-hr. **Prevod HR: n8n `cf-transkreacija-hr`** (`ID_CF_TRANSKREACIJA_HR`) prek `execute_workflow`, `executionMode: "manual"`, telo `prevod/hr-sol-vhod.json` pod `inputs.webhookData.body`. Workflow ostane neaktiven. Izvedba traja do nekaj minut; izid preberi z `get_workflow_execution`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`, in ga zapiši, kot je, v `prevod/hr-sol-izid.json`. `izid` je `PASS` (Igorjev pogoj izpolnjen), `UREDNIK` (besedilo gre Igorju z odprtimi vprašanji ali nerešenimi ugotovitvami) ali `NAPAKA` (HR ni nastal).
+d-hr. **Prevod HR: n8n `cf-transkreacija-hr`** (`yerKUljx0ZsTTxvW`) prek `execute_workflow`, `executionMode: "manual"`, telo `prevod/hr-sol-vhod.json` pod `inputs.webhookData.body`. Workflow ostane neaktiven. Izvedba traja do nekaj minut; izid preberi z `get_workflow_execution`, `includeData: true`, `nodeNames: ["Respond to Webhook"]`, in ga zapiši, kot je, v `prevod/hr-sol-izid.json`. `izid` je `PASS` (Igorjev pogoj izpolnjen), `UREDNIK` (besedilo gre Igorju z odprtimi vprašanji ali nerešenimi ugotovitvami) ali `NAPAKA` (HR ni nastal).
 
 e-hr. **Vpis HR.**
 

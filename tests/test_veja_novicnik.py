@@ -296,3 +296,15 @@ def test_skupni_koraki_gate_audit_samo_en():
 def test_e_hr_po_ponovitvi_znova_z_novim_izidom():
     korak = _korak_4()
     assert "e-hr znova z novim `prevod/hr-sol-izid.json` in novim `executionId`" in korak
+
+
+def test_d_hr_ima_pravi_id_workflowa_iz_dokumentacije():
+    import re
+
+    veja = VEJA.read_text(encoding="utf-8")
+    assert "ID_CF_TRANSKREACIJA_HR" not in veja
+    v_veji = re.search(r"n8n `cf-transkreacija-hr`\*\* \(`([A-Za-z0-9]{16})`\)", veja)
+    dok = (REPO / "docs" / "n8n-cf-transkreacija-hr.md").read_text(encoding="utf-8")
+    v_dok = re.search(r"\*\*ID workflowa:\*\* `([A-Za-z0-9]{16})`", dok)
+    assert v_veji and v_dok
+    assert v_veji.group(1) == v_dok.group(1)
