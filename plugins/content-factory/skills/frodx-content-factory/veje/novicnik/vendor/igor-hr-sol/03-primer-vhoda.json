@@ -1,0 +1,20 @@
+{
+  "content_type": "newsletter",
+  "audience": "Vodje marketinga, prodaje in uporabniške izkušnje na Hrvaškem.",
+  "source_blocks": [
+    {
+      "id": "SUBJECT",
+      "text": "Odgovor sem potreboval v soboto. Dobil sem ga v torek."
+    },
+    {
+      "id": "HOOK",
+      "text": "V soboto zvečer sem poklical prevoznika. Zvonilo je v prazno. Napisal sem mail. Prijazen, natančen odgovor je prišel v torek dopoldne."
+    }
+  ],
+  "candidate_blocks": [],
+  "glossary": [],
+  "approved_examples": [],
+  "approved_adaptations": [],
+  "constraints": {},
+  "audit_feedback": []
+}

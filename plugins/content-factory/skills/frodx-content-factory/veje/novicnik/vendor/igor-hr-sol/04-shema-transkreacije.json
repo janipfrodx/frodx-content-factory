@@ -1,0 +1,56 @@
+{
+  "type": "object",
+  "properties": {
+    "needs_review": {
+      "type": "boolean"
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "text"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "review_reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "block_id": {
+            "type": "string"
+          },
+          "source_quote": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "block_id",
+          "source_quote",
+          "question"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "needs_review",
+    "blocks",
+    "review_reasons"
+  ],
+  "additionalProperties": false
+}

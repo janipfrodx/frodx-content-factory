@@ -1,0 +1,64 @@
+HRVAŠKE TRANSKREACIJE ZA FRODX: GRADIVO ZA JANIJA
+Pripravljeno 2. oktobra 2026
+
+KAJ JE PRIPRAVLJENO
+01-transkreacija-system.txt: samostojen sistemski prompt za ustvarjanje ali izboljšavo hrvaškega besedila.
+02-pregled-system.txt: samostojen sistemski prompt za ločen pregled točno prejetega kandidata.
+03-primer-vhoda.json: predlagana vhodna struktura; besedilo je zgolj primer.
+04-shema-transkreacije.json in 05-shema-pregleda.json: shemi izhodov za preverjanje strukture JSON.
+
+To je paket promptov in predlog za vključitev, ne izvožen ali v vašem n8n že nameščen workflow. Imena vhodnih polj so predlog pogodbe med koraki; preslikajte jih na dejanska polja obstoječega procesa. Paket ne potrebuje lokalne Codex veščine ali dostopa do zgodovine pogovorov.
+
+PREDLAGANI TOK
+1. Vhod: celoten izbrani slovenski tekst, kontekst in uredniške omejitve. En newsletter/članek naj bo en vhodni objekt z več bloki. Tako model vidi rdečo nit in povezave med bloki.
+2. Pisanje: sistemski prompt 01 + vhodni JSON v uporabniškem sporočilu. Pri prvi izdelavi je candidate_blocks prazen. Pri redakciji vsebuje zadnji HR kandidat.
+3. Preverjanje izhoda: validacija JSON, prisotnosti/unikatnosti id-jev, vrstnega reda, zaščitenih nizov in dejanskih omejitev dolžine. Če needs_review=true, rezultat potrebuje urednika. Napak pri razčlenjevanju ali neveljavne strukture ne pošiljajte v objavo.
+4. Ločen pregled: nov klic z 02, istim izvirnikom, istimi zahtevami in blocks iz prvega klica kot candidate_blocks. Pregledovalcu ne posredujte samocene pisca, prejšnjih številčnih ocen ali njegove razlage odločitev. To je ločen modelni klic, ne trditev, da sodeluje človeški lektor; lahko uporablja isti model. Ne potrebuje pogovornega spomina.
+5. Če pregled najde popravljive težave, pošljite prvemu koraku isti izvirnik, kandidat in issues kot audit_feedback. Potem ponovno preglejte celoten novi kandidat.
+6. Največ dva kroga popravkov po prvi izdelavi. Če rezultat še ne prestane meril ali je potreben odgovor o pomenu izvirnika, vrnite ga uredniku s konkretnimi razlogi. Ne ustvarjajte zanke »popravljaj do 100«, ki spodbuja nepotrebne spremembe ali višanje ocene.
+
+POGOJ ZA JEZIKOVNO SPREJEMLJIV REZULTAT
+- Pisec vrne needs_review=false.
+- Pregledovalec vrne verdict=PASS in score najmanj 95.
+- Vsi štirje checks so true.
+- Nobena ugotovitev nima blocking=true.
+- Programsko preverjanje strukture in zaščitenih podatkov uspe.
+Zahtevajte vse pogoje, ne samo številke 95. To je jezikovni pogoj znotraj vašega obstoječega postopka objave; ta paket ničesar ne objavi in ne nadomešča drugih uredniških korakov.
+
+PODROBNOSTI VKLJUČITVE V N8N
+Basic LLM Chain podpira sistemsko sporočilo in dinamičen Prompt (User Message). Besedilo iz 01 oziroma 02 dajte v System; podatke posameznega članka pošljite ločeno kot serializiran JSON v uporabniškem sporočilu.
+Za vsak klic priključite Structured Output Parser in izberite Define using JSON Schema z ustrezno priloženo shemo. Shemi ne uporabljata $ref.
+Parser potrjuje strukturo podatkov, ne kakovosti hrvaščine ali resničnosti modelove ocene. Primerjavo id-jev, zaščitenih nizov in omejitev dolžine izvedite še programsko. Pri številkah upoštevajte dovoljene spremembe zapisa in pregiba, ne zgolj primerjave vseh nizov znak za znakom.
+Ohranite povezavo med dokumentom, izvirnikom, kandidatom, ugotovitvami in različico prompta. Če obdelujete več dokumentov, jih ne pomešajte; dinamični izrazi v n8n podvozliščih se lahko nanašajo na prvi vhodni element. Shemi naj bosta statični; besedila posameznega dokumenta naj prihajajo skozi glavni klic.
+
+VIRI ZA N8N (preverjeno 2. oktobra 2026)
+Basic LLM Chain:
+https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.chainllm/
+Structured Output Parser:
+https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.outputparserstructured/
+
+KAKO IZBOLJŠEVATI KAKOVOST
+V approved_examples dodajte 3–5 dejansko potrjenih parov SI/HR iz iste vrste vsebine, skupaj z razlogom, zakaj je rešitev dobra. Pretekli predlog asistenta še ni potrjen primer. V glossary dodajte samo dogovorjene izraze z njihovim kontekstom; brez mehanskih zamenjav ne glede na pomen.
+Najprej primerjajte stari in novi postopek na 5–10 reprezentativnih besedilih: kolumna, newsletter, spletni opis, e-pošta in vprašalnik. Ocenjujte slepo, brez oznake, katero različico je pripravil novi prompt. Beležite predvsem pomenske spremembe, nenaravne kolokacije, izgubo avtorjevega glasu in nepotrebne popravke dobrih stavkov. Potrjene primere nato dodajajte v knjižnico. Ne učite postopka iz vsakega naključnega predloga pregledovalca.
+Prag 95 je uredniška konvencija, ne zagotovilo kakovosti ali statistična meritev. Prompta v tej nalogi nista bila preizkušena v dejanskem n8n procesu z izbranim modelom. Pregledana je bila medsebojna skladnost vhodov/izhodov in preverjena JSON sintaksa priloženih datotek; združljivost shem preverite še v vašem parserju.
+
+KAJ JE BILO NAJDENO V ZGODOVINI
+Pregledani so bili dostopni relevantni pogovori 25. septembra in 1. oktobra 2026 ter sedanji pogovor. To ni popoln pregled vse zgodovine več tednov.
+
+25. 9. 2026: »Preveri besedila pred objavo«
+ID: 01a0d6b9-2825-74f1-997a-a1f95d71a122
+Igorjev izrecni kriterij: »ne smejo pomisliti, da gre za prevod«; zahteva jasna navodila, kaj popraviti in kako. Pregled je ločil lokalne jezikovne popravke, ohranitev osebnega glasu in vsebinske razlike med jezikovnimi izdajami. Odkril je tudi spremembo priimka Pauletič v Pauletić.
+
+1. 10. 2026: »Preveri naravnost besedil«
+ID: 6abe4106-5eac-83ed-b57a-bcfa3b29ed98
+Igor sprašuje, ali besedilo deluje kot delo rojenega govorca. Glavne ugotovitve se nanašajo na kolokacije in stavčno zgradbo: npr. »do njega doći posebno« in »razgovora stiglo je«.
+
+1. 10. 2026: »Preverjanje hrvaščine«
+ID: 6abe7576-ed9c-83eb-9a10-268c44353a8e
+Zaporedni pregledi vprašalnika, obrazca, rezultatne strani in e-pošte. Ponavljajoča potreba: iste popravke dosledno prenesti v vsa povezana besedila, ohraniti pomen vprašanj in odgovorov ter naravno izraziti osebni ton.
+
+1. 10. 2026: »Pregled pripravljenosti objave«
+ID: 6abe8d4c-2db8-83ed-b035-dcda96231fc9
+Preverjanje newsletterja HR/EN pred objavo. Stare ocene so bile deloma nedosledne: izraz »Zvonilo je u prazno« je bil drugje pohvaljen, tu pa predlagan za spremembo. Zato paket zahteva konkreten razlog za vsak obvezen poseg in ločuje slogovno možnost od napake. Starih faktografskih navedb iz tega odgovora nismo uporabili kot preverjena dejstva.
+
+Paket upošteva tudi obstoječo veščino frodx-transcreation-audit in njeno hrvaško referenco: preverjanje sledu slovenskega izvirnika, hrvaškega standarda, avtorjevega glasu, pomenske zvestobe in hišnega sloga. Dvostopenjski avtomatizirani tok in sheme so nov predlog za Janijev proces, ne trditev, da je bil tak proces že vzpostavljen.
