@@ -466,7 +466,7 @@ def test_lokalni_vir_brez_preverbe_url_naslova_in_stevilk():
 
 def test_lokalni_vir_se_vedno_brez_dolgega_pomisljaja():
     with pytest.raises(NapakaIzida, match="B2_BODY: dolgi"):
-        preveri_izid(_izid_lokalni("Radionica — Zagreb 21. 10."), _vhod_lokalni())
+        preveri_izid(_izid_lokalni("Radionica \u2014 Zagreb 21. 10."), _vhod_lokalni())
 
 
 def test_okvirni_vnos_ne_izklopi_preverbe():
@@ -478,20 +478,20 @@ def test_okvirni_vnos_ne_izklopi_preverbe():
 
 @pytest.mark.parametrize("besedilo, opozorilo", [
     ("Zašto 12 milijuna poziva? 27,7%", True),
-    ("Zašto 12 milijuna poziva? 27,7 %", False),
+    ("Zašto 12 milijuna poziva? 27,7\u00a0%", False),
     ("Zašto 12 milijuna poziva? 27,7 %", False),
     ("Zašto 12 milijuna poziva? https://frodx.com/hr/a1%20b", False),
 ])
 def test_odstotek_brez_nbsp_je_opozorilo(besedilo, opozorilo):
     izid = _izid_mini()
     izid["blocks"][0]["text"] = besedilo
-    pricakovano = ["SUBJECT: pred % manjka nedeljivi presledek (U+00A0), npr. 12 %"] if opozorilo else []
+    pricakovano = ["SUBJECT: pred % manjka nedeljivi presledek (U+00A0), npr. 12\u00a0%"] if opozorilo else []
     assert preveri_izid(izid, _vhod_mini()) == pricakovano
 
 
 def test_odstotek_brez_nbsp_tudi_v_lokalnem_bloku():
     opozorila = preveri_izid(_izid_lokalni("Radionica u Zagrebu, 30% popusta."), _vhod_lokalni())
-    assert opozorila == ["B2_BODY: pred % manjka nedeljivi presledek (U+00A0), npr. 12 %"]
+    assert opozorila == ["B2_BODY: pred % manjka nedeljivi presledek (U+00A0), npr. 12\u00a0%"]
 
 
 def test_brez_hr_pozdrava_v_docx_pipeline_napaka(tmp_path, monkeypatch):
