@@ -104,6 +104,17 @@ def test_referenca_in_zetev_v_constraints(tmp_path):
     assert "pred splošnimi pravili" in c["zetev"]["navodilo"]
 
 
+def test_pozdrav_v_constraints_iz_docx_pipeline(tmp_path):
+    stanje = _stanje()
+    c = sestavi_vhod(stanje, _hr_vhod(stanje, _mapa(tmp_path)))["constraints"]
+    assert set(c) == {"referenca", "zetev", "pozdrav"}
+    assert c["pozdrav"] == {
+        "besedilo": "Pozdrav,",
+        "navodilo": "Izdaja se začne s stalnim pozdravom »Pozdrav,«, ki ga ne pišeš. "
+                    "HOOK mu neposredno sledi, zato se začne z malo začetnico.",
+    }
+
+
 def test_hr_vhod_za_druge_bloke_manjka_korak(tmp_path):
     stanje = _stanje()
     hr_vhod = _hr_vhod(stanje, _mapa(tmp_path))
@@ -481,3 +492,14 @@ def test_odstotek_brez_nbsp_je_opozorilo(besedilo, opozorilo):
 def test_odstotek_brez_nbsp_tudi_v_lokalnem_bloku():
     opozorila = preveri_izid(_izid_lokalni("Radionica u Zagrebu, 30% popusta."), _vhod_lokalni())
     assert opozorila == ["B2_BODY: pred % manjka nedeljivi presledek (U+00A0), npr. 12 %"]
+
+
+def test_brez_hr_pozdrava_v_docx_pipeline_napaka(tmp_path, monkeypatch):
+    import hr_sol
+
+    pot = tmp_path / "docx-pipeline.md"
+    pot.write_text("| `GREETING` | `Pozdravljeni,` | EN = `Hello,` |\n", encoding="utf-8")
+    monkeypatch.setattr(hr_sol, "DOCX_PIPELINE", pot)
+    stanje = _stanje()
+    with pytest.raises(ValueError, match="GREETING"):
+        sestavi_vhod(stanje, _hr_vhod(stanje, _mapa(tmp_path)))

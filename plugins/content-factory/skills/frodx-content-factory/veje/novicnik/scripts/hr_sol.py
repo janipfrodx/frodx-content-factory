@@ -42,6 +42,12 @@ NAVODILO_ZETEV = (
 )
 
 VENDOR = Path(__file__).resolve().parents[1] / "vendor" / "igor-hr-sol"
+DOCX_PIPELINE = Path(__file__).resolve().parents[1] / "vendor" / "frodx-newsletter" / "references" / "docx-pipeline.md"
+POZDRAV_HR = re.compile(r"^\|\s*`GREETING`\s*\|.*?HR = `([^`]+)`", re.MULTILINE)
+NAVODILO_POZDRAV = (
+    "Izdaja se začne s stalnim pozdravom »{}«, ki ga ne pišeš. "
+    "HOOK mu neposredno sledi, zato se začne z malo začetnico."
+)
 PROMPTI = {"pisec": "01-transkreacija-system.txt", "pregled": "02-pregled-system.txt"}
 URL = re.compile(r"https?://[^\s<>\"»”)]+")
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
@@ -163,6 +169,13 @@ def polja_si(si: dict) -> list:
     return polja
 
 
+def pozdrav_hr() -> str:
+    najdba = POZDRAV_HR.search(DOCX_PIPELINE.read_text(encoding="utf-8"))
+    if not najdba:
+        raise ValueError("vendor/frodx-newsletter/references/docx-pipeline.md nima HR pozdrava v vrstici GREETING")
+    return najdba.group(1)
+
+
 def sestavi_vhod(stanje: dict, hr_vhod: dict) -> dict:
     si = _si(stanje)
     bloki = hr_vhod.get("bloki")
@@ -180,6 +193,7 @@ def sestavi_vhod(stanje: dict, hr_vhod: dict) -> dict:
             referenca.append({"block_id": f"B{n}", "url": b["url"], "besedilo": b["referenca"]})
     if prilagoditve:
         prilagoditve.append({"block_ids": ["PREHEADER", "HOOK", "CLOSING"], "navodilo": NAVODILO_OKVIR})
+    pozdrav = pozdrav_hr()
     return {
         "content_type": "newsletter",
         "audience": AUDIENCE,
@@ -191,6 +205,7 @@ def sestavi_vhod(stanje: dict, hr_vhod: dict) -> dict:
         "constraints": {
             "referenca": {"navodilo": NAVODILO_REFERENCA, "bloki": referenca},
             "zetev": {"navodilo": NAVODILO_ZETEV, "pari": list(hr_vhod.get("zetev") or [])},
+            "pozdrav": {"besedilo": pozdrav, "navodilo": NAVODILO_POZDRAV.format(pozdrav)},
         },
         "audit_feedback": [],
     }
