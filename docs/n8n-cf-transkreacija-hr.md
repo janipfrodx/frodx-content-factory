@@ -9,6 +9,7 @@ HR transkreacija novičnika: GPT-6.1 Sol kot pisec in ločen pregled, največ 2 
 - **Projekt:** Content Factory (`FucXmQlDiWLVsRHW`), brez mape
 - **Stanje:** neaktiven (ni objavljen); kliče se z `execute_workflow`, `executionMode: "manual"`
 - **Webhook:** `POST`, path `cf-transkreacija-hr`, `responseMode: responseNode`, brez avtentikacije
+- **Avtentikacija:** webhook je nima. Dokler je workflow neaktiven, produkcijski URL klicev ne sprejme in se kliče samo prek `execute_workflow`. Pred kakršnokoli aktivacijo ali objavo workflowa mora webhook dobiti avtentikacijo (npr. header auth); brez nje bi lahko vsak, ki pozna URL, porabljal klice Sola na naš račun.
 - **Model:** `gpt-6.1-sol` (`@n8n/n8n-nodes-langchain.openAi` typeVersion 2.3, resource `text`, operation `response`)
 - **Credential:** `openAiApi` `R57o8BoYHtoylkoX` (OpenAI API)
 - **Napake OpenAI:** vseh šest OpenAI vozlišč ima `onError: continueRegularOutput`; `Razcleni`/`Odloci` napako zapišeta v `napaka`, izvedba se ne ustavi.
@@ -62,6 +63,7 @@ Izvedba `217299` po krogih (OpenAI čas, žetoni vhod/izhod):
 | 2 | 23,9 s, 7271/1408, `needs_review: true` | 9,1 s, 6470/340, `PASS` 96, 0 ugotovitev |
 
 - `blocks`: `SUBJECT, PREHEADER, GREETING, HOOK, B1_TITLE, B1_BODY, B1_CTA, CLOSING` v tem vrstnem redu.
-- Izid je `UREDNIK` kljub `PASS` 96, ker je pisec v 2. krogu vrnil `needs_review: true` z enim vprašanjem: pregled je zahteval, da se zadeva uskladi s številom klicev ("12 milijonov Britancev" -> "Britanci 12 milijuna puta godišnje"), kar je vsebinski popravek izvirnika, ki ga mora potrditi Igor.
+- Kroga 1 in 2 sta tekla, ker je pregled v krogih 0 in 1 vrnil `FAIL` 84 z blokirajočo ugotovitvijo za `SUBJECT` (v krogu 0 še ena za `HOOK`): zadeva govori o 12 milijonih Britancev, telo pa o 12 milijonih klicev na leto; neskladje je že v SI izvirniku.
+- V krogu 2 je pisec zadevo uskladil s številom klicev ("12 milijonov Britancev" -> "Britanci 12 milijuna puta godišnje") in vrnil `needs_review: true` z enim vprašanjem v `review_reasons`: ali Igor potrjuje ta vsebinski popravek izvirnika. Pregled kroga 2 je dal `PASS` 96 brez ugotovitev. Izid je `UREDNIK` zaradi pisčevega vprašanja, ne zaradi pregleda.
 - `hr_sol.py preveri_izid` na izidu: brez `NapakaIzida`, opozoril 0 (`[]`).
 - Telo, ki ga je prejel `Trigger`, je enako `vhod_pisec_r0.json` (preverjeno s Pythonom `==`).
