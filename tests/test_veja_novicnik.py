@@ -317,3 +317,9 @@ def test_d_hr_klic_cakanje_in_zapis_odgovora():
                 '"webhookData"', "vrne samo `executionId`", "`includeData: false`", "`success` ali `error`",
                 '`nodeNames: ["Respond to Webhook"]`', "skripta ga razpakira"):
         assert niz in d_hr, niz
+
+
+def test_e_hr_opozorilo_o_odstotku_na_gate():
+    korak = _korak_4()
+    e_hr = korak[korak.index("e-hr. **Vpis HR.**"):korak.index("d. **Prevod EN.**")]
+    assert "% brez nedeljivega presledka" in e_hr

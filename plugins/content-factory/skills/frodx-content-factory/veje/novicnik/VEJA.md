@@ -126,7 +126,7 @@ e-hr. **Vpis HR.**
 python3 veje/novicnik/scripts/hr_sol.py izdaja <state.json> <mapa teka>/prevod/hr-sol-izid.json <executionId>
 ```
 
-Skripta preveri izid (id-ji, U+2014, Pauletič, URL-ji in e-naslovi, kontrolna vsota promptov), HR izdajo vpiše in zapiše `_run.prevod_hr`. `OPOZORILO:` o številki preveri sam v izpisu in ga povej Igorju na gate-u. Ob `NAPAKA:` ali izidu `NAPAKA` HR **ne napišeš sam**: Igorju povej, da HR ni nastal, in d-hr ponovi enkrat; po uspešni ponovitvi poženi e-hr znova z novim `prevod/hr-sol-izid.json` in novim `executionId`. Pri drugi napaki se tek ustavi; napako zapiši v `_run.open_tasks` za Janija.
+Skripta preveri izid (id-ji, U+2014, Pauletič, URL-ji in e-naslovi, kontrolna vsota promptov), HR izdajo vpiše in zapiše `_run.prevod_hr`. `OPOZORILO:` o številki ali o % brez nedeljivega presledka preveri sam v izpisu in ga povej Igorju na gate-u; % brez nedeljivega presledka bi korak 6 javil kot kršitev koraka 4, ki je ne popraviš sam. Ob `NAPAKA:` ali izidu `NAPAKA` HR **ne napišeš sam**: Igorju povej, da HR ni nastal, in d-hr ponovi enkrat; po uspešni ponovitvi poženi e-hr znova z novim `prevod/hr-sol-izid.json` in novim `executionId`. Pri drugi napaki se tek ustavi; napako zapiši v `_run.open_tasks` za Janija.
 
 d. **Prevod EN.** Pisec, njegova koraka 4-5, iz `prevod/en-vhod.json`:
 - blok `transkreacija`: transkreacija SI bloka. Referenca ni vir besedila. Zgodba, dolžina in struktura bloka pridejo iz SI. Iz reference vzameš že potrjene izraze, naslove, terminologijo in formulacije, da se blok ne razlikuje od strani, na katero vodi CTA;

@@ -463,3 +463,21 @@ def test_okvirni_vnos_ne_izklopi_preverbe():
     izid["blocks"][1]["text"] = "Pišite na igor.pauletic@frodx.com. U 17:12 vozi."
     with pytest.raises(NapakaIzida, match="B1_BODY: manjka https://frodx.com/si/x"):
         preveri_izid(izid, _vhod_lokalni(okvir_na_b1=True))
+
+
+@pytest.mark.parametrize("besedilo, opozorilo", [
+    ("Zašto 12 milijuna poziva? 27,7%", True),
+    ("Zašto 12 milijuna poziva? 27,7 %", False),
+    ("Zašto 12 milijuna poziva? 27,7 %", False),
+    ("Zašto 12 milijuna poziva? https://frodx.com/hr/a1%20b", False),
+])
+def test_odstotek_brez_nbsp_je_opozorilo(besedilo, opozorilo):
+    izid = _izid_mini()
+    izid["blocks"][0]["text"] = besedilo
+    pricakovano = ["SUBJECT: pred % manjka nedeljivi presledek (U+00A0), npr. 12 %"] if opozorilo else []
+    assert preveri_izid(izid, _vhod_mini()) == pricakovano
+
+
+def test_odstotek_brez_nbsp_tudi_v_lokalnem_bloku():
+    opozorila = preveri_izid(_izid_lokalni("Radionica u Zagrebu, 30% popusta."), _vhod_lokalni())
+    assert opozorila == ["B2_BODY: pred % manjka nedeljivi presledek (U+00A0), npr. 12 %"]

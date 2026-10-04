@@ -19,7 +19,9 @@ from pathlib import Path
 
 from iz_editions import NapakaPreslikave, izdaja_iz_editions, vpisi
 from izdaja_besedilo import NapakaOznak, izdaja_v_besedilo
+from preveri_paket import ODSTOTEK_BREZ_NBSP
 from prevod_vhod import ManjkaKorak
+from tipografija import nbsp_pred_odstotkom
 
 AUDIENCE = (
     "Vodje marketinga, prodaje, kontaktnih centrov in uporabniške izkušnje na Hrvaškem; "
@@ -121,6 +123,8 @@ def preveri_izid(izid: dict, vhod: dict) -> list:
             raise NapakaIzida(f"{bid}: dolgi pomišljaj U+2014")
         if "Pauletić" in besedilo:
             raise NapakaIzida(f"{bid}: Pauletić namesto Pauletič")
+        if ODSTOTEK_BREZ_NBSP.search(nbsp_pred_odstotkom(URL.sub("", besedilo), "hr")):
+            opozorila.append(f"{bid}: pred % manjka nedeljivi presledek (U+00A0), npr. 12\u00a0%")
         if bid in lokalni:
             continue
         for niz in _nizi(URL, si_besedilo) + _nizi(EMAIL, si_besedilo):
