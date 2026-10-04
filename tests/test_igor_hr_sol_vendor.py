@@ -27,7 +27,7 @@ def test_paket_ima_readme_z_izvorom():
     vsebina = (PAKET / "README.md").read_text(encoding="utf-8")
     assert "2. 10. 2026" in vsebina
     assert "ne urejaj" in vsebina.lower()
-    assert "—" not in vsebina
+    assert "\u2014" not in vsebina
 
 
 def test_paket_ni_samostojen_skill():
