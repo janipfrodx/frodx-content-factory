@@ -39,7 +39,3 @@ Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual` in `frodx
 ## Različice
 
 0.7.1: HR novičnika napiše in pregleda GPT-6.1 Sol v n8n (cf-transkreacija-hr) po Igorjevem paketu; EN in kolumna nespremenjena.
-
-0.7.0: Podpora za novičnik v treh jezikih (SI, HR, EN) s preverami in slikami blokov, integracija s HubSpot in n8n, predaja v Newsletter Hub.
-
-0.6.x: Kolumna s socialnimi objavami, naslovno sliko, meta podatki in integracija s HubSpot.
