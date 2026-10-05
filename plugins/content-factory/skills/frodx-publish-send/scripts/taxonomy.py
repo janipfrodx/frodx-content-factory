@@ -34,3 +34,12 @@ def load_tags(path: Path) -> dict:
         for celice in _vrstice(path)
         if len(celice) == 5 and celice[1] in JEZIKI
     }
+
+
+def load_pillars(path: Path) -> dict:
+    """(ime kampanje, jezik) -> pillar URL ali "". Bere vrstice s tremi stolpci."""
+    return {
+        (celice[0], celice[1]): celice[2]
+        for celice in _vrstice(path)
+        if len(celice) == 3 and celice[1] in JEZIKI
+    }
