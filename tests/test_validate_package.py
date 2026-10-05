@@ -602,3 +602,140 @@ def test_cli_brez_audita_vrne_0_z_opozorilom(tmp_path):
     assert izid.returncode == 0, izid.stdout
     assert "audit" in izid.stdout
     assert "ni pripravljen za objavo" in izid.stdout
+
+
+# --- Pillar povezave (spec 2026-10-05) ---
+
+PILLAR_KAMPANJA = "Interest - Programi zvestobe"
+PILLAR_URL = {
+    "sl": "https://frodx.com/program-zvestobe-openloyalty",
+    "en": "https://frodx.com/en/loyalty-program-openloyalty",
+    "hr": "https://frodx.com/hr/program-lojalnosti-openloyalty",
+}
+
+
+def _pillars(prazni=()):
+    from taxonomy import load_pillars
+    REFS = TAXONOMY.parent
+    tabela = {par: "" for par in load_pillars(REFS / "pillar-pages.md")}
+    for jezik, url in PILLAR_URL.items():
+        tabela[(PILLAR_KAMPANJA, jezik)] = "" if jezik in prazni else url
+    return tabela
+
+
+def _pkg_s_pillarjem():
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    for jezik, url in PILLAR_URL.items():
+        assert pkg["languages"][jezik]["campaign_name"] == PILLAR_KAMPANJA
+        pkg["languages"][jezik]["content"] += f"\n\n[Več o programih zvestobe.]({url})"
+    return pkg
+
+
+def _validate_p(pkg, pillars):
+    from validate_package import validate
+    return validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY), pillars)
+
+
+def test_pravilna_pillar_vrstica_gre_skozi():
+    assert _validate_p(_pkg_s_pillarjem(), _pillars()) == []
+
+
+def test_brez_pillars_se_ne_preverja():
+    from validate_package import validate
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    assert validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY)) == []
+
+
+def test_manjkajoca_pillar_vrstica_pade():
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    napake = _validate_p(pkg, _pillars())
+    assert len([n for n in napake if "pillar" in n]) == 3
+    assert any("languages.sl.content" in n and PILLAR_URL["sl"] in n for n in napake)
+
+
+def test_pillar_v_napacnem_jeziku_pade():
+    pkg = _pkg_s_pillarjem()
+    pkg["languages"]["en"]["content"] = pkg["languages"]["en"]["content"].replace(PILLAR_URL["en"], PILLAR_URL["sl"])
+    napake = _validate_p(pkg, _pillars())
+    assert any("languages.en.content" in n and PILLAR_URL["sl"] in n and PILLAR_URL["en"] in n for n in napake)
+
+
+def test_pillar_z_hslang_pade():
+    pkg = _pkg_s_pillarjem()
+    pkg["languages"]["sl"]["content"] = pkg["languages"]["sl"]["content"].replace(
+        PILLAR_URL["sl"], PILLAR_URL["sl"] + "?hsLang=sl"
+    )
+    napake = _validate_p(pkg, _pillars())
+    assert any("languages.sl.content" in n and "?hsLang=sl" in n for n in napake)
+
+
+def test_podvojena_pillar_vrstica_pade():
+    pkg = _pkg_s_pillarjem()
+    pkg["languages"]["hr"]["content"] += f"\n\n[Više o programima lojalnosti.]({PILLAR_URL['hr']})"
+    napake = _validate_p(pkg, _pillars())
+    assert any("languages.hr.content" in n and "2 pillar" in n for n in napake)
+
+
+def test_prazno_besedilo_pillar_povezave_pade():
+    pkg = _pkg_s_pillarjem()
+    pkg["languages"]["sl"]["content"] = pkg["languages"]["sl"]["content"].replace(
+        "[Več o programih zvestobe.]", "[ ]"
+    )
+    napake = _validate_p(pkg, _pillars())
+    assert any("languages.sl.content" in n and "besedila" in n for n in napake)
+
+
+def test_pillar_pred_podpisom_pade():
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg["languages"]["sl"]["content"] = (
+        f"Prvi odstavek slovenske kolumne.\n\n[Več o programih zvestobe.]({PILLAR_URL['sl']})"
+        "\n\nigor.pauletic@frodx.com"
+    )
+    napake = _validate_p(pkg, _pillars(prazni=("en", "hr")))
+    assert any("languages.sl.content" in n and "zadnja vrstica" in n for n in napake)
+
+
+def test_pillar_s_praznimi_vrsticami_in_crlf_gre_skozi():
+    pkg = _pkg_s_pillarjem()
+    for jezik in PILLAR_URL:
+        pkg["languages"][jezik]["content"] = pkg["languages"][jezik]["content"].replace("\n", "\r\n") + "\r\n\r\n  \r\n"
+    assert _validate_p(pkg, _pillars()) == []
+
+
+def test_podpis_dolg_ps_in_pillar_gre_skozi():
+    pkg = _pkg_s_pillarjem()
+    pkg["languages"]["sl"]["content"] = (
+        "Prvi odstavek slovenske kolumne.\n\nigor.pauletic@frodx.com\n\n"
+        "P.S. Prvi odstavek P.S.\n\nDrugi odstavek P.S.\n\nTretji odstavek P.S.\n\n"
+        f"[Več o programih zvestobe.]({PILLAR_URL['sl']})"
+    )
+    assert _validate_p(pkg, _pillars()) == []
+
+
+def test_neznana_kampanja_brez_pillar_suma():
+    napake = _validate_p(json.loads((FIXTURES / "package_bad_campaign.json").read_text(encoding="utf-8")), _pillars())
+    assert not [n for n in napake if "pillar" in n]
+
+
+def test_prazen_url_v_tabeli_je_opozorilo_ne_krsitev():
+    from validate_package import opozorila_pillar
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    tabela = _pillars(prazni=("sl", "en", "hr"))
+    assert _validate_p(pkg, tabela) == []
+    vrstice = opozorila_pillar(pkg, tabela)
+    assert len(vrstice) == 3
+    assert all("pillar-pages.md" in v for v in vrstice)
+
+
+def test_cli_izpise_opozorilo_pillar_in_vrne_0():
+    """Dokler je tabela prazna (pred Uršino potrditvijo), CLI opozori in ne blokira."""
+    from taxonomy import load_pillars
+    from validate_package import PILLARS
+    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    kampanja = pkg["languages"]["sl"]["campaign_name"]
+    if load_pillars(PILLARS)[(kampanja, "sl")]:
+        import pytest
+        pytest.skip("tabela za kampanjo fixtura že ima URL - opozorila ni")
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(FIXTURES / "package_valid.json")], capture_output=True, text=True)
+    assert r.returncode == 0, r.stdout
+    assert "pillar" in r.stdout and "Opozorilo" in r.stdout

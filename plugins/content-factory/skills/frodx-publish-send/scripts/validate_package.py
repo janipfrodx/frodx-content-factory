@@ -21,6 +21,7 @@ PODPIS = "igor.pauletic@frodx.com"
 SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 PREPOVEDANE = ("tu je trik", "here's the trick", "ovdje je trik")
 PODPIS_SAM_VRSTICA = re.compile(rf"[*_>\s]*{re.escape(PODPIS)}[*_\s]*", re.I)
+PILLAR_VRSTICA = re.compile(r"\[([^\]]*)\]\((https://frodx\.com/[^)\s]*)\)")
 
 # 1200x630 ni izmišljeno: frodx-key-visual/references/prompt-recipes.md za og:image
 # navaja crop na 1200x630.
@@ -35,6 +36,7 @@ TAXONOMY = (
     _PLUGIN / "skills" / "frodx-content-factory" / "veje" / "kolumna"
     / "publishing-meta" / "references" / "hubspot-taxonomy.md"
 )
+PILLARS = TAXONOMY.parent / "pillar-pages.md"
 
 
 def _podpis_je_povezava(vsebina: str) -> bool:
@@ -50,6 +52,49 @@ def _podpis_je_povezava(vsebina: str) -> bool:
         rf"<a\b[^>]*>[^<]*{e}[^<]*</a>",           # <a ...>...PODPIS...</a>
     )
     return any(re.search(v, vsebina, re.I | re.S) for v in vzorci)
+
+
+def _pillar(vrstica: str):
+    """(besedilo, url), kadar je vrstica v celoti markdown povezava na frodx.com, sicer None."""
+    m = PILLAR_VRSTICA.fullmatch(vrstica.strip())
+    return (m.group(1).strip(), m.group(2)) if m else None
+
+
+def _preveri_pillar(jezik: str, vsebina: str, pricakovan: str, vsi_url: set) -> list:
+    """Zadnja vrstica mora biti [besedilo](pricakovan) in pillar vrstica sme biti ena sama."""
+    if not pricakovan:
+        return []
+    vrstice = [l.strip() for l in vsebina.splitlines() if l.strip()]
+    napake = []
+    zadnja = _pillar(vrstice[-1]) if vrstice else None
+    if zadnja is None:
+        napake.append(
+            f"languages.{jezik}.content: zadnja vrstica ni pillar povezava [stavek]({pricakovan})"
+        )
+    else:
+        besedilo, url = zadnja
+        if url != pricakovan:
+            napake.append(f"languages.{jezik}.content: pillar povezava kaže na {url}, pričakovan {pricakovan}")
+        if not besedilo:
+            napake.append(f"languages.{jezik}.content: pillar povezava nima besedila")
+    znani = vsi_url | {pricakovan}
+    n = sum(1 for l in vrstice if (p := _pillar(l)) and p[1].split("?")[0] in znani)
+    if n > 1:
+        napake.append(f"languages.{jezik}.content vsebuje {n} pillar vrstic, dovoljena je ena")
+    return napake
+
+
+def opozorila_pillar(pkg: dict, pillars: dict) -> list:
+    """Jeziki, katerih par (kampanja, jezik) ima v pillar-pages.md prazen URL. Ne blokira."""
+    vrstice = []
+    for jezik in JEZIKI:
+        podatki = (pkg.get("languages") or {}).get(jezik) or {}
+        kampanja = str(podatki.get("campaign_name", "")).strip()
+        if (kampanja, jezik) in pillars and not pillars[(kampanja, jezik)]:
+            vrstice.append(
+                f"korak 6: {jezik} brez pillar povezave - vrzel v pillar-pages.md za {kampanja}"
+            )
+    return vrstice
 
 
 def opozorila(run: dict) -> list:
@@ -156,7 +201,7 @@ def preveri_sliko(run, state_pot: Path) -> list:
     return napake
 
 
-def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
+def validate(pkg: dict, campaigns: dict, tags: dict, pillars: dict = None) -> list:
     napake = []
 
     meta = pkg.get("meta") or {}
@@ -223,6 +268,8 @@ def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
                     napake.append(f"languages.{jezik}.content vsebuje prepovedano frazo '{fraza}'")
 
             nlines = [l.strip() for l in vsebina.splitlines() if l.strip()]
+            if nlines and _pillar(nlines[-1]):
+                nlines = nlines[:-1]
             n_podpis = sum(l.lower().count(PODPIS) for l in nlines)
             podpis_idx = [i for i, l in enumerate(nlines) if PODPIS in l.lower()]
             if n_podpis == 0:
@@ -293,6 +340,13 @@ def validate(pkg: dict, campaigns: dict, tags: dict) -> list:
                     napake.append(f"languages.{jezik}.tag_name se ne ujema s taksonomijo")
                 if str(podatki.get("tag_slug", "")).strip() != pricakovan["slug"]:
                     napake.append(f"languages.{jezik}.tag_slug se ne ujema s taksonomijo")
+            if pillars is not None and vsebina.strip():
+                napake += _preveri_pillar(
+                    jezik,
+                    vsebina,
+                    pillars.get((kampanja, jezik), ""),
+                    {u for u in pillars.values() if u},
+                )
 
     if len(kampanje_v_paketu) > 1:
         napake.append(f"campaign_name mora biti enak v vseh jezikih, najdene: {sorted(kampanje_v_paketu)}")
@@ -306,11 +360,12 @@ def main() -> int:
         return 1
 
     sys.path.insert(0, str(_TU.parent))
-    from taxonomy import load_campaigns, load_tags
+    from taxonomy import load_campaigns, load_tags, load_pillars
 
     pkg = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
     run = pkg.pop("_run", None)
-    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY))
+    pillars = load_pillars(PILLARS)
+    napake = validate(pkg, load_campaigns(TAXONOMY), load_tags(TAXONOMY), pillars)
     napake += preveri_sliko(run, Path(sys.argv[1]))
 
     odprte = opozorila(run)
@@ -319,6 +374,8 @@ def main() -> int:
         for vrstica in odprte:
             print(f"  ! {vrstica}")
     for vrstica in opozorila_audit(run):
+        print(f"Opozorilo: {vrstica} - oddaja ni blokirana")
+    for vrstica in opozorila_pillar(pkg, pillars):
         print(f"Opozorilo: {vrstica} - oddaja ni blokirana")
 
     if napake:

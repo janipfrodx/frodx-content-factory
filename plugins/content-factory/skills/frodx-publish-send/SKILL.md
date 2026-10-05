@@ -2,7 +2,7 @@
 name: frodx-publish-send
 description: Validate a finished FrodX content package and hand it to the right app. A column goes through the binary contract check and the n8n workflow cf-deliver-draft into the publishing app; a newsletter edition goes through its branch check and the n8n workflow cf-deliver-newsletter into Newsletter Hub. Both return an edit link for Igor. Use as the last step of a content run, or when Igor says "pošlji", "daj v aplikacijo", "objavi to". Never sets the publish or send date - Igor picks that in the app.
 metadata:
-  version: 0.4.0
+  version: 0.5.0
 ---
 
 # Predaja paketa
@@ -36,6 +36,7 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    | `social_posts[*].image_url`, `social_posts[*].image_alt` | 5 (faza B) |
    | `meta.version` | 1 - `init_run.py` jo zapiše; če ni `1.2`, je tek nastal s staro verzijo skilla |
    | dolgi pomišljaj, prepovedana fraza, manjkajoč podpis | 2 (sl), 4 (en, hr) |
+   | pillar povezava (manjka, napačen URL, prazno besedilo, podvojena) | 6 |
 
    Ne popravljaj polj sam. Vrni Igorja na pristojni korak.
 
@@ -49,6 +50,8 @@ Pot `scripts/validate_package.py` je relativna na mapo tega skilla (`plugins/con
    Tipičen primer je hrvaščina brez native pregleda: gate je ne vidi (vsa polja so izpolnjena), prevod je sicer strojno pregledan v koraku 4 (`frodx-transcreation-check`), a brez tega opozorila gre v objavo, ne da bi ga videl native govorec hrvaščine.
 
    **Opozorilo o manjkajočem auditu** (`Opozorilo: korak 4: audit transkreacije ni opravljen za ...`) prav tako ne blokira (Janijeva odločitev 29. 9. 2026). Po Igorjevem pravilu prevod brez audita ni pripravljen za objavo - preberi ga Igorju na glas in vprašaj, ali oddaja kljub temu.
+
+   **Opozorilo o manjkajoči pillar povezavi** (`Opozorilo: korak 6: <jezik> brez pillar povezave - ...`) ne blokira. Pomeni, da `publishing-meta/references/pillar-pages.md` za to kampanjo in jezik nima URL-ja, zato je kolumna v tem jeziku brez povezave na pillar stran. Preberi ga Igorju; popravek je vpis potrjenega URL-ja v tabelo (Urša), ne kolumne.
 
 4. **Če gate gre skozi (exit 0):** sestavi telo predaje.
 
