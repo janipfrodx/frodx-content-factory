@@ -24,7 +24,7 @@
   "languages": {
     "sl": {
       "language_code": "sl",
-      "content": "Prvi odstavek slovenske kolumne.\n\nigor.pauletic@frodx.com",
+      "content": "Prvi odstavek slovenske kolumne.\n\nigor.pauletic@frodx.com\n\n[Več o programih zvestobe.](https://frodx.com/program-zvestobe-openloyalty)",
       "slug": "lojalnostni-programi-kaznujejo-zveste",
       "seo_title": "Zakaj lojalnostni programi kaznujejo zveste kupce",
       "meta_description": "Lojalnostni programi pogosto nagradijo nove kupce bolj kot tiste, ki so jim zvesti. Poglejmo, zakaj se to dogaja in kaj lahko trgovec naredi drugace ze danes.",
@@ -37,7 +37,7 @@
     },
     "en": {
       "language_code": "en",
-      "content": "First paragraph of the English column.\n\nigor.pauletic@frodx.com",
+      "content": "First paragraph of the English column.\n\nigor.pauletic@frodx.com\n\n[More on loyalty programmes.](https://frodx.com/en/loyalty-program-openloyalty)",
       "slug": "loyalty-programmes-punish-loyal-customers",
       "seo_title": "Why loyalty programmes punish loyal customers",
       "meta_description": "Loyalty programmes often reward new customers more than loyal ones. Here is why that happens and what a retailer can actually do about it now.",
@@ -50,7 +50,7 @@
     },
     "hr": {
       "language_code": "hr",
-      "content": "Prvi odlomak hrvatske kolumne.\n\nigor.pauletic@frodx.com",
+      "content": "Prvi odlomak hrvatske kolumne.\n\nigor.pauletic@frodx.com\n\n[Više o programima lojalnosti.](https://frodx.com/hr/program-lojalnosti-openloyalty)",
       "slug": "programi-lojalnosti-kaznjavaju-vjerne-kupce",
       "seo_title": "Zasto programi lojalnosti kaznjavaju vjerne kupce",
       "meta_description": "Programi lojalnosti cesto nagraduju nove kupce vise nego one koji su im vjerni. Pogledajmo zasto se to dogada i sto trgovac zapravo moze uciniti drugacije.",

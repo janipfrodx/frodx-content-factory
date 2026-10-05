@@ -624,10 +624,19 @@ def _pillars(prazni=()):
 
 
 def _pkg_s_pillarjem():
+    """package_valid.json že nosi pillar vrstico v vseh treh jezikih."""
     pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
     for jezik, url in PILLAR_URL.items():
         assert pkg["languages"][jezik]["campaign_name"] == PILLAR_KAMPANJA
-        pkg["languages"][jezik]["content"] += f"\n\n[Več o programih zvestobe.]({url})"
+        assert pkg["languages"][jezik]["content"].rstrip().endswith(f"]({url})")
+    return pkg
+
+
+def _pkg_brez_pillarja():
+    pkg = _pkg_s_pillarjem()
+    for jezik in PILLAR_URL:
+        vsebina = pkg["languages"][jezik]["content"].rstrip()
+        pkg["languages"][jezik]["content"] = vsebina.rsplit("\n\n", 1)[0]
     return pkg
 
 
@@ -647,7 +656,7 @@ def test_brez_pillars_se_ne_preverja():
 
 
 def test_manjkajoca_pillar_vrstica_pade():
-    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg = _pkg_brez_pillarja()
     napake = _validate_p(pkg, _pillars())
     assert len([n for n in napake if "pillar" in n]) == 3
     assert any("languages.sl.content" in n and PILLAR_URL["sl"] in n for n in napake)
@@ -719,7 +728,7 @@ def test_neznana_kampanja_brez_pillar_suma():
 
 def test_prazen_url_v_tabeli_je_opozorilo_ne_krsitev():
     from validate_package import opozorila_pillar
-    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
+    pkg = _pkg_brez_pillarja()
     tabela = _pillars(prazni=("sl", "en", "hr"))
     assert _validate_p(pkg, tabela) == []
     vrstice = opozorila_pillar(pkg, tabela)
@@ -727,15 +736,21 @@ def test_prazen_url_v_tabeli_je_opozorilo_ne_krsitev():
     assert all("pillar-pages.md" in v for v in vrstice)
 
 
-def test_cli_izpise_opozorilo_pillar_in_vrne_0():
-    """Dokler je tabela prazna (pred Uršino potrditvijo), CLI opozori in ne blokira."""
+def test_cli_izpise_opozorilo_pillar_in_vrne_0(tmp_path):
+    """Kampanja, ki ima v pravi tabeli prazen URL: CLI opozori in ne blokira."""
     from taxonomy import load_pillars
     from validate_package import PILLARS
-    pkg = json.loads((FIXTURES / "package_valid.json").read_text(encoding="utf-8"))
-    kampanja = pkg["languages"]["sl"]["campaign_name"]
-    if load_pillars(PILLARS)[(kampanja, "sl")]:
-        import pytest
-        pytest.skip("tabela za kampanjo fixtura že ima URL - opozorila ni")
-    r = subprocess.run([sys.executable, str(SKRIPTA), str(FIXTURES / "package_valid.json")], capture_output=True, text=True)
+    kampanja = "Interest - AI Support & Service Hub"
+    assert all(load_pillars(PILLARS)[(kampanja, j)] == "" for j in PILLAR_URL)
+    pkg = _pkg_brez_pillarja()
+    tags = load_tags(TAXONOMY)
+    for jezik in PILLAR_URL:
+        podatki = pkg["languages"][jezik]
+        podatki["campaign_name"] = kampanja
+        tag = tags.get((kampanja, jezik), {"id": "", "name": "", "slug": ""})
+        podatki["tag_id"], podatki["tag_name"], podatki["tag_slug"] = tag["id"], tag["name"], tag["slug"]
+    pot = tmp_path / "state.json"
+    pot.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(SKRIPTA), str(pot)], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout
-    assert "pillar" in r.stdout and "Opozorilo" in r.stdout
+    assert r.stdout.count("brez pillar povezave") == 3

@@ -81,3 +81,63 @@ def test_publishing_meta_brez_dolgega_pomisljaja():
 def test_plugin_verzija_0_7_2():
     plugin = json.loads((REPO / "plugins" / "content-factory" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     assert plugin["version"] == "0.7.2"
+
+
+POTRJENO = {
+    "Interest - AI agenti in Voice AI": (
+        "https://frodx.com/ai-agenti-voice-ai",
+        "https://frodx.com/en/ai-agenti-voice-ai",
+        "https://frodx.com/hr/ai-agenti-voice-ai",
+    ),
+    "Interest - Prodaja in lead management": (
+        "https://frodx.com/lead-management-prodajni-proces",
+        "https://frodx.com/en/lead-management-sales-process",
+        "https://frodx.com/hr/lead-management-prodajni-proces",
+    ),
+    "Interest - Programi zvestobe": (
+        "https://frodx.com/program-zvestobe-openloyalty",
+        "https://frodx.com/en/loyalty-program-openloyalty",
+        "https://frodx.com/hr/program-lojalnosti-openloyalty",
+    ),
+    "Interest - Loyalty programs": (
+        "https://frodx.com/program-zvestobe-openloyalty",
+        "https://frodx.com/en/loyalty-program-openloyalty",
+        "https://frodx.com/hr/program-lojalnosti-openloyalty",
+    ),
+    "Interest - HubSpot inbound marketing": (
+        "https://frodx.com/hubspot-inbound-marketing-vodic",
+        "https://frodx.com/en/hubspot-marketing-sales-guide",
+        "https://frodx.com/hr/hubspot-inbound-marketing-vodic",
+    ),
+    "Interest - Emarsys omnichannel marketing": (
+        "https://frodx.com/omnichannel-marketing-emarsys",
+        "https://frodx.com/en/omnichannel-marketing-emarsys",
+        "https://frodx.com/hr/omnichannel-marketing-emarsys",
+    ),
+    "Interest - E-commerce in retail": (
+        "https://frodx.com/ecommerce-strategija-shopify",
+        "https://frodx.com/en/ecommerce-strategy-shopify",
+        "https://frodx.com/hr/ecommerce-strategija-shopify",
+    ),
+    "Interest - Digitalna transformacija": (
+        "https://frodx.com/digitalna-transformacija-strategija",
+        "https://frodx.com/en/digital-transformation-strategy",
+        "https://frodx.com/hr/digitalna-transformacija-strategija",
+    ),
+    "Interest - CX Customer Experience": (
+        "https://frodx.com/customer-experience-cx-vodic",
+        "https://frodx.com/en/customer-experience-cx-guide",
+        "https://frodx.com/hr/customer-experience-cx-vodic",
+    ),
+    "Interest - AI Support & Service Hub": ("", "", ""),
+}
+
+
+def test_potrjene_vrednosti_5_10_2026():
+    """Jani je tabelo potrdil 5. 10. 2026. Tiha sprememba tabele mora pasti."""
+    pricakovano = {
+        (kampanja, jezik): url
+        for kampanja, urlji in POTRJENO.items()
+        for jezik, url in zip(("sl", "en", "hr"), urlji)
+    }
+    assert load_pillars(PILLARS) == pricakovano
