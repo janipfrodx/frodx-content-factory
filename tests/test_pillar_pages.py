@@ -56,3 +56,28 @@ def test_bralnik_bere_prazen_in_poln_url(tmp_path):
 
 def test_taksonomija_nima_tristolpcnih_vrstic():
     assert load_pillars(TAXONOMY) == {}
+import json
+
+META_SKILL = REFS.parent / "SKILL.md"
+
+
+def test_publishing_meta_bere_pillar_tabelo():
+    vsebina = META_SKILL.read_text(encoding="utf-8")
+    assert "references/pillar-pages.md" in vsebina
+    assert "zadnjo vrstico" in vsebina.lower()
+    assert "structure.md" in vsebina
+
+
+def test_publishing_meta_verzija_dvignjena():
+    glava = META_SKILL.read_text(encoding="utf-8").split("---")[1]
+    assert "version: 0.2.0" in glava
+
+
+def test_publishing_meta_brez_dolgega_pomisljaja():
+    assert "\u2014" not in META_SKILL.read_text(encoding="utf-8")
+    assert "\u2014" not in PILLARS.read_text(encoding="utf-8")
+
+
+def test_plugin_verzija_0_7_2():
+    plugin = json.loads((REPO / "plugins" / "content-factory" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    assert plugin["version"] == "0.7.2"

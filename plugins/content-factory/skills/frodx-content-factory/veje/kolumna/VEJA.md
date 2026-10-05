@@ -137,7 +137,7 @@ Vhodi in cilji skupnih skillov so pri tej veji privzeti, kot jih opisuje vsak sk
 
 ## Preverba paketa
 
-`python3 frodx-publish-send/scripts/validate_package.py <state.json>` (pot relativna na `plugins/content-factory/skills/`): binarni kontrakt paketa (vsa polja, taksonomija iz `publishing-meta/references/hubspot-taxonomy.md`, slike, dolgi pomišljaj, podpis). Kršitve in pristojni koraki so v `frodx-publish-send/SKILL.md`.
+`python3 frodx-publish-send/scripts/validate_package.py <state.json>` (pot relativna na `plugins/content-factory/skills/`): binarni kontrakt paketa (vsa polja, taksonomija iz `publishing-meta/references/hubspot-taxonomy.md`, pillar povezava iz `publishing-meta/references/pillar-pages.md`, slike, dolgi pomišljaj, podpis). Kršitve in pristojni koraki so v `frodx-publish-send/SKILL.md`.
 
 ## Oddaja
 

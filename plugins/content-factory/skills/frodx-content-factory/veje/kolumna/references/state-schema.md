@@ -12,7 +12,7 @@
 | `universal.slug` | korak 6 |
 | `social_posts[].text` | korak 2 |
 | `social_posts[].image_url`, `social_posts[].image_alt` | korak 5 (faza B) |
-| `languages.<jezik>.content` | korak 2 (sl), korak 3 (popravki sl), korak 4 (en, hr) |
+| `languages.<jezik>.content` | korak 2 (sl), korak 3 (popravki sl), korak 4 (en, hr), korak 6 (samo zadnja vrstica: pillar povezava) |
 | `languages.<jezik>.slug` | korak 6 |
 | `languages.<jezik>.seo_title` | korak 6 |
 | `languages.<jezik>.meta_description` | korak 6 |
