@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Ustvari mapo teka in začetni state.json.
 
-Uporaba: python3 init_run.py [--veja kolumna|novicnik] "<naslov teme>" <ciljna-mapa>
+Uporaba: python3 init_run.py [--veja kolumna|novicnik|nika] "<naslov teme>" <ciljna-mapa>
 Brez --veja nastane tek kolumne. Izpiše pot do ustvarjenega state.json.
 Exit 1, če tek že obstaja.
 """
@@ -15,7 +15,7 @@ from pathlib import Path
 
 JEZIKI = ("sl", "en", "hr")
 SLUG_MAX = 80
-VEJE = ("kolumna", "novicnik")
+VEJE = ("kolumna", "novicnik", "nika")
 
 
 def slugify(naslov: str) -> str:
@@ -110,6 +110,52 @@ def zgradi_stanje_novicnik(tema: str, slug: str, cas: str) -> dict:
     }
 
 
+def zgradi_stanje_nika(tema: str, slug: str, cas: str) -> dict:
+    # Oblika telesa POST /api/drafts tipa nika_story v1.0 (tests/fixtures/nika_story_body.json).
+    # Tek nastane ob gate-u koraka 1, ko je novost izbrana, zato je naslednji korak 2.
+    tek = f"{cas[:10]}-{slug}"
+    return {
+        "type": "nika_story",
+        "version": "1.0",
+        "run_slug": tek,
+        "story": {
+            "title": "",
+            "alt_titles": [],
+            "blog_md": "",
+            "linkedin_text": "",
+            "first_comment": "",
+            "meta_description": "",
+        },
+        "source": {"update_title": tema, "status": "", "mail_date": "", "kb_urls": []},
+        "activity": "",
+        "dilemma": "",
+        "judgment": {"origin": "", "principle": "", "question": "Bi se tako odločila?"},
+        "claims": [],
+        "preveri": [],
+        "warnings": [],
+        "score": {"total": None, "items": {}},
+        "formulas": [],
+        "_run": {
+            "veja": "nika",
+            "slug": tek,
+            "step": 2,
+            "status": "awaiting_card",
+            "kandidat": {},
+            "vnos": "",
+            "approvals": {},
+            "open_tasks": [],
+            "skill_versions": {},
+        },
+    }
+
+
+GRADNIKI = {
+    "kolumna": zgradi_stanje,
+    "novicnik": zgradi_stanje_novicnik,
+    "nika": zgradi_stanje_nika,
+}
+
+
 def main() -> int:
     argumenti = sys.argv[1:]
     veja = "kolumna"
@@ -120,7 +166,7 @@ def main() -> int:
         veja, argumenti = argumenti[1], argumenti[2:]
 
     if len(argumenti) != 2:
-        print('Uporaba: init_run.py [--veja kolumna|novicnik] "<naslov teme>" <ciljna-mapa>')
+        print('Uporaba: init_run.py [--veja kolumna|novicnik|nika] "<naslov teme>" <ciljna-mapa>')
         return 1
 
     tema = argumenti[0].strip()
@@ -158,7 +204,7 @@ def main() -> int:
 
         cas = zdaj.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         pot = mapa / "state.json"
-        zgradi = zgradi_stanje if veja == "kolumna" else zgradi_stanje_novicnik
+        zgradi = GRADNIKI[veja]
         pot.write_text(
             json.dumps(zgradi(tema, slug, cas), ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",

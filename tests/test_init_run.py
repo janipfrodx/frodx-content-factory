@@ -256,3 +256,59 @@ def test_novicnik_zacne_s_praznimi_odlocitvami_auditom_in_zetvijo():
     assert run["gradivo_odlocitve"] == {}
     assert run["transcreation_audit"] == {}
     assert run["zetev"] == []
+
+
+def test_stanje_nike_je_telo_nika_story():
+    from init_run import zgradi_stanje_nika
+    stanje = zgradi_stanje_nika("Deal Progression", "deal-progression", "2026-10-06T09:00:00.000Z")
+    assert stanje["type"] == "nika_story"
+    assert stanje["version"] == "1.0"
+    assert stanje["run_slug"] == "2026-10-06-deal-progression"
+    assert set(stanje["story"]) == {"title", "alt_titles", "blog_md", "linkedin_text", "first_comment", "meta_description"}
+    assert stanje["story"]["alt_titles"] == []
+    assert stanje["source"] == {"update_title": "Deal Progression", "status": "", "mail_date": "", "kb_urls": []}
+    assert stanje["judgment"] == {"origin": "", "principle": "", "question": "Bi se tako odločila?"}
+    for kljuc in ("claims", "preveri", "warnings", "formulas"):
+        assert stanje[kljuc] == [], kljuc
+    assert stanje["score"] == {"total": None, "items": {}}
+
+
+def test_stanje_nike_ima_run_na_koraku_dve():
+    from init_run import zgradi_stanje_nika
+    tek = zgradi_stanje_nika("Deal Progression", "deal-progression", "2026-10-06T09:00:00.000Z")["_run"]
+    assert tek["veja"] == "nika"
+    assert tek["slug"] == "2026-10-06-deal-progression"
+    assert tek["step"] == 2
+    assert tek["status"] == "awaiting_card"
+    assert tek["kandidat"] == {}
+    assert tek["vnos"] == ""
+    assert tek["approvals"] == {}
+    assert tek["open_tasks"] == []
+
+
+def test_cli_veja_nika(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "--veja", "nika", "Deal Progression", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stdout + r.stderr
+    stanje = json.loads(Path(r.stdout.strip()).read_text(encoding="utf-8"))
+    assert stanje["type"] == "nika_story"
+    assert stanje["_run"]["veja"] == "nika"
+
+
+def test_cli_nika_isti_dan_dvakrat_ne_povozi(tmp_path):
+    argumenti = [sys.executable, str(SKRIPTA), "--veja", "nika", "Deal Progression", str(tmp_path)]
+    assert subprocess.run(argumenti, capture_output=True, text=True).returncode == 0
+    r = subprocess.run(argumenti, capture_output=True, text=True)
+    assert r.returncode == 1
+    assert "ze obstaja" in r.stdout
+
+
+def test_cli_neznana_veja_nasteje_tudi_niko(tmp_path):
+    r = subprocess.run(
+        [sys.executable, str(SKRIPTA), "--veja", "tamara", "X", str(tmp_path)],
+        capture_output=True, text=True,
+    )
+    assert r.returncode == 1
+    assert "nika" in r.stdout
