@@ -1,6 +1,6 @@
 # FrodX Content Factory
 
-Cowork plugin z verigo skillov za produkcijo vsebine FrodX: kolumna za frodx.com s socialnimi objavami, naslovno sliko in meta podatki, ali novičnik FrodX GameChanger v treh jezikih (SI, HR, EN), ki konča kot osnutek v Newsletter Hubu.
+Cowork plugin z verigo skillov za produkcijo vsebine FrodX: kolumna za frodx.com s socialnimi objavami, naslovno sliko in meta podatki, ali novičnik FrodX GameChanger v treh jezikih (SI, HR, EN), ki konča kot osnutek v Newsletter Hubu, ali Nikino tedensko zgodbo o HubSpot novosti za blog in LinkedIn.
 
 ## Namestitev v Claude Cowork
 
@@ -26,16 +26,18 @@ obe verziji za isto številko.
 
 ## Uporaba
 
-V Coworku napiši `/frodx-content-factory` in povej, kaj rabiš. Skill izbere pravo vejo: »nova kolumna« vodi skozi sedem korakov do objave na frodx.com, »pripravi novičnik« pa skozi šest korakov do osnutka v Newsletter Hubu. Med koraki čaka na tvojo potrditev.
+V Coworku napiši `/frodx-content-factory` in povej, kaj rabiš. Skill izbere pravo vejo: »nova kolumna« vodi skozi sedem korakov do objave na frodx.com, »pripravi novičnik« pa skozi šest korakov do osnutka v Newsletter Hubu. »Nova Nikina zgodba« pa skozi štiri korake od HubSpotovega tedenskega maila do preverjenega paketa; predaja v aplikacijo še ni zgrajena. Med koraki čaka na tvojo potrditev.
 
 ## Lastništvo vsebine
 
-Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual` in `frodx-newsletter` so Igorjevi. Vendorirani so nespremenjeni - glej `plugins/content-factory/VENDOR.md`. Ne urejaj jih neposredno.
+Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual`, `frodx-newsletter` in `nika-update-writer` so Igorjevi. Vendorirani so nespremenjeni - glej `plugins/content-factory/VENDOR.md`. Ne urejaj jih neposredno.
 
 ## Testi
 
     python3 -m pytest tests/ -v
 
 ## Različice
+
+0.8.0: veja nika (Nikina tedenska zgodba o HubSpot novosti): vendoriran nika-update-writer 1.1.1, init_run --veja nika, preverba paketa nika_story v1.0. Predaja cf-deliver-nika in aplikacija še nista zgrajeni.
 
 0.7.1: HR novičnika napiše in pregleda GPT-6.1 Sol v n8n (cf-transkreacija-hr) po Igorjevem paketu; EN in kolumna nespremenjena.

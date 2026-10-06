@@ -40,3 +40,11 @@ def test_verziji_se_ujemata():
     market = json.loads((REPO / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
     plugin = json.loads((REPO / "plugins" / "content-factory" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     assert market["plugins"][0]["version"] == plugin["version"]
+
+
+def test_verzija_z_vejo_nika():
+    plugin = json.loads((REPO / "plugins" / "content-factory" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    market = json.loads((REPO / ".claude-plugin" / "marketplace.json").read_text(encoding="utf-8"))
+    assert plugin["version"] == "0.8.0"
+    assert "Nikine zgodbe" in plugin["description"]
+    assert "Nikina zgodba" in market["plugins"][0]["description"]

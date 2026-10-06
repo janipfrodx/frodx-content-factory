@@ -78,11 +78,6 @@ def test_publishing_meta_brez_dolgega_pomisljaja():
     assert "\u2014" not in PILLARS.read_text(encoding="utf-8")
 
 
-def test_plugin_verzija_0_7_2():
-    plugin = json.loads((REPO / "plugins" / "content-factory" / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
-    assert plugin["version"] == "0.7.2"
-
-
 POTRJENO = {
     "Interest - AI agenti in Voice AI": (
         "https://frodx.com/ai-agenti-voice-ai",

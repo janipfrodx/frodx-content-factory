@@ -8,8 +8,9 @@
 | `frodx-transcreation` | frodx-content-kit.zip | 6. 8. 2026 |
 | `frodx-key-visual` | frodx-content-kit.zip | 6. 8. 2026 |
 | `frodx-newsletter` | frodx-content-kit.zip | 6. 8. 2026 |
+| `nika-update-writer` | gradivo/nika-update-writer-v1.1.1 (Igor, 6. 10. 2026) | 6. 10. 2026 |
 
-`igor-column-writer` živi v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`. Datoteki sta nespremenjeni; lokacijo pozna `tools/vendor_hash.py` (`POTI`).
+`igor-column-writer` živi v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`. Datoteki sta nespremenjeni; lokacijo pozna `tools/vendor_hash.py` (`POTI`). `nika-update-writer` živi v `skills/frodx-content-factory/veje/nika/vendor/`.
 
 ## Pravilo
 
