@@ -1,6 +1,6 @@
 {
-  "generated_from": "Igorjevi zipi 29. 9. 2026 (igor-column-writer 1.5.0, frodx-transcreation 1.0.0, frodx-transcreation-audit)",
-  "package_version": "2026-09-29",
+  "generated_from": "Igorjevi zipi 29. 9. 2026 (igor-column-writer 1.5.0, frodx-transcreation 1.0.0, frodx-transcreation-audit) in nika-update-writer 1.1.1 (6. 10. 2026)",
+  "package_version": "2026-10-06",
   "files": {
     "igor-column-writer/SKILL.md": "12cfbfb13c1b9abe9daf3bdbb0af1c0afd27c0ff2ac9e698dee8aa265673b2ea",
     "igor-column-writer/assets/brief-template.md": "76e1daac40a05a57b26163f9163582361c2b3e058e215a3991cc2b97b6e23caf",
@@ -53,6 +53,19 @@
     "frodx-transcreation-audit/dist/transcreation-audit-hr.md": "90f4247ecc55da12b338f08bfbcf5b25459342731938e0f01d7eac303593f549",
     "frodx-transcreation-audit/references/croatian.md": "684c4bb3614def0fad1fe4868aa5b283aa423cfcc2438e902516730efb29f3c2",
     "frodx-transcreation-audit/references/english.md": "04da5af66ee7d0b68fc2a891919bb1d7f33d4687ff889ae8cbaafcf4e54c42f4",
-    "frodx-transcreation-audit/scripts/build_portable.py": "613bf0d667a29b74e6599ea88bb2fd185091f6d9a22cdf40f934946d0eebe6d1"
+    "frodx-transcreation-audit/scripts/build_portable.py": "613bf0d667a29b74e6599ea88bb2fd185091f6d9a22cdf40f934946d0eebe6d1",
+    "nika-update-writer/SKILL.md": "aec9284a666052f923c104bbebfe1763ac4dbc315771df328e2a488479815e09",
+    "nika-update-writer/assets/dnevnik-template.md": "8181aaaafbb6047b9cd6e0a7f2f116b887ca20c27d1a3b35343e1820a1f0c6cc",
+    "nika-update-writer/references/glas.md": "153806e6bc451209b0eb7ca2d063b157bcf8834108adf2ef116d7cc392350980",
+    "nika-update-writer/references/nacela.md": "446f3a97cfe0246ce9f71483a74ae0592706d4e00c0c6c33d60db4903964ff59",
+    "nika-update-writer/references/obrazec.md": "5a0498e533f17de8209129444a47e30e325310481c9ee70079f3fe21e01968cd",
+    "nika-update-writer/references/primeri/01-breeze-assistant-energetika.md": "a85e9f964657f19fe323eda889689e22d91208c2948aa15a3acccd3f3933dba5",
+    "nika-update-writer/references/primeri/02-nurture-agent-avto.md": "3bf476b9d7decb06ff7e8baf06b24e0183396479266c453a45eb3c0c878cdd5e",
+    "nika-update-writer/references/primeri/03-deal-progression-proizvodnja.md": "b335c678974746c9061e7be0a4d77efee26afd5cba4e10bda9947dc3fa36b453",
+    "nika-update-writer/references/rubrika.md": "fd4ab709d2751a6c57882619d43b4093061945f8fed3bef53405c8fb2abf0586",
+    "nika-update-writer/references/struktura.md": "387c4b137df7d6921dabace0b89c791007f47d47c528009379250e462d263964",
+    "nika-update-writer/references/vertikale.md": "256ae5b8875f24e96521da313df441e25c4802e9d0ff19e3c4d8fec124000500",
+    "nika-update-writer/references/vir.md": "eddf22937a1d8c1173c7edcc00dc1b7f1d7dc49977464458849c0a788f89600c",
+    "nika-update-writer/scripts/check.py": "0c6d04e80b0fa4eab27570344cc4de5e67acf98d348716b526cccd767cd513a3"
   }
 }

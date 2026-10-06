@@ -12,7 +12,7 @@ SKILLS = REPO / "plugins" / "content-factory" / "skills"
 
 def test_manifest_obstaja_in_ni_prazen():
     manifest = json.loads((REPO / "vendor-manifest.json").read_text(encoding="utf-8"))
-    assert manifest["package_version"] == "2026-09-29"
+    assert manifest["package_version"] == "2026-10-06"
     assert len(manifest["files"]) > 20
 
 
@@ -58,3 +58,23 @@ def test_transkreacija_zahteva_audit():
     vsebina = (pot_skilla(SKILLS, "frodx-transcreation") / "SKILL.md").read_text(encoding="utf-8")
     assert "version: 1.0.0" in vsebina
     assert "frodx-transcreation-audit" in vsebina
+
+
+def test_nikin_pisec_je_1_1_1_v_vendorju_veje():
+    assert POTI["nika-update-writer"] == "frodx-content-factory/veje/nika/vendor/nika-update-writer"
+    assert not (SKILLS / "nika-update-writer").exists()
+    vsebina = (pot_skilla(SKILLS, "nika-update-writer") / "SKILL.md").read_text(encoding="utf-8")
+    assert "version: 1.1.1" in vsebina
+
+
+def test_check_py_spusti_vse_tri_primere():
+    import subprocess
+    koren = pot_skilla(SKILLS, "nika-update-writer")
+    primeri = sorted((koren / "references" / "primeri").glob("*.md"))
+    assert len(primeri) == 3
+    for primer in primeri:
+        izid = subprocess.run(
+            [sys.executable, str(koren / "scripts" / "check.py"), str(primer), "--blog"],
+            capture_output=True, text=True,
+        )
+        assert izid.returncode == 0, primer.name + "\n" + izid.stdout

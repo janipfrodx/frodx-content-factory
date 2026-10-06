@@ -11,6 +11,7 @@ VENDORED = (
     "frodx-key-visual",
     "frodx-newsletter",
     "frodx-transcreation-audit",
+    "nika-update-writer",
 )
 
 # Pisec, ki ga rabi ena sama veja, živi v vendor/ te veje. Ključi manifesta
@@ -20,6 +21,7 @@ POTI = {
     "igor-column-writer": "frodx-content-factory/veje/kolumna/vendor/igor-column-writer",
     "frodx-newsletter": "frodx-content-factory/veje/novicnik/vendor/frodx-newsletter",
     "frodx-transcreation-audit": "frodx-transcreation-check/vendor/frodx-transcreation-audit",
+    "nika-update-writer": "frodx-content-factory/veje/nika/vendor/nika-update-writer",
 }
 
 
@@ -49,8 +51,8 @@ if __name__ == "__main__":
     repo = Path(__file__).resolve().parents[1]
     manifest = build_manifest(
         repo / "plugins" / "content-factory" / "skills",
-        source="Igorjevi zipi 29. 9. 2026 (igor-column-writer 1.5.0, frodx-transcreation 1.0.0, frodx-transcreation-audit)",
-        package_version="2026-09-29",
+        source="Igorjevi zipi 29. 9. 2026 (igor-column-writer 1.5.0, frodx-transcreation 1.0.0, frodx-transcreation-audit) in nika-update-writer 1.1.1 (6. 10. 2026)",
+        package_version="2026-10-06",
     )
     (repo / "vendor-manifest.json").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
