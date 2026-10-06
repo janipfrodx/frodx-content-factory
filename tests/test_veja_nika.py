@@ -112,3 +112,21 @@ def test_deblo_vprasa_tudi_za_niko():
     vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
     assert "kolumna, novičnik ali Nikina zgodba" in vsebina
     assert "Gremo na Nikino zgodbo." in vsebina
+
+
+def test_korak_1_isce_po_zadevi_in_posiljatelju_hkrati():
+    korak = _razdelek("Koraki").split("### Korak 1")[1].split("### Korak 2")[0]
+    for niz in ("en klic", "samo po pošiljatelju", "z drugo zadevo ne odpiraš"):
+        assert niz in korak, niz
+
+
+def test_korak_1_hub_je_ocena():
+    korak = _razdelek("Koraki").split("### Korak 1")[1].split("### Korak 2")[0]
+    assert "Mail huba ne navaja" in korak
+    assert "(ocena)" in korak
+
+
+def test_korak_2_dejstva_iz_besedila_clanka():
+    korak = _razdelek("Koraki").split("### Korak 2")[1].split("### Korak 3")[0]
+    for niz in ("dobesedno", "povzetek", "vir ne pove"):
+        assert niz in korak, niz

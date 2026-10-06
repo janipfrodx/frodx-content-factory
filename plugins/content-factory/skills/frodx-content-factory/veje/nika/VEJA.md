@@ -44,9 +44,11 @@ python3 scripts/init_run.py --veja nika "<naslov novosti iz maila>" runs
 ### Korak 1
 
 - Konektor bere samo maile pošiljatelja `noreply@notifications.hubspot.com` z zadevo »Weekly Product Updates Roundup«. Nobenega drugega iskanja po Igorjevem nabiralniku, tudi ne za boljšo presojo (ISO 27001).
+- Iskanje je en klic z zadevo kot poizvedbo in pošiljateljem kot filtrom. Iskanje samo po pošiljatelju vrne tudi druga HubSpot obvestila s podatki strank; zadetka z drugo zadevo ne odpiraš in ga ne navajaš.
 - Če maila ni ali konektor ni povezan, to povej in prosi Igorja, naj mail prilepi ali posreduje.
 - Povezav v mailu (`app.hubspot.com/product-updates/...`) ne odpiraš, ker vodijo na prijavo. Opis iz maila je samo namig za izbor, ne vir.
 - Mail ima bete (»Trending Betas«) in novosti »Scheduled for release«; novosti »Live« v njem ni. Status za `source.status` prepiši iz razdelka maila (`beta` ali `scheduled`).
+- Mail huba ne navaja. Hub v tabeli oceniš iz naslova in opisa ter ga označiš z »(ocena)«; v koraku 2 ga potrdi ali popravi članek.
 - Ta korak nadomesti pisčev korak 1 (Nika prilepi strani) in njegov korak 2 (do sedem kandidatov).
 
 ### Korak 2
@@ -54,6 +56,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti iz maila>" runs
 - Vir dejstev je samo članek na `knowledge.hubspot.com` ali drug javni zapis na `hubspot.com`. **Brez članka ni zgodbe**: povej Igorju in mu ponudi drugo novost iz tabele.
 - Partnerski blogi so samo kazalec, da članek obstaja; v kartici dobijo `[PREVERI]`.
 - Velja samo URL, ki v rezultatu `web_fetch` stoji dobesedno. URL-ja ne sestavljaš iz naslova.
+- Izdajo, status, datum in navedke za `claims[].quote` prepišeš dobesedno iz besedila članka. Če orodje namesto besedila vrne povzetek, povzetek ni vir: kar v besedilu ne stoji, je »vir ne pove«.
 - Dejavnost naj ne ponovi dejavnosti zadnjih treh zgodb (prejšnje zgodbe so v podrazdelku »Korak 3«). Odloči Igor.
 - Igorjev vnos zapiši dobesedno v `_run.vnos`; pisec ga v koraku 3 uporabi namesto načela.
 - Kartica ostane v pogovoru. V `state.json` pred vprašanjem zapišeš `activity`, `dilemma`, `source.kb_urls` in `_run.vnos`.
