@@ -1,8 +1,8 @@
 ---
 name: frodx-content-factory
-description: Run the FrodX content factory end to end and pick the right branch. The column branch picks an AEO topic, writes the column, runs the critique loop, transcreates to EN and HR, makes the key visual and social images, enriches publishing metadata and hands the package to the publishing app. The newsletter branch builds a GameChanger newsletter edition from Igor's material in SI, HR and EN, runs critique and translation review, proposes block images and hands the draft to Newsletter Hub. Use whenever Igor wants a new column, blog post, newsletter or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
+description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor picks from HubSpot's weekly mail becomes Nika's weekly story for the blog and LinkedIn, checked and handed over for Nika's approval. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
-  version: 0.4.0
+  version: 0.5.0
 ---
 
 # FrodX Content Factory - deblo
@@ -21,8 +21,8 @@ Ti si dirigent, ne pisec. Vsebino delajo podskilli. Tvoja naloga je: pripravi st
 
 1. Preberi razdelek **Sprožilci** v vsakem `veje/*/VEJA.md`.
 2. Vejo prepoznaš po pomenu Igorjevega stavka, ne po točni frazi.
-3. Če stavek ne ustreza jasno nobeni veji ali ustreza več vejam hkrati (npr. »napiši kolumno in jo daj v newsletter«, »zaženi tovarno«), ne ugibaj. Vprašaj: »Kaj delamo: kolumna ali novičnik?« (naštej vse veje, ki obstajajo) in ne začni ničesar, dokler ne odgovori.
-4. Prvi odgovor Igorju vedno začni s potrditvijo veje, npr. »Gremo na kolumno.« ali »Gremo na novičnik.« Če si se zmotil, te Igor takoj popravi.
+3. Če stavek ne ustreza jasno nobeni veji ali ustreza več vejam hkrati (npr. »napiši kolumno in jo daj v newsletter«, »zaženi tovarno«), ne ugibaj. Vprašaj: »Kaj delamo: kolumna, novičnik ali Nikina zgodba?« (naštej vse veje, ki obstajajo) in ne začni ničesar, dokler ne odgovori.
+4. Prvi odgovor Igorju vedno začni s potrditvijo veje, npr. »Gremo na kolumno.«, »Gremo na novičnik.« ali »Gremo na Nikino zgodbo.« Če si se zmotil, te Igor takoj popravi.
 5. Preberi izbrani `veje/<tip>/VEJA.md` v celoti in izvajaj njegove korake po vrsti. Razdelek **Koraki** je vrstni red, razdelek **Posebnosti** so pravila, ki veljajo samo za to vejo.
 
 ## Zagon teka
