@@ -205,3 +205,28 @@ def test_cli_ob_krsitvi_ne_zapise(tmp_path):
     assert r.returncode == 1
     assert "KRŠITEV:" in r.stdout
     assert not cilj.exists()
+
+
+def test_ista_oznaka_v_blogu_in_linkedinu_se_steje_enkrat():
+    telo = _telo()
+    telo["preveri"] = [{"text": "ali velja za Teams", "where": "uvod"}]
+    oznaka = " [PREVERI: ali velja za Teams]"
+    telo["story"]["blog_md"] = telo["story"]["blog_md"].replace(
+        "Pogoj sta snemanje s prepisom in Notetaker.",
+        "Pogoj sta snemanje s prepisom in Notetaker." + oznaka,
+    )
+    telo["story"]["linkedin_text"] += oznaka
+    assert not _ima(_krsitve(telo), "preveri", "[PREVERI")
+
+
+def test_oznaka_samo_v_naslovu_brez_vrstice():
+    telo = _telo()
+    telo["preveri"] = []
+    telo["story"]["title"] += " [PREVERI: naslov]"
+    assert _ima(_krsitve(telo), "preveri", "[PREVERI", "korak 3")
+
+
+def test_preveri_vrstica_brez_where():
+    telo = _telo()
+    telo["preveri"] = [{"text": "a"}]
+    assert _ima(_krsitve(telo), "preveri", "korak 3")

@@ -1,6 +1,6 @@
 # Vendorirani skilli
 
-Štirje skilli v tem pluginu so delo Igorja Pauletiča in so tu **nespremenjeni**.
+Pet skillov v tem pluginu je delo Igorja Pauletiča in je tu **nespremenjenih**.
 
 | Skill | Izvor | Verzija paketa |
 |---|---|---|
@@ -24,7 +24,7 @@ Sprememba gre tako:
 
 Namen ni birokracija. Namen je, da se Igorjeva in naša kopija ne razideta tiho - to je natanko tveganje, ki ga Igor opisuje v `README-JANI.md` §8.
 
-Pisca, ki ju rabi ena sama veja, ležita v `vendor/` te veje: `igor-column-writer` v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`. Cowork ju zato ne vidi kot samostojna skilla in ne tekmujeta z deblom za iste fraze. Datoteke so nespremenjene; lokacijo pozna `tools/vendor_hash.py` (`POTI`). Igor ju samostojno uporablja v svojem izvornem kitu.
+Pisci, ki jih rabi ena sama veja, ležijo v `vendor/` te veje: `igor-column-writer` v `skills/frodx-content-factory/veje/kolumna/vendor/`, `frodx-newsletter` v `skills/frodx-content-factory/veje/novicnik/vendor/`, `nika-update-writer` v `skills/frodx-content-factory/veje/nika/vendor/`. Cowork jih zato ne vidi kot samostojne skille in ne tekmujejo z deblom za iste fraze. Datoteke so nespremenjene; lokacijo pozna `tools/vendor_hash.py` (`POTI`). Igor jih samostojno uporablja v svojem izvornem kitu.
 
 ## Čakajoče točke za Igorja
 

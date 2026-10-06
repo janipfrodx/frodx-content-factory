@@ -32,7 +32,8 @@ VIRI = ("knowledge.hubspot.com", "hubspot.com", "www.hubspot.com")
 RUN_SLUG = re.compile(r"^[a-z0-9-]{3,120}$")
 DATUM = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 URL = re.compile(r"https?://[^\s)\]]+")
-OZNAKA = re.compile(r"\[PREVERI")
+OZNAKA = re.compile(r"\[PREVERI[^\]]*\]")
+# check.py vzame samo del za to ločilo (story_part); del pred njim ostane nepreverjen.
 LOCILO = "\n---\n"
 DOLGI_POMISLJAJ = "\u2014"
 PRAG = 9.0
@@ -100,7 +101,7 @@ def _preveri_zgodbo(zgodba, krsitve, opozorila):
         if _prazno(besedilo):
             continue
         if LOCILO in besedilo:
-            krsitve.append(f"story.{polje}: vrstica --- prereče besedilo, check.py bi preveril samo del za njo (korak 3)")
+            krsitve.append(f"story.{polje}: vrstica --- prereže besedilo, check.py bi preveril samo del za njo (korak 3)")
             continue
         napake, opoz = _check(besedilo, nacin)
         krsitve += [f"story.{polje}: check.py --{nacin}: {n} (korak 3)" for n in napake]
@@ -168,10 +169,10 @@ def preveri(telo):
     _preveri_trditve(telo.get("claims"), krsitve)
 
     seznam = telo.get("preveri")
-    if not isinstance(seznam, list) or any(not isinstance(p, dict) or _prazno(p.get("text")) for p in seznam):
+    if not isinstance(seznam, list) or any(not isinstance(p, dict) or _prazno(p.get("text")) or _prazno(p.get("where")) for p in seznam):
         krsitve.append("preveri: seznam objektov s text in where (korak 3)")
         seznam = []
-    oznake = sum(len(OZNAKA.findall(zgodba.get(p) or "")) for p in ("blog_md", "linkedin_text") if isinstance(zgodba.get(p), str))
+    oznake = len({o for _, niz in _nizi(zgodba) for o in OZNAKA.findall(niz)})
     if oznake > len(seznam):
         krsitve.append(f"preveri: v besedilu je {oznake} oznak [PREVERI, v seznamu {len(seznam)}; aplikacija zaklene Potrdi po seznamu (korak 3)")
 

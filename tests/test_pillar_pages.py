@@ -56,7 +56,6 @@ def test_bralnik_bere_prazen_in_poln_url(tmp_path):
 
 def test_taksonomija_nima_tristolpcnih_vrstic():
     assert load_pillars(TAXONOMY) == {}
-import json
 
 META_SKILL = REFS.parent / "SKILL.md"
 

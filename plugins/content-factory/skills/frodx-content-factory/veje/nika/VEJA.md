@@ -56,6 +56,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti iz maila>" runs
 - Velja samo URL, ki v rezultatu `web_fetch` stoji dobesedno. URL-ja ne sestavljaš iz naslova.
 - Dejavnost naj ne ponovi dejavnosti zadnjih treh zgodb (prejšnje zgodbe so v podrazdelku »Korak 3«). Odloči Igor.
 - Igorjev vnos zapiši dobesedno v `_run.vnos`; pisec ga v koraku 3 uporabi namesto načela.
+- Kartica ostane v pogovoru. V `state.json` pred vprašanjem zapišeš `activity`, `dilemma`, `source.kb_urls` in `_run.vnos`.
 
 ### Korak 3
 
