@@ -68,6 +68,16 @@ def test_odrezan_zavihek_je_napaka(tmp_path):
     assert not izhod.exists()
 
 
+def test_gnezden_gap_je_napaka(tmp_path):
+    xml = _beri("nika_zavihek_prebran.xml")
+    gnezden = xml.replace("<row id='.298' h='f18caa01'>", "<row id='.298' h='f18caa01'><gap cap='true' from='.299'/>", 1)
+    assert gnezden != xml
+    izid, izhod = _pozeni(tmp_path, gnezden)
+    assert izid.returncode == 1
+    assert "zavihek ni prebran do konca" in izid.stdout
+    assert not izhod.exists()
+
+
 def test_dva_kosa_dasta_isto_kot_eden(tmp_path):
     xml = _beri("nika_zavihek_prebran.xml")
     rez = xml.index("<paragraph id='.3664'")

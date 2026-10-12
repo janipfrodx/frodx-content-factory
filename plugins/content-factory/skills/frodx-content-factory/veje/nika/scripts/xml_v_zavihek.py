@@ -26,6 +26,8 @@ def _bloki(kosi):
                 if i == len(kosi) - 1 or otrok.get("cap") != "true":
                     raise ValueError(ODREZAN)
                 continue
+            if any(True for _ in otrok.iter("gap")):
+                raise ValueError(ODREZAN)
             bloki.append(otrok)
     return bloki
 
