@@ -153,3 +153,14 @@ def test_placeholder_brez_oznak_je_dovoljen():
 def test_odkljukana_velika_x_je_sprejeta():
     md = _izpolni(z.zgradi(_telo())).replace("- [ ] Potrditev", "- [X] Potrditev", 1)
     assert len(iz.preberi(md)["odprte"]) == len(_telo()["preveri"]) - 1
+
+
+def test_prebran_nespremenjen_zavihek():
+    telo = _telo()
+    prebran = (REPO / "tests" / "fixtures" / "nika_zavihek_prebran.md").read_text(encoding="utf-8")
+    izid = iz.preberi(prebran)
+    assert izid["title"] == telo["story"]["title"]
+    assert iz.spremenjene_povedi(telo["story"]["blog_md"], izid["blog_md"]) == 0
+    assert iz.spremenjene_povedi(telo["story"]["linkedin_text"], izid["linkedin_text"]) == 0
+    assert izid["odlocitev"]["decision"] is None
+    assert len(izid["odprte"]) == 2
