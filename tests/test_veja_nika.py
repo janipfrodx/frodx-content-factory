@@ -138,3 +138,46 @@ def test_preverba_paketa_obe_fazi():
     assert "preveri_paket.py runs/<tek>/state.json --faza niki --telo outbox/<run_slug>.json" in preverba
     assert "preveri_paket.py runs/<tek>/state.json --faza objava" in preverba
     assert "`1.1`" in preverba
+
+
+def test_izid_se_bere_samo_iz_vozlisca_izid():
+    oddaja = _razdelek("Oddaja Niki")
+    assert 'includeData: true' in oddaja
+    assert 'nodeNames: ["Izid"]' in oddaja
+
+
+def test_tab_id_ima_vir():
+    oddaja = _razdelek("Oddaja Niki")
+    nad = _razdelek("Nadaljevanje")
+    assert "`_run.tab_id`" in oddaja and "`file` id" in oddaja
+    assert "`tab_id` (`_run.tab_id`)" in oddaja
+    assert "stolpca `tab_id`" in nad
+    assert "get_data_table_rows" in nad
+
+
+def test_stanje_v_pregledu_po_odlocitvi():
+    nad = _razdelek("Nadaljevanje")
+    korak5 = nad.split("\n5. ")[1].split("\n6. ")[0]
+    korak7 = nad.split("\n7. ")[1]
+    assert "»zavrnjeno«" in korak5
+    assert "»potrjeno«" in korak7
+
+
+def test_zavrni_izbrise_izvirnik_pred_ponovno_oddajo():
+    korak5 = _razdelek("Nadaljevanje").split("\n5. ")[1].split("\n6. ")[0]
+    assert "`_run.nika_izvirnik`" in korak5
+    assert korak5.index("izbriši") < korak5.index("ponovi »Oddaja Niki«")
+
+
+def test_opis_debla_ima_sprozilce_nadaljevanja_nike():
+    opis = _opis_debla()
+    for fraza in ("nadaljuj Niko", "Nika je pregledala", "Nika je potrdila"):
+        assert fraza in opis, fraza
+    assert "weekly mail" not in opis
+    assert len(opis) <= 1024, len(opis)
+
+
+def test_deblo_nadaljuje_niko_prek_cf_teki():
+    vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
+    razdelek = vsebina.split("## Nadaljevanje prekinjenega teka")[1].split("\n## ")[0]
+    assert "CF-Teki" in razdelek and "run_slug" in razdelek

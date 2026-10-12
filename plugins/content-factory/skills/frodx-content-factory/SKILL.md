@@ -1,6 +1,6 @@
 ---
 name: frodx-content-factory
-description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor picks from HubSpot's weekly mail becomes Nika's weekly story for the blog and LinkedIn, checked and handed over for Nika's approval. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
+description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor pastes becomes Nika's weekly story for the blog and LinkedIn, goes through the critique loop and Nika's review in a Claude Doc, and resumes after her review. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "nadaljuj Niko", "Nika je pregledala", "Nika je potrdila", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
   version: 0.5.0
 ---
@@ -66,7 +66,7 @@ Tek mora v eni seji priti do oddaje. V teku novičnika 1. 10. 2026 je kontekst z
 
 ## Nadaljevanje prekinjenega teka
 
-Če Igor reče »nadaljuj <naslov>«, poišči `runs/*-<slug>/state.json`, preberi `_run.veja` in `_run.step`, odpri `veje/<_run.veja>/VEJA.md` in nadaljuj z naslednjim korakom. Ne ponavljaj korakov, ki so že opravljeni, razen če Igor to izrecno zahteva.
+Če Igor reče »nadaljuj <naslov>«, poišči `runs/*-<slug>/state.json`, preberi `_run.veja` in `_run.step`, odpri `veje/<_run.veja>/VEJA.md` in nadaljuj z naslednjim korakom. Za vejo Nika v novem chatu (mape teka ni) tek najdeš prek `CF-Teki` (vrstica z `run_slug`, `veja = nika`, `stanje = caka_niko`) in zavihka v Docu, kot piše razdelek »Nadaljevanje« v `veje/nika/VEJA.md`. Ne ponavljaj korakov, ki so že opravljeni, razen če Igor to izrecno zahteva.
 
 Če `_run.veja` manjka, je tek nastal pred deblom in je kolumna.
 
