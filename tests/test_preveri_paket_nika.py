@@ -41,14 +41,14 @@ def test_dejavnosti_iz_vertikal():
 
 def test_napacna_verzija():
     telo = _telo()
-    telo["version"] = "1.1"
-    assert _ima(_krsitve(telo), "type/version", "init_run.py")
+    telo["version"] = "1.0"
+    assert _ima(_krsitve(telo), "type/version", "nika_story 1.1")
 
 
 def test_manjka_polje_zgodbe():
     telo = _telo()
-    telo["story"]["first_comment"] = ""
-    assert _ima(_krsitve(telo), "story.first_comment", "korak 3")
+    telo["story"]["meta_description"] = ""
+    assert _ima(_krsitve(telo), "story.meta_description: manjka")
 
 
 def test_en_alternativni_naslov():
@@ -63,22 +63,10 @@ def test_meta_opis_prekratek():
     assert _ima(_krsitve(telo), "story.meta_description", "120 znakov", "korak 3")
 
 
-def test_prvi_komentar_brez_vira():
-    telo = _telo()
-    telo["story"]["first_comment"] = "Več na https://app.hubspot.com/product-updates/123"
-    assert _ima(_krsitve(telo), "story.first_comment", "korak 3")
-
-
 def test_check_py_napaka_bloga_je_krsitev():
     telo = _telo()
     telo["story"]["blog_md"] = telo["story"]["blog_md"].rsplit("\n", 1)[0]
     assert _ima(_krsitve(telo), "story.blog_md", "check.py --blog", "zadnja vrstica", "korak 3")
-
-
-def test_povezava_v_linkedin_je_krsitev():
-    telo = _telo()
-    telo["story"]["linkedin_text"] += " https://knowledge.hubspot.com/x"
-    assert _ima(_krsitve(telo), "story.linkedin_text", "check.py --linkedin", "korak 3")
 
 
 def test_vrstica_s_tremi_vezaji_v_blogu():
@@ -230,3 +218,87 @@ def test_preveri_vrstica_brez_where():
     telo = _telo()
     telo["preveri"] = [{"text": "a"}]
     assert _ima(_krsitve(telo), "preveri", "korak 3")
+
+
+def _objava():
+    telo = _telo()
+    telo["languages"] = {
+        "en": {"title": "Who updates the deal after the call?", "blog_md": "# Who updates the deal after the call?\n\nText.",
+               "meta_description": "Deal Progression in HubSpot suggests deal updates after a call.", "linkedin_text": "Short post.\n\nSecond line."},
+        "hr": {"title": "Tko ažurira posao nakon poziva?", "blog_md": "# Tko ažurira posao nakon poziva?\n\nTekst.",
+               "meta_description": "Deal Progression u HubSpotu predlaže ažuriranja posla nakon poziva."},
+    }
+    telo["meta"] = {
+        "campaign_name": "Interest - Test", "campaign_guid": "00000000-0000-0000-0000-000000000000",
+        "tags": {"sl": "1", "en": "2", "hr": "3"},
+        "covers": {j: {"url": f"https://f.hubspotusercontent.com/{j}.png", "alt": "Nika"} for j in ("sl", "en", "hr")},
+    }
+    telo["schedule"] = {"publish_at": "2099-10-20T07:00:00+02:00", "linkedin_date": "2099-10-20"}
+    return telo
+
+
+def test_faza_niki_ne_zahteva_prevodov():
+    assert pp.preveri(_telo(), "niki")[0] == []
+
+
+def test_faza_objava_zahteva_prevode():
+    assert _ima(pp.preveri(_telo(), "objava")[0], "languages.en.blog_md", "korak 7")
+
+
+def test_faza_objava_gre_skozi():
+    assert pp.preveri(_objava(), "objava", rubrika=lambda: {"campaign_name": "Interest - Test",
+        "campaign_guid": "00000000-0000-0000-0000-000000000000", "tags": {"sl": "1", "en": "2", "hr": "3"}})[0] == []
+
+
+def test_kratka_objava_s_povezavo():
+    assert _ima(pp.kratka_objava("Vrstica.\n\nhttps://frodx.com"), "povezava")
+
+
+def test_kratka_objava_predolga():
+    assert _ima(pp.kratka_objava("\n".join(["vrstica"] * 5)), "4 vrstice")
+
+
+def test_kratka_objava_ok():
+    assert pp.kratka_objava("Ena.\n\nDve.\n\nTri.") == []
+
+
+def test_preveri_v_prevodu():
+    telo = _objava()
+    telo["languages"]["hr"]["blog_md"] += " [PREVERI: datum]"
+    assert _ima(pp.preveri(telo, "objava")[0], "languages.hr.blog_md", "[PREVERI")
+
+
+def test_linkedin_pred_blogom():
+    telo = _objava()
+    telo["schedule"] = {"publish_at": "2099-10-20T09:00:00+02:00", "linkedin_date": "2099-10-20"}
+    assert _ima(pp.preveri(telo, "objava")[0], "schedule", "7.30")
+    telo["schedule"]["linkedin_date"] = "2099-10-19"
+    assert _ima(pp.preveri(telo, "objava")[0], "schedule", "pred blogom")
+
+
+def test_publish_at_v_preteklosti_ali_brez_zamika():
+    telo = _objava()
+    telo["schedule"]["publish_at"] = "2020-01-01T07:00:00+01:00"
+    assert _ima(pp.preveri(telo, "objava")[0], "schedule.publish_at", "prihodnosti")
+    telo["schedule"]["publish_at"] = "2099-10-20T07:00:00"
+    assert _ima(pp.preveri(telo, "objava")[0], "schedule.publish_at", "zamik")
+
+
+def test_rubrika_se_ne_ujema():
+    telo = _objava()
+    telo["meta"]["tags"]["hr"] = "999"
+    rub = lambda: {"campaign_name": "Interest - Test", "campaign_guid": "00000000-0000-0000-0000-000000000000",
+                   "tags": {"sl": "1", "en": "2", "hr": "3"}}
+    assert _ima(pp.preveri(telo, "objava", rubrika=rub)[0], "meta.tags.hr", "korak 8")
+
+
+def test_rubrika_se_ni_v_taksonomiji():
+    rub = lambda: {"campaign_name": "", "campaign_guid": "", "tags": {"sl": "", "en": "", "hr": ""}}
+    assert _ima(pp.preveri(_objava(), "objava", rubrika=rub)[0], "hubspot-taxonomy.md", "H2")
+
+
+def test_cli_faza(tmp_path):
+    stanje = tmp_path / "state.json"
+    stanje.write_text(json.dumps(_telo(), ensure_ascii=False), encoding="utf-8")
+    izid = subprocess.run([sys.executable, str(SKRIPTA), str(stanje), "--faza", "objava"], capture_output=True, text=True)
+    assert izid.returncode == 1 and "languages.en" in izid.stdout

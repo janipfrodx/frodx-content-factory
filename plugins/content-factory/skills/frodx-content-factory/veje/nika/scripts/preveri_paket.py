@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Preverba paketa Nikine zgodbe (nika_story v1.0) pred oddajo.
+"""Preverba paketa Nikine zgodbe (nika_story v1.1) pred oddajo.
 
-Uporaba: python3 preveri_paket.py <state.json> [--telo <pot>]
+Uporaba: python3 preveri_paket.py <state.json> [--faza niki|objava] [--telo <pot>]
 
 Iz state.json odstrani _run in preveri telo. Kršitve izpiše s pristojnim
-korakom in vrne exit 1. Na blog_md in linkedin_text požene vendorirani
-check.py: njegove napake so kršitve, opozorila ostanejo opozorila. Ocena pod
-9,0 je opozorilo, ker je Igor zgodbo z njo že potrdil na gate-u koraka 3.
+korakom in vrne exit 1. Na blog_md požene vendorirani check.py: njegove
+napake so kršitve, opozorila ostanejo opozorila. linkedin_text je kratka
+objava (1-4 vrstice, brez povezave in naslova), preverja jo kratka_objava.
+Ocena pod 9,0 je opozorilo, ker je Igor zgodbo z njo že potrdil na gate-u
+koraka 3.
+
+Faza niki (privzeta) preveri slovensko zgodbo za Nikin pregled. Faza objava
+doda prevode (EN, HR), meta podatke (kampanja, oznake, naslovnice) proti
+hubspot-taxonomy.md in urnik objave.
 Z --telo zapiše telo za oddajo, a samo, kadar kršitev ni; če zapis spodleti,
 vrne exit 2.
 """
+import datetime as dt
 import json
 import re
 import subprocess
@@ -23,8 +30,8 @@ CHECK = PISEC / "scripts" / "check.py"
 VERTIKALE = PISEC / "references" / "vertikale.md"
 
 TIP = "nika_story"
-VERZIJA = "1.0"
-POLJA_ZGODBE = ("title", "blog_md", "linkedin_text", "first_comment", "meta_description")
+VERZIJA = "1.1"
+POLJA_ZGODBE = ("title", "blog_md", "linkedin_text", "meta_description")
 STATUSI = ("beta", "scheduled", "live")
 IZVORI = ("nacelo", "igor", "skill")
 KATEGORIJE = ("nova", "obstojeci", "priporocilo")
@@ -37,6 +44,11 @@ OZNAKA = re.compile(r"\[PREVERI[^\]]*\]")
 LOCILO = "\n---\n"
 DOLGI_POMISLJAJ = "\u2014"
 PRAG = 9.0
+FAZE = ("niki", "objava")
+TAKSONOMIJA = Path(__file__).resolve().parents[2] / "kolumna" / "publishing-meta" / "references" / "hubspot-taxonomy.md"
+JEZIKI_PREVODA = ("en", "hr")
+ISO_Z_ZAMIKOM = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?[+-]\d{2}:\d{2}$")
+LINKEDIN_URA = "07:30"
 
 
 def _prazno(vrednost):
@@ -83,6 +95,87 @@ def _check(besedilo, nacin):
     return napake, opozorila
 
 
+def kratka_objava(besedilo):
+    krsitve = []
+    vrstice = [v for v in besedilo.splitlines() if v.strip()]
+    if not 1 <= len(vrstice) <= 4:
+        krsitve.append(f"kratka objava ima {len(vrstice)} vrstic, dovoljeno 1-4 vrstice")
+    if URL.search(besedilo):
+        krsitve.append("povezava gre v prvi komentar, ne v objavo")
+    if any(v.lstrip().startswith("#") for v in vrstice):
+        krsitve.append("brez naslova v objavi")
+    return krsitve
+
+
+def rubrika_iz_taksonomije(pot=TAKSONOMIJA):
+    """Vrstice, ki se začnejo z `| nika |`: kampanja (4 stolpci) in oznake (5 stolpcev)."""
+    izid = {"campaign_name": "", "campaign_guid": "", "tags": {"sl": "", "en": "", "hr": ""}}
+    for vrstica in Path(pot).read_text(encoding="utf-8").splitlines():
+        celice = [c.strip() for c in vrstica.strip().strip("|").split("|")]
+        if not vrstica.startswith("|") or celice[0] != "nika":
+            continue
+        if len(celice) == 4 and celice[1] == "kampanja":
+            izid["campaign_name"], izid["campaign_guid"] = celice[2], celice[3]
+        elif len(celice) == 5 and celice[1] in izid["tags"]:
+            izid["tags"][celice[1]] = celice[2]
+    return izid
+
+
+def _preveri_objavo(telo, krsitve, rubrika):
+    jeziki = telo.get("languages") if isinstance(telo.get("languages"), dict) else {}
+    for j in JEZIKI_PREVODA:
+        jezik = jeziki.get(j) if isinstance(jeziki.get(j), dict) else {}
+        polja = ("title", "blog_md", "meta_description") + (("linkedin_text",) if j == "en" else ())
+        for polje in polja:
+            vrednost = jezik.get(polje)
+            if _prazno(vrednost):
+                krsitve.append(f"languages.{j}.{polje}: manjka (korak 7)")
+            elif OZNAKA.search(vrednost):
+                krsitve.append(f"languages.{j}.{polje}: odprta oznaka [PREVERI (korak 7)")
+        meta_opis = jezik.get("meta_description")
+        if not _prazno(meta_opis) and len(meta_opis) > 160:
+            krsitve.append(f"languages.{j}.meta_description: {len(meta_opis)} znakov, največ 160 (korak 7)")
+        if j == "en" and not _prazno(jezik.get("linkedin_text")):
+            krsitve += [f"languages.en.linkedin_text: {k} (korak 7)" for k in kratka_objava(jezik["linkedin_text"])]
+
+    meta = telo.get("meta") if isinstance(telo.get("meta"), dict) else {}
+    pricakovano = rubrika()
+    if not pricakovano["campaign_guid"] or not all(pricakovano["tags"].values()):
+        krsitve.append("meta: kampanja ali oznake rubrike še niso v hubspot-taxonomy.md (H2, H3)")
+    else:
+        for polje in ("campaign_name", "campaign_guid"):
+            if meta.get(polje) != pricakovano[polje]:
+                krsitve.append(f"meta.{polje}: ne ustreza hubspot-taxonomy.md (korak 8)")
+        oznake = meta.get("tags") if isinstance(meta.get("tags"), dict) else {}
+        for j, tag_id in pricakovano["tags"].items():
+            if oznake.get(j) != tag_id:
+                krsitve.append(f"meta.tags.{j}: ne ustreza hubspot-taxonomy.md (korak 8)")
+    naslovnice = meta.get("covers") if isinstance(meta.get("covers"), dict) else {}
+    for j in ("sl", "en", "hr"):
+        n = naslovnice.get(j) if isinstance(naslovnice.get(j), dict) else {}
+        if not isinstance(n.get("url"), str) or not n["url"].startswith("https://") or _prazno(n.get("alt")):
+            krsitve.append(f"meta.covers.{j}: manjka https URL ali alt opis (korak 8)")
+
+    urnik = telo.get("schedule") if isinstance(telo.get("schedule"), dict) else {}
+    objava, li = urnik.get("publish_at"), urnik.get("linkedin_date")
+    if not isinstance(objava, str) or not ISO_Z_ZAMIKOM.match(objava):
+        krsitve.append("schedule.publish_at: ISO čas z zamikom, npr. 2026-10-20T07:00:00+02:00 (korak 9)")
+        return
+    try:
+        cas = dt.datetime.fromisoformat(objava)
+    except ValueError:
+        krsitve.append("schedule.publish_at: neveljaven datum ali čas (korak 9)")
+        return
+    if cas <= dt.datetime.now(dt.timezone.utc):
+        krsitve.append("schedule.publish_at: mora biti v prihodnosti (korak 9)")
+    if not isinstance(li, str) or not DATUM.match(li):
+        krsitve.append("schedule.linkedin_date: YYYY-MM-DD (korak 9)")
+    elif li < objava[:10]:
+        krsitve.append("schedule: LinkedIn ne sme iti pred blogom (korak 9)")
+    elif li == objava[:10] and objava[11:16] > LINKEDIN_URA:
+        krsitve.append("schedule: LinkedIn teče ob 7.30; na dan bloga mora biti blog objavljen do 7.30 (korak 9)")
+
+
 def _preveri_zgodbo(zgodba, krsitve, opozorila):
     for polje in POLJA_ZGODBE:
         if _prazno(zgodba.get(polje)):
@@ -93,10 +186,7 @@ def _preveri_zgodbo(zgodba, krsitve, opozorila):
     meta = zgodba.get("meta_description")
     if not _prazno(meta) and not 140 <= len(meta) <= 160:
         krsitve.append(f"story.meta_description: {len(meta)} znakov, dovoljeno 140-160 (korak 3)")
-    prvi = zgodba.get("first_comment")
-    if not _prazno(prvi) and not any(_vir_ok(u) for u in URL.findall(prvi)):
-        krsitve.append("story.first_comment: nima povezave na knowledge.hubspot.com ali hubspot.com (korak 3)")
-    for polje, nacin in (("blog_md", "blog"), ("linkedin_text", "linkedin")):
+    for polje, nacin in (("blog_md", "blog"),):
         besedilo = zgodba.get(polje)
         if _prazno(besedilo):
             continue
@@ -106,6 +196,9 @@ def _preveri_zgodbo(zgodba, krsitve, opozorila):
         napake, opoz = _check(besedilo, nacin)
         krsitve += [f"story.{polje}: check.py --{nacin}: {n} (korak 3)" for n in napake]
         opozorila += [f"story.{polje}: {o}" for o in opoz]
+    objava = zgodba.get("linkedin_text")
+    if not _prazno(objava):
+        krsitve += [f"story.linkedin_text: {k} (korak 3)" for k in kratka_objava(objava)]
 
 
 def _preveri_vir(vir, krsitve):
@@ -140,7 +233,7 @@ def _preveri_trditve(trditve, krsitve):
                 krsitve.append(f"{p}: nova zmožnost brez navedka iz vira (korak 2)")
 
 
-def preveri(telo):
+def preveri(telo, faza="niki", rubrika=rubrika_iz_taksonomije):
     krsitve, opozorila = [], []
     if "_run" in telo:
         krsitve.append("_run: telo za oddajo ne nosi _run (korak 4)")
@@ -190,15 +283,39 @@ def preveri(telo):
     for pot, niz in _nizi(telo):
         if DOLGI_POMISLJAJ in niz:
             krsitve.append(f"{pot}: dolgi pomišljaj (U+2014), uporabi razmaknjen vezaj (korak 3)")
+    if faza == "objava":
+        _preveri_objavo(telo, krsitve, rubrika)
     return krsitve, opozorila
 
 
+UPORABA = "Uporaba: preveri_paket.py <state.json> [--faza niki|objava] [--telo <pot>]"
+
+
+def _argumenti(argv):
+    if len(argv) < 2 or argv[1].startswith("--"):
+        return None
+    faza, telo, i = "niki", None, 2
+    while i < len(argv):
+        if argv[i] not in ("--faza", "--telo") or i + 1 >= len(argv):
+            return None
+        if argv[i] == "--faza":
+            faza = argv[i + 1]
+        else:
+            telo = argv[i + 1]
+        i += 2
+    if faza not in FAZE:
+        return None
+    return argv[1], faza, telo
+
+
 def main(argv) -> int:
-    if len(argv) not in (2, 4) or (len(argv) == 4 and argv[2] != "--telo"):
-        print("Uporaba: preveri_paket.py <state.json> [--telo <pot>]")
+    razclenjeno = _argumenti(argv)
+    if razclenjeno is None:
+        print(UPORABA)
         return 1
+    vhod, faza, cilj_pot = razclenjeno
     try:
-        stanje = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
+        stanje = json.loads(Path(vhod).read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as napaka:
         print(f"state.json ni mogoče prebrati: {napaka}")
         return 1
@@ -206,15 +323,15 @@ def main(argv) -> int:
         print("state.json ni objekt")
         return 1
     telo = {k: v for k, v in stanje.items() if k != "_run"}
-    krsitve, opozorila = preveri(telo)
+    krsitve, opozorila = preveri(telo, faza)
     for besedilo in opozorila:
         print(f"Opozorilo: {besedilo}")
     if krsitve:
         for besedilo in krsitve:
             print(f"KRŠITEV: {besedilo}")
         return 1
-    if len(argv) == 4:
-        cilj = Path(argv[3])
+    if cilj_pot:
+        cilj = Path(cilj_pot)
         try:
             cilj.parent.mkdir(parents=True, exist_ok=True)
             cilj.write_text(json.dumps(telo, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

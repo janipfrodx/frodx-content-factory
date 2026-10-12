@@ -262,9 +262,11 @@ def test_stanje_nike_je_telo_nika_story():
     from init_run import zgradi_stanje_nika
     stanje = zgradi_stanje_nika("Deal Progression", "deal-progression", "2026-10-06T09:00:00.000Z")
     assert stanje["type"] == "nika_story"
-    assert stanje["version"] == "1.0"
+    assert stanje["version"] == "1.1"
     assert stanje["run_slug"] == "2026-10-06-deal-progression"
-    assert set(stanje["story"]) == {"title", "alt_titles", "blog_md", "linkedin_text", "first_comment", "meta_description"}
+    assert set(stanje["story"]) == {"title", "alt_titles", "blog_md", "linkedin_text", "meta_description"}
+    for kljuc in ("languages", "meta", "schedule"):
+        assert kljuc in stanje, kljuc
     assert stanje["story"]["alt_titles"] == []
     assert stanje["source"] == {"update_title": "Deal Progression", "status": "", "mail_date": "", "kb_urls": []}
     assert stanje["judgment"] == {"origin": "", "principle": "", "question": "Bi se tako odločila?"}

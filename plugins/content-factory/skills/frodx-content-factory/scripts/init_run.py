@@ -111,19 +111,18 @@ def zgradi_stanje_novicnik(tema: str, slug: str, cas: str) -> dict:
 
 
 def zgradi_stanje_nika(tema: str, slug: str, cas: str) -> dict:
-    # Oblika telesa POST /api/drafts tipa nika_story v1.0 (tests/fixtures/nika_story_body.json).
+    # Paket nika_story v1.1 (tests/fixtures/nika_story_body.json).
     # Tek nastane ob gate-u koraka 1, ko je novost izbrana, zato je naslednji korak 2.
     tek = f"{cas[:10]}-{slug}"
     return {
         "type": "nika_story",
-        "version": "1.0",
+        "version": "1.1",
         "run_slug": tek,
         "story": {
             "title": "",
             "alt_titles": [],
             "blog_md": "",
             "linkedin_text": "",
-            "first_comment": "",
             "meta_description": "",
         },
         "source": {"update_title": tema, "status": "", "mail_date": "", "kb_urls": []},
@@ -135,6 +134,17 @@ def zgradi_stanje_nika(tema: str, slug: str, cas: str) -> dict:
         "warnings": [],
         "score": {"total": None, "items": {}},
         "formulas": [],
+        "languages": {
+            "en": {"title": "", "blog_md": "", "meta_description": "", "linkedin_text": ""},
+            "hr": {"title": "", "blog_md": "", "meta_description": ""},
+        },
+        "meta": {
+            "campaign_name": "",
+            "campaign_guid": "",
+            "tags": {"sl": "", "en": "", "hr": ""},
+            "covers": {j: {"url": "", "alt": ""} for j in ("sl", "en", "hr")},
+        },
+        "schedule": {"publish_at": "", "linkedin_date": ""},
         "_run": {
             "veja": "nika",
             "slug": tek,

@@ -44,14 +44,6 @@ def test_objava_ima_polja_iz_speca():
     assert set(_json("nika_publish_body.json")) == OBJAVA_POLJA
 
 
-def test_objava_nosi_besedila_iz_paketa():
-    objava = _json("nika_publish_body.json")
-    paket = _json("nika_story_body.json")
-    assert objava["run_slug"] == paket["run_slug"]
-    for polje in ("title", "blog_md", "meta_description", "linkedin_text", "first_comment"):
-        assert objava[polje] == paket["story"][polje], polje
-
-
 def test_objava_brez_oznak_in_s_casovnim_zamikom():
     objava = _json("nika_publish_body.json")
     for polje in ("title", "blog_md", "linkedin_text", "first_comment"):
