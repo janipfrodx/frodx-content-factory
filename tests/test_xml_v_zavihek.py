@@ -98,3 +98,9 @@ def test_izbran_potrdi_v_zavihku_je_approve(tmp_path):
 def test_brez_argumentov_izpise_uporabo():
     izid = subprocess.run([sys.executable, str(SKRIPTA)], capture_output=True, text=True)
     assert izid.returncode == 1 and "Uporaba: xml_v_zavihek.py <izhod.md> <kos1.xml>" in izid.stdout
+
+
+def test_oblike_kot_izvoz_brez_ubezanja_zvezdice_in_podcrtaja(tmp_path):
+    izid, izhod = _pozeni(tmp_path, _beri("docs_oblike.xml"))
+    assert izid.returncode == 0, izid.stdout
+    assert izhod.read_bytes() == (FIKSNE / "docs_oblike.md").read_bytes()

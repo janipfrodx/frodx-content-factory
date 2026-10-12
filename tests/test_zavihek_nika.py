@@ -164,3 +164,8 @@ def test_prebran_nespremenjen_zavihek():
     assert iz.spremenjene_povedi(telo["story"]["linkedin_text"], izid["linkedin_text"]) == 0
     assert izid["odlocitev"]["decision"] is None
     assert len(izid["odprte"]) == 2
+
+
+def test_ubezana_navpicnica_v_celici():
+    md = _izpolni(z.zgradi(_telo()), komentar="ena \\| dve")
+    assert iz.preberi(md)["odlocitev"]["comment"] == "ena | dve"

@@ -223,6 +223,7 @@ def test_pregled_ime_zavihka_brez_povezave():
 
 def test_koraki_po_6_se_niso_zapisani():
     assert "Koraki 7-12 (naslovnica, objava) še niso zapisani" in _razdelek("Nadaljevanje")
+    assert "tek gre na korak 7" not in _razdelek("Nadaljevanje")
 
 
 def test_potrdi_osvezi_blog_pred_check():

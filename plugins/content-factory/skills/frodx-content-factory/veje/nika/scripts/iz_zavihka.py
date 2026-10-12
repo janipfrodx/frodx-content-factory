@@ -22,6 +22,7 @@ VREDNOSTI = {
 }
 POLJE = dict(zip(SPUSTNI, VREDNOSTI))
 POVED = re.compile(r"(?<=[.!?«])\s+")
+NAVPICNICA = re.compile(r"(?<!\\)\|")
 
 
 def _razdelki(md):
@@ -52,10 +53,13 @@ def _vrednost(celica):
 def _odlocitev(tabela):
     izid = {"decision": None, "judgment_answer": "", "reason": "", "comment": ""}
     for vrstica in tabela.splitlines():
-        celice = [c.strip() for c in vrstica.strip().strip("|").split("|")]
+        vrstica = vrstica.strip()
+        vrstica = vrstica[1:] if vrstica.startswith("|") else vrstica
+        vrstica = vrstica[:-1] if vrstica.endswith("|") and not vrstica.endswith("\\|") else vrstica
+        celice = [c.strip().replace("\\|", "|") for c in NAVPICNICA.split(vrstica)]
         if len(celice) < 2:
             continue
-        kljuc, odgovor = celice[0], _vrednost("|".join(celice[1:]))
+        kljuc, odgovor = celice[0], _vrednost(" | ".join(celice[1:]))
         if kljuc == KOMENTAR:
             izid["comment"] = odgovor
             continue

@@ -14,6 +14,8 @@ from pathlib import Path
 
 PREBERI_ZNOVA = "prepis XML se ne ujema z Docsom; preberi zavihek znova"
 ODREZAN = "zavihek ni prebran do konca; nadaljuj z read in next"
+# Izvoz Docsa ubeži še * in _ v besedilu; tu namenoma ne, ker bi ubežniki prišli v story in HubSpot.
+OZNAKE = {"bold": "**", "italic": "*", "code": "`"}
 
 
 def _bloki(kosi):
@@ -45,6 +47,8 @@ def _inline(el):
     for otrok in el:
         if otrok.tag == "hardBreak":
             deli.append("\\\n")
+        elif otrok.tag in OZNAKE:
+            deli.append(f"{OZNAKE[otrok.tag]}{_inline(otrok)}{OZNAKE[otrok.tag]}")
         elif otrok.tag == "link":
             deli.append(f"[{''.join(otrok.itertext())}]({otrok.get('href', '')})")
         else:
@@ -76,7 +80,7 @@ def _tabela(el):
     vrstice = []
     for i, vrstica in enumerate(el.findall("row")):
         celice = vrstica.findall("cell")
-        vrstice.append("| " + " | ".join(_odstavki(c) for c in celice) + " |")
+        vrstice.append("| " + " | ".join(_odstavki(c).replace("|", "\\|") for c in celice) + " |")
         if i == 0 and celice and all(c.get("header") == "true" for c in celice):
             vrstice.append("| " + " | ".join("---" for _ in celice) + " |")
     return "\n".join(vrstice)

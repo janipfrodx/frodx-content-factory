@@ -182,7 +182,7 @@ Sprožilci: »nadaljuj Niko«, »Nika je pregledala«, »Nika je potrdila«.
 4. Odločitev prazna: Nika še ni končala; povej Igorju in končaj.
 5. »Zavrni«: povej razlog in komentar. V zavihku »Pregled« nastavi stanje »zavrnjeno«. Z Igorjem predelaj zgodbo (korak 3 ali 4). Pred ponovno oddajo iz `state.json` izbriši `_run.nika_izvirnik` (da ga `iz_zavihka.py` ob naslednjem branju znova zapiše iz novega zavihka in se spremembe ne štejejo proti staremu izvirniku), osveži zavihek (tabela odločitve prazna) in ponovi »Oddaja Niki«, ki stanje v »Pregled« znova nastavi na »čaka Niko«; `cf-deliver-nika` vrne `resubmitted`, ker je vrstica še v `caka_niko`.
 6. »Potrdi«: najprej osveži datoteko bloga z `python3 veje/nika/scripts/besedilo.py izpis runs/<tek>/state.json sl > runs/<tek>/zgodba-blog.md`, nato `python3 veje/nika/vendor/nika-update-writer/scripts/check.py runs/<tek>/zgodba-blog.md --blog --prev runs/<tek>/prev` in preverba paketa v fazi `niki`. Odprta oznaka `[PREVERI` v besedilu ali kršitev ustavi tek; neodkljukane oznake iz `odprte` naštej Igorju.
-7. Gate: pokaži Nikine spremembe (število spremenjenih povedi in povedi same), njeno sodbo in komentar. Po Igorjevem da v zavihku »Pregled« nastavi stanje »potrjeno« in tek gre na korak 7.
+7. Gate: pokaži Nikine spremembe (število spremenjenih povedi in povedi same), njeno sodbo in komentar. Po Igorjevem da v zavihku »Pregled« nastavi stanje »potrjeno«; tek se tu konča, dokler koraki 7-12 niso zapisani.
 
 Koraki 7-12 (naslovnica, objava) še niso zapisani; po Igorjevem da pri koraku 6 tek tu konča in Igor počaka na naslednjo verzijo.
 
