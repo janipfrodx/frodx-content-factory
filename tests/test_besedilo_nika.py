@@ -40,3 +40,11 @@ def test_brez_naslova_je_napaka():
 def test_neznan_jezik():
     with pytest.raises(ValueError, match="sl, en, hr"):
         b.izpis(_stanje(), "de")
+
+
+def test_brez_argumentov_izpise_celo_uporabo():
+    import subprocess, sys
+    izid = subprocess.run([sys.executable, str(SKRIPTA)], capture_output=True, text=True)
+    assert izid.returncode == 1
+    assert "besedilo.py izpis <state.json> <sl|en|hr>" in izid.stdout
+    assert "besedilo.py vpis <state.json> <sl|en|hr> <datoteka>" in izid.stdout

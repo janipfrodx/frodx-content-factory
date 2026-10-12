@@ -139,7 +139,8 @@ def test_oznaka_preveri_brez_vrstice():
         "Pogoj sta snemanje s prepisom in Notetaker.",
         "Pogoj sta snemanje s prepisom in Notetaker [PREVERI: ali velja za Teams].",
     )
-    assert _ima(_krsitve(telo), "preveri", "[PREVERI", "korak 3")
+    assert _ima(_krsitve(telo), "preveri", "[PREVERI", "korak 3", "oddaja Niki")
+    assert not _ima(_krsitve(telo), "aplikacija")
 
 
 def test_run_v_telesu():

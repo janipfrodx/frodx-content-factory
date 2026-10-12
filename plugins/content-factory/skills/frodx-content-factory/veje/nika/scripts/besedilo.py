@@ -38,7 +38,7 @@ def vpis(stanje, jezik, besedilo):
 
 def main(argv):
     if len(argv) < 4 or argv[1] not in ("izpis", "vpis") or (argv[1] == "vpis" and len(argv) != 5):
-        print(__doc__.strip().splitlines()[2])
+        print("\n".join(__doc__.strip().splitlines()[2:5]))
         return 1
     pot = Path(argv[2])
     stanje = json.loads(pot.read_text(encoding="utf-8"))

@@ -267,7 +267,7 @@ def preveri(telo, faza="niki", rubrika=rubrika_iz_taksonomije):
         seznam = []
     oznake = len({o for _, niz in _nizi(zgodba) for o in OZNAKA.findall(niz)})
     if oznake > len(seznam):
-        krsitve.append(f"preveri: v besedilu je {oznake} oznak [PREVERI, v seznamu {len(seznam)}; aplikacija zaklene Potrdi po seznamu (korak 3)")
+        krsitve.append(f"preveri: v besedilu je {oznake} oznak [PREVERI, v seznamu {len(seznam)}; brez vrstice v seznamu se oddaja Niki ustavi (korak 3)")
 
     for kljuc in ("warnings", "formulas"):
         if not isinstance(telo.get(kljuc), list):
