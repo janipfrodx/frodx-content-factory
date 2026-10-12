@@ -119,3 +119,37 @@ def test_cli_vpise_v_state(tmp_path):
     assert "Pogoj je Notetaker." in novo["story"]["blog_md"]
     assert novo["_run"]["nika_pregled"]["spremenjene_povedi"] == 1
     assert novo["_run"]["nika_pregled"]["decision"] == "approve"
+
+
+def test_ponovno_branje_ohrani_izvirnik_in_stevilo_sprememb(tmp_path):
+    import subprocess, sys
+    telo = _telo()
+    stanje = tmp_path / "state.json"
+    stanje.write_text(json.dumps(telo, ensure_ascii=False), encoding="utf-8")
+    zav = tmp_path / "zavihek.md"
+    zav.write_text(_izpolni(z.zgradi(telo)).replace("Pogoj sta snemanje s prepisom in Notetaker.", "Pogoj je Notetaker."), encoding="utf-8")
+    for _ in range(2):
+        izid = subprocess.run([sys.executable, str(SKRIPTE / "iz_zavihka.py"), str(zav), str(stanje)], capture_output=True, text=True)
+        assert izid.returncode == 0, izid.stdout
+        novo = json.loads(stanje.read_text(encoding="utf-8"))
+        assert novo["_run"]["nika_pregled"]["spremenjene_povedi"] == 1
+        assert novo["_run"]["nika_izvirnik"] == {"blog_md": telo["story"]["blog_md"], "linkedin_text": telo["story"]["linkedin_text"]}
+    assert "Pogoj je Notetaker." in novo["story"]["blog_md"]
+
+
+@pytest.mark.parametrize("vrstica", ["* [ ] foo", "- \\[ \\] foo", "foo"])
+def test_neprepoznana_oznaka_preveri_je_napaka(vrstica):
+    md = _izpolni(z.zgradi(_telo())).replace("- [ ] Potrditev", f"{vrstica}\n- [ ] Potrditev", 1)
+    with pytest.raises(ValueError, match="Odprte oznake PREVERI"):
+        iz.preberi(md)
+
+
+def test_placeholder_brez_oznak_je_dovoljen():
+    telo = _telo()
+    telo["preveri"] = []
+    assert iz.preberi(_izpolni(z.zgradi(telo)))["odprte"] == []
+
+
+def test_odkljukana_velika_x_je_sprejeta():
+    md = _izpolni(z.zgradi(_telo())).replace("- [ ] Potrditev", "- [X] Potrditev", 1)
+    assert len(iz.preberi(md)["odprte"]) == len(_telo()["preveri"]) - 1

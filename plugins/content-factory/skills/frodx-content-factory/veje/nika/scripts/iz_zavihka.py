@@ -79,6 +79,23 @@ def spremenjene_povedi(staro, novo):
     return max(len(nove - stare), len(stare - nove))
 
 
+OZNAKA_ODPRTA = "- [ ] "
+OZNAKE_ZAKLJUCENE = ("- [x] ", "- [X] ")
+BREZ_OZNAK = "Ni odprtih oznak."
+
+
+def _odprte(razdelek):
+    odprte = []
+    for vrstica in razdelek.splitlines():
+        if not vrstica.strip() or vrstica.strip() == BREZ_OZNAK:
+            continue
+        if vrstica.startswith(OZNAKA_ODPRTA):
+            odprte.append(vrstica[len(OZNAKA_ODPRTA):])
+        elif not vrstica.startswith(OZNAKE_ZAKLJUCENE):
+            raise ValueError(f"v razdelku »{RAZDELKI[1]}« je vrstica, ki ni oznaka (- [ ] ali - [x]): »{vrstica}«")
+    return odprte
+
+
 def preberi(md):
     naslov, r = _razdelki(md)
     return {
@@ -86,7 +103,7 @@ def preberi(md):
         "blog_md": f"# {naslov}\n\n{r['Zgodba za blog']}",
         "linkedin_text": r["LinkedIn"],
         "odlocitev": _odlocitev(r["Nikina odločitev"]),
-        "odprte": [v[6:] for v in r["Odprte oznake PREVERI"].splitlines() if v.startswith("- [ ] ")],
+        "odprte": _odprte(r[RAZDELKI[1]]),
     }
 
 
@@ -106,9 +123,12 @@ def main(argv):
         print(json.dumps({"decision": None, "odprte": izid["odprte"]}, ensure_ascii=False))
         return 0
     zgodba = stanje["story"]
-    spremembe = spremenjene_povedi(zgodba["blog_md"], izid["blog_md"]) + spremenjene_povedi(zgodba["linkedin_text"], izid["linkedin_text"])
+    tek = stanje.setdefault("_run", {})
+    # Izvirnik se shrani ob prvem zapisu; ponovno branje isti zavihek primerja z njim, ne z že predelanim besedilom.
+    izvirnik = tek.setdefault("nika_izvirnik", {"blog_md": zgodba["blog_md"], "linkedin_text": zgodba["linkedin_text"]})
+    spremembe = spremenjene_povedi(izvirnik["blog_md"], izid["blog_md"]) + spremenjene_povedi(izvirnik["linkedin_text"], izid["linkedin_text"])
     zgodba.update(title=izid["title"], blog_md=izid["blog_md"], linkedin_text=izid["linkedin_text"])
-    stanje.setdefault("_run", {})["nika_pregled"] = {**izid["odlocitev"], "spremenjene_povedi": spremembe, "odprte": izid["odprte"]}
+    tek["nika_pregled"] = {**izid["odlocitev"], "spremenjene_povedi": spremembe, "odprte": izid["odprte"]}
     pot.write_text(json.dumps(stanje, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(stanje["_run"]["nika_pregled"], ensure_ascii=False))
     return 0
