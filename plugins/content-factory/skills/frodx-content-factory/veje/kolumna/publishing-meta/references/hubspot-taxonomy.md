@@ -68,14 +68,14 @@ Kampanje in GUID-i: n8n `Extract Campaign GUID`. Tagi: `src/lib/tag-mapping.ts` 
 
 ## Rubrika HubSpot z Niko
 
-Samo za vejo `nika`. Kolumna teh vrstic ne bere (`taxonomy.py` bere samo vrstice z `Interest - `). Vrednosti vpiše Jani, ko oznake in kampanja v HubSpotu obstajajo; do takrat so prazne in preverba objave Nikine zgodbe pade.
+Samo za vejo `nika`. Kolumna teh vrstic ne bere (`taxonomy.py` bere samo vrstice z `Interest - `). Vrednosti so prebrane iz HubSpota 12. 10. 2026. Prazna vrednost pomeni, da preverba objave Nikine zgodbe pade.
 
 | veja | kaj | campaign_name | hubspot_campaign_guid |
 |---|---|---|---|
-| nika | kampanja |  |  |
+| nika | kampanja | Interest - HubSpot z Niko | b5d08d63-9aa1-497f-b4c0-5151a6de2239 |
 
 | veja | lang | tag_id | tag_name | tag_slug |
 |---|---|---|---|---|
-| nika | sl |  | HubSpot z Niko |  |
-| nika | hr |  | HubSpot s Nikom |  |
-| nika | en |  | HubSpot with Nika |  |
+| nika | sl | 224193873422 | HubSpot z Niko | hubspot-z-niko |
+| nika | hr | 224193873443 | HubSpot s Nikom | hubspot-s-nikom |
+| nika | en | 224203304723 | HubSpot with Nika | hubspot-with-nika |
