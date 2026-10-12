@@ -33,7 +33,7 @@ Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (
 
 ## Koraki
 
-Gate je pri korakih 1-4, 6 in 7; korak 5 teče brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
+Gate je pri korakih 1-4 in 6-8; korak 5 teče brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
 
 ```bash
 python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
@@ -48,6 +48,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 | 5 Oddaja Niki | Zavihek v Docu in `cf-deliver-nika`, razdelek »Oddaja Niki« | brez vprašanja, Igorju poveš izid |
 | 6 Nadaljevanje | Razdelek »Nadaljevanje« | **da**: Nikine spremembe in odločitev |
 | 7 Transkreacija | razdelek »Transkreacija« | **da**: EN in HR (+ ocena audita za oba jezika) |
+| 8 Meta | `python3 veje/nika/scripts/meta.py runs/<tek>/state.json` | **da**: kampanja, oznake, naslovnice, naslovi in meta opisi v treh jezikih |
 
 ### Korak 1
 
@@ -82,6 +83,13 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 - Presoja, ki je ne pokrije nobeno načelo in je Igor ne poda, ima `origin: skill`. Dilemo zapiši kot vprašanje za Niko v `preveri`, ne kot njeno odločitev.
 - Vsaka oznaka `[PREVERI: ...]` v besedilu ima svojo vrstico v `preveri`. Odprta oznaka ustavi korak 6.
 - Besedilo nima vrstice `---`, ker bi `check.py` preveril samo del za njo.
+
+### Korak 8
+
+- Skripta vpiše `meta` (kampanja, oznake, naslovnice z URL-ji in alt teksti) iz razdelka »Rubrika HubSpot z Niko« v `veje/kolumna/publishing-meta/references/hubspot-taxonomy.md` in iz `veje/nika/assets/naslovnice.json`.
+- `MANJKA` pomeni človekov korak (H2 oznake, H3 kampanja, H4 naslovnice): povej ga Igorju in ne nadaljuj. Vrednosti ne izmišljaš.
+- Pillar povezav Nikina zgodba nima.
+- Gate: Igor pregleda kampanjo, oznake in naslovnice ter naslove in meta opise v SL, HR in EN.
 
 ## Pisec in preslikava
 

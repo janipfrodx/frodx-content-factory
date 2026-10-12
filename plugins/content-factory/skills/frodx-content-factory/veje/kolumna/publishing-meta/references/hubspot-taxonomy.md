@@ -65,3 +65,17 @@ Te kombinacije danes taga nimajo. Objava v tem jeziku bo brez taga.
 ## Izvor podatkov
 
 Kampanje in GUID-i: n8n `Extract Campaign GUID`. Tagi: `src/lib/tag-mapping.ts` v aplikaciji `frodx-content-app`. Kampanje so bile v HubSpotu preimenovane iz `Blog -` v `Interest -`; `campaign-mapping.ts` in `tag-mapping.ts` sta usklajena na `Interest -` 16. 9. 2026, potrjeno tudi na strani `PROD 2`: izvedba 191132 (27. 8. 2026) je vozlišče `Extract Campaign GUID` uspešno razrešilo GUID za `campaign_name` "Interest - Programi zvestobe" (bdeff9f6-7f4a-4f7d-8d54-b8590f94b203, ujema se s to tabelo).
+
+## Rubrika HubSpot z Niko
+
+Samo za vejo `nika`. Kolumna teh vrstic ne bere (`taxonomy.py` bere samo vrstice z `Interest - `). Vrednosti vpiše Jani, ko oznake in kampanja v HubSpotu obstajajo; do takrat so prazne in preverba objave Nikine zgodbe pade.
+
+| veja | kaj | campaign_name | hubspot_campaign_guid |
+|---|---|---|---|
+| nika | kampanja |  |  |
+
+| veja | lang | tag_id | tag_name | tag_slug |
+|---|---|---|---|---|
+| nika | sl |  | HubSpot z Niko |  |
+| nika | hr |  | HubSpot s Nikom |  |
+| nika | en |  | HubSpot with Nika |  |
