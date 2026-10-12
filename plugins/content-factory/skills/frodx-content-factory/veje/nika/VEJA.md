@@ -10,7 +10,7 @@ Pisec je `vendor/nika-update-writer/SKILL.md` (Igorjev `nika-update-writer` v1.1
 
 Igor hoče novo Nikino zgodbo o HubSpot novosti. Vejo prepoznaš po pomenu, ne po točni frazi. Primeri: »nova Nikina zgodba«, »HubSpot novost za Niko«, »tedenski update za Niko«, »prišel je HubSpot mail z novostmi«, ali Igor prilepi novost iz HubSpot maila.
 
-Korak 6 se sproži z »nadaljuj Niko«, »Nika je pregledala« ali »Nika je potrdila« (razdelek »Nadaljevanje«).
+Korak 6 se sproži z »nadaljuj Niko«, »Nika je pregledala« ali »Nika je potrdila« (razdelek »Nadaljevanje«). Isti sprožilci v novem chatu nadaljujejo tudi tek, ki ima osnutke v HubSpotu (korak 11).
 
 Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (veja novičnik).
 
@@ -125,7 +125,7 @@ Pisčev predlog seznama pogovorov, kjer je zgodba uporabna, gre v pogovor, ne v 
 ## Skupni koraki
 
 - `frodx-critique-loop` teče v koraku 4, vhod je v njegovem razdelku »Vhod po veji« (Nika).
-- `frodx-transcreation` in `frodx-transcreation-check` tečeta v koraku 7 (faza B).
+- `frodx-transcreation` in `frodx-transcreation-check` tečeta v koraku 7 (razdelek »Transkreacija«).
 - `frodx-image-run` ne teče: naslovnice so fiksne (`assets/`).
 - `frodx-publish-send` ne teče: oddaja Niki in objava sta v razdelkih »Oddaja Niki« in »Objava«.
 - Kritika popravljeno besedilo vpiše z `python3 veje/nika/scripts/besedilo.py vpis <state.json> sl <datoteka>`.
@@ -143,7 +143,7 @@ Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava); njegovo telo j
 - `source` z `kb_urls` na `knowledge.hubspot.com` ali `hubspot.com`; dejavnost iz `vertikale.md`; izvor presoje;
 - kategorijo vsake trditve ter URL in navedek vsake nove; da ima vsaka oznaka `[PREVERI` vrstico v `preveri`;
 - `check.py --blog` brez napake; da v besedilu ni vrstice `---` in ni dolgega pomišljaja; da paket ne nosi `_run`;
-- faza `objava` še: prevodi EN in HR (`languages`), meta podatki (kampanja, oznake, naslovnice) proti `hubspot-taxonomy.md` in urnik objave (`schedule`).
+- faza `objava` še: prevodi EN in HR (`languages`), meta podatki (kampanja, oznake, naslovnice) proti `hubspot-taxonomy.md` in urnik objave (`schedule`; zamik `publish_at` mora biti zamik `Europe/Ljubljana` na tisti dan, poleti +02:00, pozimi +01:00).
 
 `--telo` zapiše telo za oddajo samo, kadar kršitev ni. Ocena pod 9,0 je opozorilo. Vsaka kršitev pove pristojni korak.
 
@@ -175,7 +175,7 @@ Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava); njegovo telo j
    }
    ```
 
-   `doc_url` je povezava na Doc »Nikine zgodbe« iz koraka 3, `tab_id` (`_run.tab_id`) je id zavihka, `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, run_slug}`. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in oddaje ne javi kot uspešne.
+   `doc_url` je povezava na Doc »Nikine zgodbe« iz koraka 3, `tab_id` (`_run.tab_id`) je id zavihka, `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. `execute_workflow` vrne samo `executionId`. Počakaj, da se izvedba konča: `get_workflow_execution` z `includeData: false` kliči, dokler `status` ni `success` ali `error`; šele nato prebereš izid. Dokler prejšnja izvedba teče, `cf-deliver-nika` ne kličeš znova. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, run_slug}`. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in oddaje ne javi kot uspešne.
 5. Igorju povej izid: `created` ali `resubmitted` - Nika je dobila sporočilo v Teams kanalu; `notify_failed` - daj mu povezavo na zavihek, da jo pošlje sam; `duplicate` - zgodba je že čez Nikin pregled; `rejected` - povej `sporocilo`.
 6. Igorju povej, da nadaljuje, ko Nika napiše v kanal: »nadaljuj Niko«.
 
@@ -185,7 +185,9 @@ Med Nikinim pregledom v zavihek ne pišeš.
 
 Sprožilci: »nadaljuj Niko«, »Nika je pregledala«, »Nika je potrdila«.
 
-1. Če chat nima teka: `get_data_table_rows` na `CF-Teki` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"caka_niko"}]}`; vprašaj, katero vrstico. Ustvari `runs/<run_slug>/state.json` = `paket_json` izbrane vrstice + `"_run": {"veja": "nika", "slug": "<run_slug>", "step": 6, "status": "in_progress", "approvals": {}, "open_tasks": [], "skill_versions": {}}`. `_run.tab_id` vzemi iz stolpca `tab_id` iste vrstice. `init_run.py` se tu ne kliče (naredi slug z današnjim datumom).
+1. Če chat nima teka: `get_data_table_rows` na `CF-Teki` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"caka_niko"}]}` in še enkrat z istima `dataTableId` in `projectId` ter `filter: {"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"osnutek"}]}`. Naštej vrstice obeh stanj in vprašaj, katero. Vrstica v stanju `razporejeno` je končana: če jo Igor omeni, mu povej `publish_at` in `linkedin_date` iz vrstice in ne nadaljuj. `init_run.py` se tu ne kliče (naredi slug z današnjim datumom). `_run.tab_id` vzemi iz stolpca `tab_id` izbrane vrstice.
+   - `caka_niko`: ustvari `runs/<run_slug>/state.json` = `paket_json` izbrane vrstice + `"_run": {"veja": "nika", "slug": "<run_slug>", "step": 6, "status": "in_progress", "approvals": {}, "open_tasks": [], "skill_versions": {}}` in nadaljuj s točko 2.
+   - `osnutek`: osnutki v HubSpotu že obstajajo, `paket_json` je paket za objavo iz koraka 10. Ustvari `runs/<run_slug>/state.json` = `paket_json` + `"_run": {"veja": "nika", "slug": "<run_slug>", "step": 11, "status": "in_progress", "approvals": {}, "open_tasks": [], "skill_versions": {}}`. `_run.hubspot_posts` sestavi iz stolpca `hubspot_post_ids` (`{sl, en, hr}`): za vsak jezik `id`, `editor_url` `https://app.hubspot.com/blog/4964185/editor/<id>/content` in `url` (`blog_url_sl`, `blog_url_en`, za HR prazen). `story.linkedin_text` nastavi na `li_sl_text`, `languages.en.linkedin_text` na `li_en_text`. Nadaljuj s korakom 11 (razdelek »Objava«); točke 2-7 tega razdelka odpadejo.
 2. Preberi zavihek prek Claude Docs konektorja. Zavihek je `_run.tab_id`; če `_run` ni na voljo, ga vzemi iz stolpca `tab_id` vrstice `CF-Teki` za ta `run_slug`: `get_data_table_rows` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"run_slug","value":"<run_slug>"}]}`.
    - `read` s `container {"kind":"project","id":"f307990d-76ae-4e30-b9b2-9635fc39d412"}` in `ref {"object":"file","id":"<_run.tab_id>"}` vrne vozlišče telesa. Nato znova `read` z `ref {"object":"node","id":"<id iz content.id>"}`, brez payloada.
    - `xml` iz odgovora zapiši **dobesedno** v `runs/<tek>/zavihek.xml`. Če ima odgovor `next`, nadaljuj z `read` in payloadom `{"kind":"view", ...next}`; vsak naslednji kos shrani kot `zavihek-2.xml`, `zavihek-3.xml` in tako naprej.
@@ -211,7 +213,7 @@ Po pravilih veje kolumna, razdelek »Skupni koraki« (`veje/kolumna/VEJA.md`), z
 
 Po koraku 8. `state.json` ima vse tri jezike in `meta`; HubSpot osnutke in razpored naredi `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`). Workflow ne objavljaš in ga ne aktiviraš: kličeš ga samo z `execute_workflow`.
 
-9. Vprašaj Igorja za datum in uro bloga ter dan LinkedIna (ena objava na Nikin profil, ena na stran FrodX, obe ob 7.30). LinkedIn ne sme pred blogom; na dan bloga mora biti blog do 7.30. Zapiši `schedule.publish_at` (ISO z zamikom, `Europe/Ljubljana`) in `schedule.linkedin_date`.
+9. Vprašaj Igorja za datum in uro bloga ter dan LinkedIna (ena objava na Nikin profil, ena na stran FrodX, obe ob 7.30). LinkedIn ne sme pred blogom; na dan bloga mora biti blog do 7.30. Zapiši `schedule.publish_at` (ISO z zamikom `Europe/Ljubljana` na tisti dan: poleti +02:00, pozimi +01:00) in `schedule.linkedin_date`.
 10. `python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava --telo outbox/<run_slug>.json`; kršitev ustavi tek. Nato `execute_workflow` na `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`) z `{mode: "pripravi", run_slug, paket_json}`, po istem vzorcu kot pri »Oddaja Niki«:
 
    ```json
@@ -232,9 +234,20 @@ Po koraku 8. `state.json` ima vse tri jezike in `meta`; HubSpot osnutke in razpo
    }
    ```
 
-   `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, posts}`, kjer je `posts` `{sl, en, hr}` z `id`, `editor_url` in `url` za vsak jezik. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in izida ne javi kot uspešnega. `created`: osnutki so narejeni. `exists`: osnutki že obstajajo, `posts` so isti kot prvič, uporabi jih. `rejected`: povej `sporocilo` in ne nadaljuj. Ob `created` in `exists` vrnjeni `posts` zapiši v `_run.hubspot_posts` v `state.json`, da jih lahko uporabiš znova (`pripravi` jih ob ponovnem klicu vrne kot `exists`).
-11. Eno pojavno vprašanje z zavihkom na jezik (SL, HR, EN); v vsakem `editor_url` in izbira »Da, razporedi« / »Ne, treba je popraviti«. Ob »Ne« Igor pove, kaj; popraviš prek HubSpot konektorja: najprej `GET_POST`, `<div id="ifb-feedback-...">` ostane nespremenjen, en `UPDATE` naenkrat, isti popravek vpišeš v paket (`besedilo.py vpis`). Vprašanje ponoviš za vse jezike. Nič se ne razporedi, dokler niso vsi trije »Da«. Če konektor nima pravice, Igor popravi v urejevalniku in reče »popravljeno«.
-12. `execute_workflow` na `cf-nika-publish` z istim vzorcem kot v koraku 10 in telesom `{mode: "razporedi", run_slug, li_sl_text: story.linkedin_text, li_en_text: languages.en.linkedin_text}` (končni besedili po morebitnih popravkih); `workflowId`, `executionMode`, `triggerNodeName` in `method` so isti, izid se bere iz vozlišča `Izid` z `{izid, sporocilo}`. `scheduled`: povej Igorju datum bloga in dan LinkedIna in v zavihku »Pregled« nastavi stanje »razporejeno«. `exists`: razpored že obstaja, povej in stanje v »Pregled« nastavi na »razporejeno«. `schedule_failed`: povej sporočilo HubSpota; vrstica ostane `osnutek`, Igor ponovi. `rejected`: povej `sporocilo`. LinkedIn objavi `cf-nika-linkedin` ob 7.30 sam.
+   `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. `execute_workflow` vrne samo `executionId`. Počakaj, da se izvedba konča: `get_workflow_execution` z `includeData: false` kliči, dokler `status` ni `success` ali `error`; šele nato prebereš izid. Dokler prejšnja izvedba za isti `run_slug` teče, `pripravi` in `razporedi` ne kličeš znova. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, posts}`, kjer je `posts` `{sl, en, hr}` z `id`, `editor_url` in `url` za vsak jezik. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in izida ne javi kot uspešnega. `created`: osnutki so narejeni. `exists`: osnutki že obstajajo, `posts` so isti kot prvič, uporabi jih. `rejected`: povej `sporocilo` in ne nadaljuj; sporočilo »prejšnji pripravi za ta tek še teče ali je padel« pomeni, da mora Jani preveriti osnutke v HubSpotu in izprazniti `hubspot_post_ids`, preden ponoviš. Ob `created` in `exists` vrnjeni `posts` zapiši v `_run.hubspot_posts` v `state.json`, da jih lahko uporabiš znova (`pripravi` jih ob ponovnem klicu vrne kot `exists`).
+11. Eno pojavno vprašanje z zavihkom na jezik (SL, HR, EN); v vsakem `editor_url` in izbira »Da, razporedi« / »Ne, treba je popraviti«. V zavihku SL je še LinkedIn objava `story.linkedin_text`, v zavihku EN `languages.en.linkedin_text`, dobesedno, kot ju v koraku 12 dobi n8n; v vprašanju je tudi urnik (`schedule.publish_at`, `schedule.linkedin_date`). Ob »Ne« Igor pove, kaj; popraviš:
+    - blog prek HubSpot konektorja: najprej `GET_POST`, `<div id="ifb-feedback-...">` ostane nespremenjen, en `UPDATE` naenkrat, isti popravek vpišeš v paket (`besedilo.py vpis`). Če konektor nima pravice, Igor popravi v urejevalniku in reče »popravljeno«.
+    - LinkedIn objavo neposredno v `story.linkedin_text` oziroma `languages.en.linkedin_text` v `state.json` (`besedilo.py` piše samo `blog_md`); ostati mora kratka objava.
+    - datum: posodobi `schedule` v `state.json` po pravilih koraka 9. Datum v InstantFeedback widgetu v telesu objave ostane tisti iz koraka 10 (kozmetično).
+
+    Po vsakem popravku znova poženi `python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava --telo outbox/<run_slug>.json` (preveri tudi kratko objavo in urnik); kršitev popraviš, preden greš naprej. Vprašanje ponoviš za vse jezike. Nič se ne razporedi, dokler niso vsi trije »Da«.
+12. `execute_workflow` na `cf-nika-publish` z istim vzorcem kot v koraku 10 in telesom `{mode: "razporedi", run_slug, li_sl_text: story.linkedin_text, li_en_text: languages.en.linkedin_text, publish_at: schedule.publish_at, linkedin_date: schedule.linkedin_date}` (končne vrednosti iz `state.json` po morebitnih popravkih v koraku 11); `workflowId`, `executionMode`, `triggerNodeName` in `method` so isti. Počakaj, da se izvedba konča: `get_workflow_execution` z `includeData: false` kliči, dokler `status` ni `success` ali `error`; šele nato prebereš izid. Dokler prejšnja izvedba za isti `run_slug` teče, `razporedi` ne kličeš znova. Izid se bere iz vozlišča `Izid` z `{izid, sporocilo}` (`includeData: true`, `nodeNames: ["Izid"]`). Workflow datuma preveri po istih pravilih kot preverba paketa, ju zapiše v `CF-Teki` in razporedi z njima.
+    - `scheduled`: povej Igorju datum bloga in dan LinkedIna in v zavihku »Pregled« nastavi stanje »razporejeno«.
+    - `exists`: razpored že obstaja, povej in stanje v »Pregled« nastavi na »razporejeno«.
+    - `schedule_failed`: povej sporočilo HubSpota; vrstica ostane `osnutek`, Igor ponovi.
+    - `rejected`: povej `sporocilo`. Če sporočilo pravi, da je HubSpot razpored uspel, vrstica v CF-Teki pa ni posodobljena, `razporedi` ne ponavljaš (ni preverjeno, kako HubSpot sprejme ponovni razpored že razporejene objave): povej Igorju, da je blog razporejen, LinkedIn pa ne bo objavljen, dokler Jani v `CF-Teki` ne nastavi vrstice na `razporejeno` z `li_sl_text`, `li_en_text` in `li_sl_status`/`li_en_status` `scheduled`. Če pravi, da `publish_at` ni več v prihodnosti, z Igorjem izberi nov datum po koraku 9, znova poženi preverbo v fazi `objava` in ponovi `razporedi`.
+
+    LinkedIn objavi `cf-nika-linkedin` ob 7.30 sam.
 
 ## Posebnosti
 
@@ -243,4 +256,4 @@ Po koraku 8. `state.json` ima vse tri jezike in `meta`; HubSpot osnutke in razpo
 - Številk ne izmišljaš: številka iz vira ima povezavo, ilustrativna je označena kot primer.
 - Nika ne piše vnosa in ne dobi obrazca. Pisčevega `references/obrazec.md` ne uporabljaš.
 - `nacela.md` in `glas.md` sta Igorjeva (vendor) in se ne urejata. Nikini odgovori prideta vanju skozi Igorjev vir.
-- Obstojni točki sta zavihek (besedilo) in `CF-Teki` (paket ob oddaji).
+- Obstojne točke so zavihek (besedilo), `CF-Teki` ob oddaji Niki (paket) in `CF-Teki` po koraku 10 (paket za objavo, ID-ji osnutkov, LinkedIn besedili). Od obeh točk v `CF-Teki` se tek nadaljuje v novem chatu (razdelek »Nadaljevanje«).

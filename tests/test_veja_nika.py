@@ -275,3 +275,71 @@ def test_objava_koraki_9_do_12():
         assert niz in objava, niz
     for n in (9, 11):
         assert "**da**" in _vrstica_koraka(n), n
+
+
+def _korak_objave(n):
+    return _razdelek("Objava").split(f"\n{n}. ")[1].split(f"\n{n + 1}. ")[0]
+
+
+def _caka_konec(besedilo):
+    for niz in ("Počakaj, da se izvedba konča", "`includeData: false`", "`status`", "`success`", "`error`"):
+        assert niz in besedilo, niz
+
+
+def test_izid_sele_po_koncu_izvedbe():
+    for n in (10, 12):
+        korak = _korak_objave(n)
+        _caka_konec(korak)
+        assert korak.index("Počakaj, da se izvedba konča") < korak.index('nodeNames: ["Izid"]'), n
+    assert "Dokler prejšnja izvedba za isti `run_slug` teče" in _korak_objave(10)
+    oddaja = _razdelek("Oddaja Niki").split("\n4. ")[1].split("\n5. ")[0]
+    _caka_konec(oddaja)
+
+
+def test_korak_10_zapise_hubspot_posts():
+    assert "`_run.hubspot_posts`" in _korak_objave(10)
+
+
+def test_nadaljevanje_po_osnutkih():
+    korak1 = _razdelek("Nadaljevanje").split("\n1. ")[1].split("\n2. ")[0]
+    for niz in ('{"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"osnutek"}]}',
+                "`razporejeno`", "`hubspot_post_ids`", "`_run.hubspot_posts`",
+                "https://app.hubspot.com/blog/4964185/editor/<id>/content", "`li_sl_text`", "`li_en_text`",
+                '"step": 11', "korakom 11"):
+        assert niz in korak1, niz
+
+
+def test_razporedi_z_novim_datumom():
+    korak11 = _korak_objave(11)
+    korak12 = _korak_objave(12)
+    assert "`schedule`" in korak11 and "--faza objava" in korak11
+    assert "InstantFeedback" in korak11
+    for niz in ("publish_at: schedule.publish_at", "linkedin_date: schedule.linkedin_date", "razporejeno"):
+        assert niz in korak12, niz
+
+
+def test_razporedi_vrstica_ni_posodobljena():
+    korak12 = _korak_objave(12)
+    assert "vrstica v CF-Teki pa ni posodobljena" in korak12
+    assert "Jani" in korak12
+
+
+def test_korak_11_pokaze_linkedin_besedili():
+    korak11 = _korak_objave(11)
+    for niz in ("`story.linkedin_text`", "`languages.en.linkedin_text`", "kratka objava"):
+        assert niz in korak11, niz
+
+
+def test_meta_vodi_na_korak_9():
+    assert "gre tek na korak 9" in _razdelek("Koraki").split("### Korak 8")[1]
+
+
+def test_brez_razvojnega_zargona():
+    assert "faza B" not in VEJA.read_text(encoding="utf-8")
+
+
+def test_obstojne_tocke_vkljucijo_osnutke():
+    assert "po koraku 10" in _razdelek("Posebnosti")
+    vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
+    assert "`stanje = osnutek`" in vsebina
+    assert "osnutki v HubSpotu (korak 10;" in vsebina

@@ -1,6 +1,6 @@
 ---
 name: frodx-content-factory
-description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor pastes becomes Nika's weekly story for the blog and LinkedIn, goes through the critique loop and Nika's review in a Claude Doc, and resumes after her review. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "nadaljuj Niko", "Nika je pregledala", "Nika je potrdila", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
+description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor pastes becomes Nika's weekly story, passes critique and her review in a Claude Doc, then is translated and scheduled on the HubSpot blog and LinkedIn. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "nadaljuj Niko", "Nika je pregledala", "Nika je potrdila", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
   version: 0.6.0
 ---
@@ -47,9 +47,9 @@ Vrstni red ni kozmetičen. V teku 14. 9. 2026 so se `social_posts[]` izgubili, k
 
 **Mapa teka ne preživi seje - preverjeno 14.-15. 8. 2026.** V Cowork seji je CWD `/home/claude`, kar je efemerni oblačni vsebnik: `runs/` in `outbox/` nastaneta tam in umreta skupaj s sejo. Kar iz tega sledi za tvoje delo:
 
-- **Tek naj steče v eni seji.** Razdelek »Nadaljevanje prekinjenega teka« spodaj deluje samo znotraj iste seje, razen veje Nika: nadaljuje se v novem chatu prek `CF-Teki` in zavihka v Docu.
+- **Tek naj steče v eni seji.** Razdelek »Nadaljevanje prekinjenega teka« spodaj deluje samo znotraj iste seje, razen veje Nika: nadaljuje se v novem chatu prek `CF-Teki` in zavihka v Docu (po oddaji Niki) ali prek `CF-Teki` (po osnutkih v HubSpotu).
 - **Ob vsakem gate-u pokaži Igorju vsebino, ne samo poti.** Besedilo, alt tekste in meta podatke izpiši v pogovor - pogovor preživi, mapa ne. Če je seja prekinjena, je transkript edini vir, iz katerega je mogoče tek obnoviti.
-- **Edina obstojna točka je oddaja**, zadnji korak veje, ko paket odide v aplikacijo. Do takrat obstaja tek samo v tej seji. Pri veji Nika je oddaja Niki (korak 5) taka točka: paket je v `CF-Teki`, besedilo v zavihku Doca.
+- **Edina obstojna točka je oddaja**, zadnji korak veje, ko paket odide v aplikacijo. Do takrat obstaja tek samo v tej seji. Veja Nika ima dve taki točki: oddaja Niki (korak 5; paket v `CF-Teki`, besedilo v zavihku Doca) in osnutki v HubSpotu (korak 10; paket za objavo, ID-ji osnutkov in LinkedIn besedili v `CF-Teki`).
 - Če tek prekineš sredi poti, to Igorju povej kot dejstvo: »mapa teka je izgubljena, imamo pa besedilo v pogovoru«. Ne trdi, da se tek nadaljuje kasneje, če se ne more.
 
 Obstojna rešitev (sinhronizacija mape teka na SharePoint prek n8n) je odprta točka, ne del tega skilla.
@@ -66,7 +66,7 @@ Tek mora v eni seji priti do oddaje. V teku novičnika 1. 10. 2026 je kontekst z
 
 ## Nadaljevanje prekinjenega teka
 
-Če Igor reče »nadaljuj <naslov>«, poišči `runs/*-<slug>/state.json`, preberi `_run.veja` in `_run.step`, odpri `veje/<_run.veja>/VEJA.md` in nadaljuj z naslednjim korakom. Za vejo Nika v novem chatu (mape teka ni) tek najdeš prek `CF-Teki` (vrstica z `run_slug`, `veja = nika`, `stanje = caka_niko`) in zavihka v Docu, kot piše razdelek »Nadaljevanje« v `veje/nika/VEJA.md`. Ne ponavljaj korakov, ki so že opravljeni, razen če Igor to izrecno zahteva.
+Če Igor reče »nadaljuj <naslov>«, poišči `runs/*-<slug>/state.json`, preberi `_run.veja` in `_run.step`, odpri `veje/<_run.veja>/VEJA.md` in nadaljuj z naslednjim korakom. Za vejo Nika v novem chatu (mape teka ni) tek najdeš prek `CF-Teki` (vrstica z `run_slug`, `veja = nika` in `stanje = caka_niko` ali `stanje = osnutek`) in, pred osnutki, zavihka v Docu, kot piše razdelek »Nadaljevanje« v `veje/nika/VEJA.md`. Ne ponavljaj korakov, ki so že opravljeni, razen če Igor to izrecno zahteva.
 
 Če `_run.veja` manjka, je tek nastal pred deblom in je kolumna.
 
