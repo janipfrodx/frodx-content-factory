@@ -24,6 +24,7 @@ import sys
 import tempfile
 from pathlib import Path
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 PISEC = Path(__file__).resolve().parents[1] / "vendor" / "nika-update-writer"
 CHECK = PISEC / "scripts" / "check.py"
@@ -49,6 +50,7 @@ TAKSONOMIJA = Path(__file__).resolve().parents[2] / "kolumna" / "publishing-meta
 JEZIKI_PREVODA = ("en", "hr")
 ISO_Z_ZAMIKOM = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?[+-]\d{2}:\d{2}$")
 LINKEDIN_URA = "07:30"
+CASOVNI_PAS = "Europe/Ljubljana"
 
 
 def _prazno(vrednost):
@@ -105,6 +107,12 @@ def kratka_objava(besedilo):
     if any(v.lstrip().startswith("#") for v in vrstice):
         krsitve.append("brez naslova v objavi")
     return krsitve
+
+
+def zamik_ljubljane_ok(iso):
+    """Ali je zamik v ISO času tisti, ki ga ima Europe/Ljubljana v tistem trenutku."""
+    cas = dt.datetime.fromisoformat(iso)
+    return cas.utcoffset() == cas.astimezone(ZoneInfo(CASOVNI_PAS)).utcoffset()
 
 
 def rubrika_iz_taksonomije(pot=TAKSONOMIJA):
@@ -166,6 +174,8 @@ def _preveri_objavo(telo, krsitve, rubrika):
     except ValueError:
         krsitve.append("schedule.publish_at: neveljaven datum ali čas (korak 9)")
         return
+    if not zamik_ljubljane_ok(objava):
+        krsitve.append(f"schedule.publish_at: zamik ne ustreza {CASOVNI_PAS} (poleti +02:00, pozimi +01:00) (korak 9)")
     if cas <= dt.datetime.now(dt.timezone.utc):
         krsitve.append("schedule.publish_at: mora biti v prihodnosti (korak 9)")
     if not isinstance(li, str) or not DATUM.match(li):

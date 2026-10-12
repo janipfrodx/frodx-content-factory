@@ -303,3 +303,21 @@ def test_cli_faza(tmp_path):
     stanje.write_text(json.dumps(_telo(), ensure_ascii=False), encoding="utf-8")
     izid = subprocess.run([sys.executable, str(SKRIPTA), str(stanje), "--faza", "objava"], capture_output=True, text=True)
     assert izid.returncode == 1 and "languages.en" in izid.stdout
+
+
+def test_zamik_ustreza_ljubljani():
+    assert pp.zamik_ljubljane_ok("2026-10-20T07:00:00+02:00")
+    assert pp.zamik_ljubljane_ok("2026-11-05T07:00:00+01:00")
+    assert not pp.zamik_ljubljane_ok("2026-11-05T07:00:00+02:00")
+    assert not pp.zamik_ljubljane_ok("2026-07-01T07:00:00+01:00")
+    assert not pp.zamik_ljubljane_ok("2026-07-01T07:00:00+00:00")
+
+
+def test_publish_at_z_napacnim_zamikom():
+    telo = _objava()
+    telo["schedule"] = {"publish_at": "2099-11-05T07:00:00+02:00", "linkedin_date": "2099-11-05"}
+    assert _ima(pp.preveri(telo, "objava")[0], "schedule.publish_at", "Europe/Ljubljana", "korak 9")
+    telo["schedule"]["publish_at"] = "2099-11-05T07:00:00+01:00"
+    assert not _ima(pp.preveri(telo, "objava")[0], "Europe/Ljubljana")
+    telo["schedule"] = {"publish_at": "2099-10-20T07:00:00+02:00", "linkedin_date": "2099-10-20"}
+    assert not _ima(pp.preveri(telo, "objava")[0], "Europe/Ljubljana")
