@@ -33,7 +33,7 @@ Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (
 
 ## Koraki
 
-Gate je pri korakih 1-4 in 6-8; korak 5 teče brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
+Gate je pri korakih 1-4, 6-9 in 11; koraki 5, 10 in 12 tečejo brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
 
 ```bash
 python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
@@ -49,6 +49,10 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 | 6 Nadaljevanje | Razdelek »Nadaljevanje« | **da**: Nikine spremembe in odločitev |
 | 7 Transkreacija | razdelek »Transkreacija« | **da**: EN in HR (+ ocena audita za oba jezika) |
 | 8 Meta | `python3 veje/nika/scripts/meta.py runs/<tek>/state.json` | **da**: kampanja, oznake, naslovnice, naslovi in meta opisi v treh jezikih |
+| 9 Datumi | pojavno vprašanje, razdelek »Objava« | **da**: datum in ura bloga, dan LinkedIna |
+| 10 Osnutki | `cf-nika-publish` `pripravi`, razdelek »Objava« | brez vprašanja |
+| 11 Pregled osnutkov | pojavno vprašanje z zavihki SL, HR, EN, razdelek »Objava« | **da**: »Da, razporedi« ali »Ne, treba je popraviti« za vsak jezik |
+| 12 Razpored | `cf-nika-publish` `razporedi`, razdelek »Objava« | brez vprašanja, Igorju izid |
 
 ### Korak 1
 
@@ -77,7 +81,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
   ```
 
 - `story.linkedin_text` je kratka objava po standardu kolumne `veje/kolumna/vendor/igor-column-writer/references/social-posts.md` (3-4 kratke vrstice, brez povezave in brez oznake zanjo), v Nikinem glasu, o isti novosti. Pisčevega pravila »isto besedilo za blog in LinkedIn« ne uporabiš. Preveri jo `preveri_paket.py`.
-- Prejšnje zgodbe v `runs/<tek>/prev/` so zadnje tri objave z oznako rubrike »HubSpot z Niko« (SL), ki jih dobiš prek HubSpot konektorja, vsaka kot `.md`. Dokler oznaka ne obstaja (H2), ostane mapa prazna. Primere iz `vendor/nika-update-writer/references/primeri/` `check.py` primerja sam.
+- Prejšnje zgodbe v `runs/<tek>/prev/` so zadnje tri objave z oznako rubrike »HubSpot z Niko« (SL), ki jih dobiš prek HubSpot konektorja, vsaka kot `.md`. Če je objav s to oznako manj kot tri, ima mapa toliko zgodb, kolikor jih je (morda nobene). Primere iz `vendor/nika-update-writer/references/primeri/` `check.py` primerja sam.
 - Napaka `check.py`, nerazvrščena trditev ali nova zmožnost brez URL-ja ustavi paket. Opozorila `check.py` zapiši v `warnings`.
 - Pri oceni pod 9,0 zgodbo enkrat revidiraj in povej, kaj manjka. Na gate-u Igor odloči, ali gre naprej.
 - Presoja, ki je ne pokrije nobeno načelo in je Igor ne poda, ima `origin: skill`. Dilemo zapiši kot vprašanje za Niko v `preveri`, ne kot njeno odločitev.
@@ -89,7 +93,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 - Skripta vpiše `meta` (kampanja, oznake, naslovnice z URL-ji in alt teksti) iz razdelka »Rubrika HubSpot z Niko« v `veje/kolumna/publishing-meta/references/hubspot-taxonomy.md` in iz `veje/nika/assets/naslovnice.json`.
 - `MANJKA` pomeni človekov korak (H2 oznake, H3 kampanja, H4 naslovnice): povej ga Igorju in ne nadaljuj. Vrednosti ne izmišljaš.
 - Pillar povezav Nikina zgodba nima.
-- Gate: Igor pregleda kampanjo, oznake in naslovnice ter naslove in meta opise v SL, HR in EN.
+- Gate: Igor pregleda kampanjo, oznake in naslovnice ter naslove in meta opise v SL, HR in EN. Po njegovem da gre tek na korak 9 (razdelek »Objava«).
 
 ## Pisec in preslikava
 
@@ -130,10 +134,10 @@ Pisčev predlog seznama pogovorov, kjer je zgodba uporabna, gre v pogovor, ne v 
 
 ```bash
 python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza niki --telo outbox/<run_slug>.json
-python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava
+python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava --telo outbox/<run_slug>.json
 ```
 
-Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava). Preverba pregleda:
+Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava); njegovo telo je `paket_json` za `pripravi` in prepiše telo iz oddaje Niki. Preverba pregleda:
 - `type` `nika_story` in `version` `1.1`; vsa polja `story` (`title`, `blog_md`, `linkedin_text`, `meta_description`); natanko dva alternativna naslova; meta opis 140-160 znakov;
 - `story.linkedin_text` je kratka objava (1-4 vrstice, brez povezave in naslova), ne zgodba; prvega komentarja paket ne nosi;
 - `source` z `kb_urls` na `knowledge.hubspot.com` ali `hubspot.com`; dejavnost iz `vertikale.md`; izvor presoje;
@@ -201,7 +205,36 @@ Po pravilih veje kolumna, razdelek »Skupni koraki« (`veje/kolumna/VEJA.md`), z
 2. `frodx-transcreation-check` za `en` in `hr`, z auditom na koncu, kot pri kolumni; vhod v njegovem »Vhod po veji« (Nika). Zadolžitev za HR native pregled zapiše v `_run.open_tasks` sam.
 3. `story.meta_description` prevedi v `languages.<jezik>.meta_description` (največ 160 znakov).
 4. `story.linkedin_text` prevedi samo v EN, v `languages.en.linkedin_text`, po istem standardu kratke objave. HR LinkedIn objave ni.
-5. Gate: oba prevoda, oceni audita, EN LinkedIn objava; povej, da priporočaš HR native pregled.
+5. Gate: oba prevoda, oceni audita, EN LinkedIn objava; povej, da priporočaš HR native pregled. Po Igorjevem da gre tek na korak 8 (`meta.py`, razdelek »Koraki«).
+
+## Objava
+
+Po koraku 8. `state.json` ima vse tri jezike in `meta`; HubSpot osnutke in razpored naredi `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`). Workflow ne objavljaš in ga ne aktiviraš: kličeš ga samo z `execute_workflow`.
+
+9. Vprašaj Igorja za datum in uro bloga ter dan LinkedIna (ena objava na Nikin profil, ena na stran FrodX, obe ob 7.30). LinkedIn ne sme pred blogom; na dan bloga mora biti blog do 7.30. Zapiši `schedule.publish_at` (ISO z zamikom, `Europe/Ljubljana`) in `schedule.linkedin_date`.
+10. `python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava --telo outbox/<run_slug>.json`; kršitev ustavi tek. Nato `execute_workflow` na `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`) z `{mode: "pripravi", run_slug, paket_json}`, po istem vzorcu kot pri »Oddaja Niki«:
+
+   ```json
+   {
+     "workflowId": "ZhBP6iFc2JlVhrvt",
+     "executionMode": "manual",
+     "triggerNodeName": "Trigger",
+     "inputs": {
+       "webhookData": {
+         "method": "POST",
+         "body": {
+           "mode": "pripravi",
+           "run_slug": "<run_slug>",
+           "paket_json": "<telo iz outbox/<run_slug>.json kot niz>"
+         }
+       }
+     }
+   }
+   ```
+
+   `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, posts}`, kjer je `posts` `{sl, en, hr}` z `id`, `editor_url` in `url` za vsak jezik. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in izida ne javi kot uspešnega. `created`: osnutki so narejeni. `exists`: osnutki že obstajajo, `posts` so isti kot prvič, uporabi jih. `rejected`: povej `sporocilo` in ne nadaljuj. Ob `created` in `exists` vrnjeni `posts` zapiši v `_run.hubspot_posts` v `state.json`, da jih lahko uporabiš znova (`pripravi` jih ob ponovnem klicu vrne kot `exists`).
+11. Eno pojavno vprašanje z zavihkom na jezik (SL, HR, EN); v vsakem `editor_url` in izbira »Da, razporedi« / »Ne, treba je popraviti«. Ob »Ne« Igor pove, kaj; popraviš prek HubSpot konektorja: najprej `GET_POST`, `<div id="ifb-feedback-...">` ostane nespremenjen, en `UPDATE` naenkrat, isti popravek vpišeš v paket (`besedilo.py vpis`). Vprašanje ponoviš za vse jezike. Nič se ne razporedi, dokler niso vsi trije »Da«. Če konektor nima pravice, Igor popravi v urejevalniku in reče »popravljeno«.
+12. `execute_workflow` na `cf-nika-publish` z istim vzorcem kot v koraku 10 in telesom `{mode: "razporedi", run_slug, li_sl_text: story.linkedin_text, li_en_text: languages.en.linkedin_text}` (končni besedili po morebitnih popravkih); `workflowId`, `executionMode`, `triggerNodeName` in `method` so isti, izid se bere iz vozlišča `Izid` z `{izid, sporocilo}`. `scheduled`: povej Igorju datum bloga in dan LinkedIna in v zavihku »Pregled« nastavi stanje »razporejeno«. `exists`: razpored že obstaja, povej in stanje v »Pregled« nastavi na »razporejeno«. `schedule_failed`: povej sporočilo HubSpota; vrstica ostane `osnutek`, Igor ponovi. `rejected`: povej `sporocilo`. LinkedIn objavi `cf-nika-linkedin` ob 7.30 sam.
 
 ## Posebnosti
 

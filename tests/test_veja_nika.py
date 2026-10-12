@@ -266,3 +266,12 @@ def test_kritika_nika_korak_4():
     nika = vsebina.split("Za **Niko**")[1].split("\n## ")[0]
     assert "po vsakem krogu, namesto `languages.sl.content`" in nika
     assert "`_run.step = 4`" in nika
+
+
+def test_objava_koraki_9_do_12():
+    objava = _razdelek("Objava")
+    for niz in ("--faza objava", "cf-nika-publish", "pripravi", "razporedi", "editor_url", "Da, razporedi",
+                "Ne, treba je popraviti", "GET_POST", "ifb-feedback", "en `UPDATE`", "exists", "schedule_failed", "7.30"):
+        assert niz in objava, niz
+    for n in (9, 11):
+        assert "**da**" in _vrstica_koraka(n), n

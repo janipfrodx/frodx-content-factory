@@ -10,7 +10,7 @@ RAZDELKI = [
 ]
 RAZDELKI_NIKA = [
     "Sprožilci", "Paket", "Koraki", "Pisec in preslikava",
-    "Skupni koraki", "Preverba paketa", "Oddaja Niki", "Nadaljevanje", "Transkreacija", "Posebnosti",
+    "Skupni koraki", "Preverba paketa", "Oddaja Niki", "Nadaljevanje", "Transkreacija", "Objava", "Posebnosti",
 ]
 STARE_POTI = (
     "frodx-content-factory/references/",
