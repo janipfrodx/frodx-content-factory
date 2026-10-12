@@ -152,6 +152,14 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`):
   Popravek ohrani vse oznake in vrstni red blokov. Če skripta vrne `NAPAKA:`, se je oblika pokvarila: `state.json` je ostal nespremenjen, popravek ponovi na zadnjem veljavnem besedilu, ne vpisuj ga mimo skripte.
 - `critique/round-N.json`, `_run.critique_rounds`, `_run.step = 3` in `_run.status` so enaki kot pri kolumni.
 
+Za **Niko** (`frodx-content-factory/veje/nika/`), poti relativne na mapo debla:
+
+- **Vhod:** `python3 veje/nika/scripts/besedilo.py izpis <state.json> sl`. To je `besedilo` za krog 1.
+- **Prompt:** isti kot kolumna, `references/critique-prompt.md`, z isto zamenjavo `{{DANES}}` in zavrnjenimi pripombami v krogu 2 in 3.
+- **`body.context`:** `Nikina zgodba o HubSpot novosti, do 450 besed | novost: <source.update_title> | dejavnost: <activity>`. Pripombe, ki zahtevajo daljše besedilo, več virov ali spremembo Nikine presoje, zavrni z utemeljitvijo.
+- **Krogi:** največ trije, kot kolumna.
+- **Zapis:** popravljeno besedilo zapiši v datoteko in ga vpiši z `python3 veje/nika/scripts/besedilo.py vpis <state.json> sl <datoteka>`. Po zadnjem krogu veja znova požene `check.py --blog`.
+
 ## Kaj ne delaš
 
 - Ne pošiljaš v kritiko EN in HR verzij. Ta korak je samo za slovenščino; transkreacija ima svoj QA.

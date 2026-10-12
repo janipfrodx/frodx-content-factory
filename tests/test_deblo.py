@@ -8,6 +8,10 @@ RAZDELKI = [
     "Sprožilci", "Paket", "Koraki", "Pisec in preslikava",
     "Skupni koraki", "Preverba paketa", "Oddaja", "Posebnosti",
 ]
+RAZDELKI_NIKA = [
+    "Sprožilci", "Paket", "Koraki", "Pisec in preslikava",
+    "Skupni koraki", "Preverba paketa", "Oddaja Niki", "Nadaljevanje", "Posebnosti",
+]
 STARE_POTI = (
     "frodx-content-factory/references/",
     "skills/frodx-topic-pick",
@@ -25,7 +29,8 @@ def test_vsaka_veja_ima_isti_skelet():
     veje = sorted(VEJE.glob("*/VEJA.md"))
     assert veje, "ni nobene veje"
     for pot in veje:
-        assert _naslovi(pot) == RAZDELKI, pot.parent.name
+        pricakovano = RAZDELKI_NIKA if pot.parent.name == "nika" else RAZDELKI
+        assert _naslovi(pot) == pricakovano, pot.parent.name
 
 
 def test_veja_ni_samostojen_skill():

@@ -38,6 +38,8 @@ Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual`, `frodx-n
 
 ## Različice
 
+0.9.0: veja nika gre skozi kritiko do Nikinega pregleda v Docu »Nikine zgodbe« in nazaj, paket nika_story v1.1, kratka LinkedIn objava.
+
 0.8.1: veja nika po suhem teku: korak 1 išče po zadevi in pošiljatelju v enem klicu, hub v tabeli je označen kot ocena; korak 2 jemlje izdajo, datum in navedke dobesedno iz besedila članka, ne iz povzetka.
 
 0.8.0: veja nika (Nikina tedenska zgodba o HubSpot novosti): vendoriran nika-update-writer 1.1.1, init_run --veja nika, preverba paketa nika_story v1.0. Predaja cf-deliver-nika in aplikacija še nista zgrajeni.

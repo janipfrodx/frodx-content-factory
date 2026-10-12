@@ -82,3 +82,10 @@ def test_native_zadolzitev_novicnika_se_ne_zapise():
     vsebina = PREVERBA.read_text(encoding="utf-8")
     odprta = vsebina.split("## Odprta zadolžitev za človeka", 1)[1].split("\n## ", 1)[0]
     assert "razen pri veji novičnik" in odprta
+
+
+def test_kritika_ima_vhod_za_niko():
+    vsebina = (SKILLI / "frodx-critique-loop" / "SKILL.md").read_text(encoding="utf-8")
+    vhod = vsebina[vsebina.index("## Vhod po veji"):]
+    for niz in ("Za **Niko**", "besedilo.py izpis <state.json> sl", "besedilo.py vpis <state.json> sl", "450 besed"):
+        assert niz in vhod, niz

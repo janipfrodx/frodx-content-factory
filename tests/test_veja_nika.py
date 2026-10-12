@@ -39,27 +39,18 @@ def test_vse_poti_v_veji_obstajajo():
         "vendor/nika-update-writer/references/rubrika.md",
         "vendor/nika-update-writer/scripts/check.py",
         "scripts/preveri_paket.py",
+        "scripts/besedilo.py",
+        "scripts/zavihek.py",
+        "scripts/iz_zavihka.py",
     ):
         assert pot in vsebina, pot
         assert (NIKA / pot).is_file(), pot
-
-
-def test_stirje_koraki_vsi_z_gateom():
-    for n in range(1, 5):
-        assert "**da**" in _vrstica_koraka(n), n
 
 
 def test_tek_nastane_po_izbiri_novosti():
     koraki = _razdelek("Koraki")
     assert "init_run.py --veja nika" in koraki
     assert "_run.kandidat" in _vrstica_koraka(1)
-
-
-def test_korak_1_bere_samo_hubspotov_mail():
-    koraki = _razdelek("Koraki")
-    for niz in ("noreply@notifications.hubspot.com", "Weekly Product Updates Roundup", "14 dni",
-                "Nobenega drugega iskanja", "ISO 27001", "app.hubspot.com", "prilepi"):
-        assert niz in koraki, niz
 
 
 def test_korak_2_brez_clanka_ni_zgodbe():
@@ -70,22 +61,8 @@ def test_korak_2_brez_clanka_ni_zgodbe():
 
 def test_korak_3_check_py_v_obeh_nacinih_s_prev():
     koraki = _razdelek("Koraki")
-    for niz in ("--blog --prev", "--linkedin --prev", "primeri/", "origin: skill", "9,0", "vrstice `---`"):
+    for niz in ("--blog --prev", "primeri/", "origin: skill", "9,0", "vrstice `---`"):
         assert niz in koraki, niz
-
-
-def test_skupni_koraki_ne_tecejo():
-    skupni = _razdelek("Skupni koraki")
-    for niz in ("frodx-critique-loop", "frodx-transcreation-check", "frodx-image-run", "frodx-publish-send"):
-        assert niz in skupni, niz
-
-
-def test_preverba_in_oddaja_brez_izmisljenega_workflowa():
-    assert "preveri_paket.py runs/<tek>/state.json --telo outbox/<run_slug>.json" in _razdelek("Preverba paketa")
-    oddaja = _razdelek("Oddaja")
-    assert "cf-deliver-nika" in oddaja
-    assert "še ne obstaja" in oddaja
-    assert "outbox/<run_slug>.json" in oddaja
 
 
 def test_nika_ne_dobi_obrazca():
@@ -114,19 +91,50 @@ def test_deblo_vprasa_tudi_za_niko():
     assert "Gremo na Nikino zgodbo." in vsebina
 
 
-def test_korak_1_isce_po_zadevi_in_posiljatelju_hkrati():
-    korak = _razdelek("Koraki").split("### Korak 1")[1].split("### Korak 2")[0]
-    for niz in ("en klic", "samo po pošiljatelju", "z drugo zadevo ne odpiraš"):
-        assert niz in korak, niz
-
-
-def test_korak_1_hub_je_ocena():
-    korak = _razdelek("Koraki").split("### Korak 1")[1].split("### Korak 2")[0]
-    assert "Mail huba ne navaja" in korak
-    assert "(ocena)" in korak
-
-
 def test_korak_2_dejstva_iz_besedila_clanka():
     korak = _razdelek("Koraki").split("### Korak 2")[1].split("### Korak 3")[0]
     for niz in ("dobesedno", "povzetek", "vir ne pove"):
         assert niz in korak, niz
+
+
+def test_koraki_do_nadaljevanja():
+    for n, gate in ((1, True), (2, True), (3, True), (4, True), (5, False), (6, True)):
+        assert ("**da**" in _vrstica_koraka(n)) is gate, n
+
+
+def test_korak_1_igor_prilepi_novost():
+    korak = _razdelek("Koraki").split("### Korak 1")[1].split("### Korak 2")[0]
+    assert "prilepi" in korak
+    assert "noreply@notifications.hubspot.com" not in VEJA.read_text(encoding="utf-8")
+
+
+def test_kritika_pred_nikinim_pregledom():
+    koraki = _razdelek("Koraki")
+    assert koraki.index("frodx-critique-loop") < koraki.index("cf-deliver-nika")
+    assert "besedilo.py vpis" in _razdelek("Skupni koraki")
+
+
+def test_oddaja_niki():
+    oddaja = _razdelek("Oddaja Niki")
+    for niz in ("zavihek.py", "cf-deliver-nika", "notify_failed", "--faza niki", "Pregled", "execute_workflow"):
+        assert niz in oddaja, niz
+    assert "še ne obstaja" not in VEJA.read_text(encoding="utf-8")
+
+
+def test_nadaljevanje():
+    nad = _razdelek("Nadaljevanje")
+    for niz in ("nadaljuj Niko", "Nika je pregledala", "CF-Teki", "iz_zavihka.py", "[PREVERI", "Zavrni", "caka_niko"):
+        assert niz in nad, niz
+
+
+def test_kratka_linkedin_objava():
+    vsebina = VEJA.read_text(encoding="utf-8")
+    assert "igor-column-writer/references/social-posts.md" in vsebina
+    assert "--linkedin" not in _razdelek("Koraki")
+
+
+def test_preverba_paketa_obe_fazi():
+    preverba = _razdelek("Preverba paketa")
+    assert "preveri_paket.py runs/<tek>/state.json --faza niki --telo outbox/<run_slug>.json" in preverba
+    assert "preveri_paket.py runs/<tek>/state.json --faza objava" in preverba
+    assert "`1.1`" in preverba
