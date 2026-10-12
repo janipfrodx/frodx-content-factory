@@ -181,3 +181,70 @@ def test_deblo_nadaljuje_niko_prek_cf_teki():
     vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
     razdelek = vsebina.split("## Nadaljevanje prekinjenega teka")[1].split("\n## ")[0]
     assert "CF-Teki" in razdelek and "run_slug" in razdelek
+
+
+def test_nadaljevanje_bere_xml_ne_izvoza():
+    nad = _razdelek("Nadaljevanje")
+    korak2 = nad.split("\n2. ")[1].split("\n3. ")[0]
+    for niz in ("xml_v_zavihek.py", "zavihek.xml", "zavihek-2.xml", '"object":"node"', "f307990d-76ae-4e30-b9b2-9635fc39d412", "next"):
+        assert niz in korak2, niz
+    vsebina = VEJA.read_text(encoding="utf-8")
+    for niz in ("export", "base64", "bytes_b64"):
+        assert niz not in vsebina, niz
+    assert (NIKA / "scripts" / "xml_v_zavihek.py").is_file()
+
+
+def test_get_data_table_rows_je_izpisan():
+    nad = _razdelek("Nadaljevanje")
+    korak1 = nad.split("\n1. ")[1].split("\n2. ")[0]
+    korak2 = nad.split("\n2. ")[1].split("\n3. ")[0]
+    for niz in ('dataTableId: "qXM8KuxMDyNQ9C0y"', 'projectId: "FucXmQlDiWLVsRHW"',
+                '{"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"caka_niko"}]}'):
+        assert niz in korak1, niz
+    assert '{"columnName":"run_slug","value":"<run_slug>"}' in korak2
+
+
+def test_oddaja_klic_execute_workflow_v_celoti():
+    oddaja = _razdelek("Oddaja Niki")
+    korak4 = oddaja.split("\n4. ")[1].split("\n5. ")[0]
+    for niz in ('"workflowId": "o8L8DsTaqQT3wi9B"', '"executionMode": "manual"', '"triggerNodeName": "Trigger"',
+                '"method": "POST"', '"run_slug"', '"doc_url"', '"tab_id"', '"title"', '"activity"', '"paket_json"'):
+        assert niz in korak4, niz
+    assert "ne javi kot uspešne" in korak4
+
+
+def test_pregled_ime_zavihka_brez_povezave():
+    oddaja = _razdelek("Oddaja Niki")
+    assert "71a36976-ec9a" in oddaja
+    assert "navadno besedilo" in oddaja
+    assert "povezava na zavihek" not in oddaja
+    assert "zavihek.py runs/<tek>/state.json --celice" in oddaja
+
+
+def test_koraki_po_6_se_niso_zapisani():
+    assert "Koraki 7-12 (naslovnica, objava) še niso zapisani" in _razdelek("Nadaljevanje")
+
+
+def test_potrdi_osvezi_blog_pred_check():
+    korak6 = _razdelek("Nadaljevanje").split("\n6. ")[1].split("\n7. ")[0]
+    assert korak6.index("besedilo.py izpis") < korak6.index("check.py")
+
+
+def test_brez_zastarelih_besedil():
+    vsebina = VEJA.read_text(encoding="utf-8")
+    for niz in ("katero novost vzamemo ta teden", "drugo novost iz tabele"):
+        assert niz not in vsebina, niz
+
+
+def test_deblo_izjeme_za_niko():
+    vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
+    assert "razen veje Nika: nadaljuje se v novem chatu prek `CF-Teki` in zavihka v Docu" in vsebina
+    assert "(veja lahko predpiše drugo vozlišče, npr. Nika `Izid`)" in vsebina
+    assert "version: 0.6.0" in vsebina.split("---")[1]
+
+
+def test_kritika_nika_korak_4():
+    vsebina = (DEBLO.parent / "frodx-critique-loop" / "SKILL.md").read_text(encoding="utf-8")
+    nika = vsebina.split("Za **Niko**")[1].split("\n## ")[0]
+    assert "po vsakem krogu, namesto `languages.sl.content`" in nika
+    assert "`_run.step = 4`" in nika

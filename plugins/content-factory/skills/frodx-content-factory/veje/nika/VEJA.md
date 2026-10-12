@@ -8,7 +8,7 @@ Pisec je `vendor/nika-update-writer/SKILL.md` (Igorjev `nika-update-writer` v1.1
 
 ## Sprožilci
 
-Igor hoče novo Nikino zgodbo o HubSpot novosti. Vejo prepoznaš po pomenu, ne po točni frazi. Primeri: »nova Nikina zgodba«, »HubSpot novost za Niko«, »tedenski update za Niko«, »prišel je HubSpot mail z novostmi«, »katero novost vzamemo ta teden«.
+Igor hoče novo Nikino zgodbo o HubSpot novosti. Vejo prepoznaš po pomenu, ne po točni frazi. Primeri: »nova Nikina zgodba«, »HubSpot novost za Niko«, »tedenski update za Niko«, »prišel je HubSpot mail z novostmi«, ali Igor prilepi novost iz HubSpot maila.
 
 Korak 6 se sproži z »nadaljuj Niko«, »Nika je pregledala« ali »Nika je potrdila« (razdelek »Nadaljevanje«).
 
@@ -58,7 +58,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 
 ### Korak 2
 
-- Vir dejstev je samo članek na `knowledge.hubspot.com` ali drug javni zapis na `hubspot.com`. **Brez članka ni zgodbe**: povej Igorju in mu ponudi drugo novost iz tabele.
+- Vir dejstev je samo članek na `knowledge.hubspot.com` ali drug javni zapis na `hubspot.com`. **Brez članka ni zgodbe**: povej Igorju; če hoče, prilepi drugo novost.
 - Partnerski blogi so samo kazalec, da članek obstaja; v kartici dobijo `[PREVERI]`.
 - Velja samo URL, ki v rezultatu `web_fetch` stoji dobesedno. URL-ja ne sestavljaš iz naslova.
 - Izdajo, status, datum in navedke za `claims[].quote` prepišeš dobesedno iz besedila članka. Če orodje namesto besedila vrne povzetek, povzetek ni vir: kar v besedilu ne stoji, je »vir ne pove«.
@@ -138,8 +138,31 @@ Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava). Preverba pregl
 
 1. `python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza niki --telo outbox/<run_slug>.json`; kršitev ustavi oddajo.
 2. `python3 veje/nika/scripts/zavihek.py runs/<tek>/state.json > runs/<tek>/zavihek.md`.
-3. Claude Docs konektor: v Doc »Nikine zgodbe« (`https://claude.ai/code/artifact/f307990d-76ae-4e30-b9b2-9635fc39d412`, doc id `f307990d-76ae-4e30-b9b2-9635fc39d412`) dodaj zavihek z imenom `<run_slug>` in vsebino `zavihek.md`; red zavihkov je `b<run_slug>`, da se zavihki razvrstijo po datumu za »Pregled« (`a0`). Id zavihka (`file` id iz odgovora Docsa ob ustvarjanju) takoj zapiši v `_run.tab_id` v `state.json`. Če zavihek s tem imenom že obstaja (ponovna oddaja po »Zavrni«), zamenjaj njegovo vsebino in ne dodaj drugega; `_run.tab_id` ostane isti. Docs podpira spustni seznam v celicah tabele: tri celice odločitve dobijo `{"type":"dropdown","enum":"<id>"}` brez `index` (izbere Nika), in sicer »Odločitev« `832fa5b7-c46c` (Potrdi, Zavrni), »Bi se tako odločila« `d37fd622-c7ec` (da, ne, drugače) in »Razlog zavrnitve« `f74ea3fe-404a` (presoja, dejstvo, novost, slog); vrednosti so v `zavihek.py --celice`. Komentar ostane prazna besedilna celica. V zavihku »Pregled« dodaj vrstico (naslov, dejavnost, današnji datum, »čaka Niko«, povezava na zavihek) ali ob ponovni oddaji obstoječi nastavi stanje »čaka Niko«. Stanje posodobiš še v »Nadaljevanje« (»potrjeno« / »zavrnjeno«) in v koraku 12 (»razporejeno«).
-4. `execute_workflow` na `cf-deliver-nika` (`o8L8DsTaqQT3wi9B`), `executionMode: "manual"`, `triggerNodeName: "Trigger"`, `inputs.webhookData.body`: `run_slug`, `doc_url` (povezava na Doc »Nikine zgodbe« iz koraka 3), `tab_id` (`_run.tab_id`), `title`, `activity`, `paket_json` (telo iz `outbox/<run_slug>.json` kot niz). Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, run_slug}`.
+3. Claude Docs konektor: v Doc »Nikine zgodbe« (`https://claude.ai/code/artifact/f307990d-76ae-4e30-b9b2-9635fc39d412`, doc id `f307990d-76ae-4e30-b9b2-9635fc39d412`) dodaj zavihek z imenom `<run_slug>` in vsebino `zavihek.md`; red zavihkov je `b<run_slug>`, da se zavihki razvrstijo po datumu za »Pregled« (`a0`). Id zavihka (`file` id iz odgovora Docsa ob ustvarjanju) takoj zapiši v `_run.tab_id` v `state.json`. Če zavihek s tem imenom že obstaja (ponovna oddaja po »Zavrni«), zamenjaj njegovo vsebino in ne dodaj drugega; `_run.tab_id` ostane isti. Docs podpira spustni seznam v celicah tabele: tri celice odločitve dobijo `{"type":"dropdown","enum":"<id>"}` brez `index` (izbere Nika), in sicer »Odločitev« `832fa5b7-c46c` (Potrdi, Zavrni), »Bi se tako odločila« `d37fd622-c7ec` (da, ne, drugače) in »Razlog zavrnitve« `f74ea3fe-404a` (presoja, dejstvo, novost, slog); vrednosti izpiše `python3 veje/nika/scripts/zavihek.py runs/<tek>/state.json --celice`. Komentar ostane prazna besedilna celica. V zavihku »Pregled« (id `71a36976-ec9a`) dodaj vrstico (naslov, dejavnost, današnji datum, »čaka Niko«, ime zavihka `<run_slug>`) ali ob ponovni oddaji obstoječi nastavi stanje »čaka Niko«. Zadnja celica vrstice je ime zavihka `<run_slug>` kot navadno besedilo, brez omembe in brez povezave. Stanje posodobiš še v »Nadaljevanje« (»potrjeno« / »zavrnjeno«) in v koraku 12 (»razporejeno«).
+4. `execute_workflow` na `cf-deliver-nika`. Telo webhooka gre gnezdeno pod `inputs.webhookData.body`:
+
+   ```json
+   {
+     "workflowId": "o8L8DsTaqQT3wi9B",
+     "executionMode": "manual",
+     "triggerNodeName": "Trigger",
+     "inputs": {
+       "webhookData": {
+         "method": "POST",
+         "body": {
+           "run_slug": "<run_slug>",
+           "doc_url": "https://claude.ai/code/artifact/f307990d-76ae-4e30-b9b2-9635fc39d412",
+           "tab_id": "<_run.tab_id>",
+           "title": "<story.title>",
+           "activity": "<activity>",
+           "paket_json": "<telo iz outbox/<run_slug>.json kot niz>"
+         }
+       }
+     }
+   }
+   ```
+
+   `doc_url` je povezava na Doc »Nikine zgodbe« iz koraka 3, `tab_id` (`_run.tab_id`) je id zavihka, `paket_json` je telo iz `outbox/<run_slug>.json` kot niz, ne objekt. Izid prebereš z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Izid"]`, nikoli cele izvedbe; vozlišče `Izid` vrne `{izid, sporocilo, run_slug}`. Če `execute_workflow` vrne napako ali izhod `get_workflow_execution` nima vozlišča `Izid`, povej Igorju, kaj je vrnil, in oddaje ne javi kot uspešne.
 5. Igorju povej izid: `created` ali `resubmitted` - Nika je dobila sporočilo v Teams kanalu; `notify_failed` - daj mu povezavo na zavihek, da jo pošlje sam; `duplicate` - zgodba je že čez Nikin pregled; `rejected` - povej `sporocilo`.
 6. Igorju povej, da nadaljuje, ko Nika napiše v kanal: »nadaljuj Niko«.
 
@@ -149,13 +172,19 @@ Med Nikinim pregledom v zavihek ne pišeš.
 
 Sprožilci: »nadaljuj Niko«, »Nika je pregledala«, »Nika je potrdila«.
 
-1. Če chat nima teka: `get_data_table_rows` na `CF-Teki` (`qXM8KuxMDyNQ9C0y`), vrstice z `veja = nika` in `stanje = caka_niko`; vprašaj, katero. Ustvari `runs/<run_slug>/state.json` = `paket_json` izbrane vrstice + `"_run": {"veja": "nika", "slug": "<run_slug>", "step": 6, "status": "in_progress", "approvals": {}, "open_tasks": [], "skill_versions": {}}`. `_run.tab_id` vzemi iz stolpca `tab_id` iste vrstice. `init_run.py` se tu ne kliče (naredi slug z današnjim datumom).
-2. Preberi zavihek prek Claude Docs konektorja (zavihek je `_run.tab_id`; če `_run` ni na voljo, ga vzemi iz vrstice `CF-Teki` za ta `run_slug`, prebrane z `get_data_table_rows`): `export` zavihka s `format: "markdown"` (base64 v `data.bytes_b64`), dekodiraj in zapiši v `runs/<tek>/zavihek.md` brez sprememb. Neizbran spustni seznam se izvozi kot prazna celica; nespremenjen izvoz ima 0 spremenjenih povedi.
+1. Če chat nima teka: `get_data_table_rows` na `CF-Teki` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"veja","value":"nika"},{"columnName":"stanje","value":"caka_niko"}]}`; vprašaj, katero vrstico. Ustvari `runs/<run_slug>/state.json` = `paket_json` izbrane vrstice + `"_run": {"veja": "nika", "slug": "<run_slug>", "step": 6, "status": "in_progress", "approvals": {}, "open_tasks": [], "skill_versions": {}}`. `_run.tab_id` vzemi iz stolpca `tab_id` iste vrstice. `init_run.py` se tu ne kliče (naredi slug z današnjim datumom).
+2. Preberi zavihek prek Claude Docs konektorja. Zavihek je `_run.tab_id`; če `_run` ni na voljo, ga vzemi iz stolpca `tab_id` vrstice `CF-Teki` za ta `run_slug`: `get_data_table_rows` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"run_slug","value":"<run_slug>"}]}`.
+   - `read` s `container {"kind":"project","id":"f307990d-76ae-4e30-b9b2-9635fc39d412"}` in `ref {"object":"file","id":"<_run.tab_id>"}` vrne vozlišče telesa. Nato znova `read` z `ref {"object":"node","id":"<id iz content.id>"}`, brez payloada.
+   - `xml` iz odgovora zapiši **dobesedno** v `runs/<tek>/zavihek.xml`. Če ima odgovor `next`, nadaljuj z `read` in payloadom `{"kind":"view", ...next}`; vsak naslednji kos shrani kot `zavihek-2.xml`, `zavihek-3.xml` in tako naprej.
+   - Poženi `python3 veje/nika/scripts/xml_v_zavihek.py runs/<tek>/zavihek.md runs/<tek>/zavihek.xml [runs/<tek>/zavihek-2.xml ...]`. Skripta preveri vsak odstavek proti Docsu in zapiše markdown zavihka. Ob NAPAKA zavihek enkrat preberi znova; če pade drugič, povej Igorju, kaj je skripta vrnila.
+   - Neizbran spustni seznam je prazna celica; nespremenjen zavihek ima 0 spremenjenih povedi.
 3. `python3 veje/nika/scripts/iz_zavihka.py runs/<tek>/zavihek.md runs/<tek>/state.json`. NAPAKA (manjka razdelek, neznana vrednost): povej Igorju dobesedno in ga prosi, naj Niko prosi za popravek v zavihku.
 4. Odločitev prazna: Nika še ni končala; povej Igorju in končaj.
 5. »Zavrni«: povej razlog in komentar. V zavihku »Pregled« nastavi stanje »zavrnjeno«. Z Igorjem predelaj zgodbo (korak 3 ali 4). Pred ponovno oddajo iz `state.json` izbriši `_run.nika_izvirnik` (da ga `iz_zavihka.py` ob naslednjem branju znova zapiše iz novega zavihka in se spremembe ne štejejo proti staremu izvirniku), osveži zavihek (tabela odločitve prazna) in ponovi »Oddaja Niki«, ki stanje v »Pregled« znova nastavi na »čaka Niko«; `cf-deliver-nika` vrne `resubmitted`, ker je vrstica še v `caka_niko`.
-6. »Potrdi«: `check.py --blog` in preverba paketa v fazi `niki`. Odprta oznaka `[PREVERI` v besedilu ali kršitev ustavi tek; neodkljukane oznake iz `odprte` naštej Igorju.
+6. »Potrdi«: najprej osveži datoteko bloga z `python3 veje/nika/scripts/besedilo.py izpis runs/<tek>/state.json sl > runs/<tek>/zgodba-blog.md`, nato `python3 veje/nika/vendor/nika-update-writer/scripts/check.py runs/<tek>/zgodba-blog.md --blog --prev runs/<tek>/prev` in preverba paketa v fazi `niki`. Odprta oznaka `[PREVERI` v besedilu ali kršitev ustavi tek; neodkljukane oznake iz `odprte` naštej Igorju.
 7. Gate: pokaži Nikine spremembe (število spremenjenih povedi in povedi same), njeno sodbo in komentar. Po Igorjevem da v zavihku »Pregled« nastavi stanje »potrjeno« in tek gre na korak 7.
+
+Koraki 7-12 (naslovnica, objava) še niso zapisani; po Igorjevem da pri koraku 6 tek tu konča in Igor počaka na naslednjo verzijo.
 
 ## Posebnosti
 

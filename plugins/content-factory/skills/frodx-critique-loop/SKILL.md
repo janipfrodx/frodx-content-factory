@@ -158,7 +158,8 @@ Za **Niko** (`frodx-content-factory/veje/nika/`), poti relativne na mapo debla:
 - **Prompt:** isti kot kolumna, `references/critique-prompt.md`, z isto zamenjavo `{{DANES}}` in zavrnjenimi pripombami v krogu 2 in 3.
 - **`body.context`:** `Nikina zgodba o HubSpot novosti, do 450 besed | novost: <source.update_title> | dejavnost: <activity>`. Pripombe, ki zahtevajo daljše besedilo, več virov ali spremembo Nikine presoje, zavrni z utemeljitvijo.
 - **Krogi:** največ trije, kot kolumna.
-- **Zapis:** popravljeno besedilo zapiši v datoteko in ga vpiši z `python3 veje/nika/scripts/besedilo.py vpis <state.json> sl <datoteka>`. Po zadnjem krogu veja znova požene `check.py --blog`.
+- **Zapis:** popravljeno besedilo po vsakem krogu, namesto `languages.sl.content`, zapiši v datoteko in ga vpiši z `python3 veje/nika/scripts/besedilo.py vpis <state.json> sl <datoteka>`. Po zadnjem krogu veja znova požene `check.py --blog`.
+- `critique/round-N.json`, `_run.critique_rounds` in `_run.status` so enaki kot pri kolumni; `_run.step = 4` (kritika je korak 4 veje Nika).
 
 ## Kaj ne delaš
 

@@ -10,7 +10,7 @@
       "name": "content-factory",
       "source": "./plugins/content-factory",
       "version": "0.9.0",
-      "description": "Veriga skillov za produkcijo FrodX vsebin v treh vejah: kolumna (izbira teme, pisanje, kritika, transkreacija, slike, meta podatki, predaja v objavo), novičnik (gradivo, SI izdaja, kritika, HR in EN s preverbo, slike blokov, predaja v Newsletter Hub) in Nikina zgodba (izbor HubSpot novosti iz tedenskega maila, kartica iz baze znanja, zgodba za blog in LinkedIn, preverba paketa)."
+      "description": "Veriga skillov za produkcijo FrodX vsebin v treh vejah: kolumna (izbira teme, pisanje, kritika, transkreacija, slike, meta podatki, predaja v objavo), novičnik (gradivo, SI izdaja, kritika, HR in EN s preverbo, slike blokov, predaja v Newsletter Hub) in Nikina zgodba (HubSpot novost, ki jo prilepi Igor, kartica iz baze znanja, zgodba za blog in LinkedIn, kritika, Nikin pregled v Docu)."
     }
   ]
 }

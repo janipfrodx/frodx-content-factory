@@ -2,7 +2,7 @@
 name: frodx-content-factory
 description: Run the FrodX content factory end to end and pick the right branch. Column: AEO topic, column, critique loop, EN and HR transcreation, key visual, social images, publishing metadata, handover to the publishing app. Newsletter: GameChanger edition from Igor's material in SI, HR and EN, critique, translation review, block images, handover to Newsletter Hub. Nika: one HubSpot product update that Igor pastes becomes Nika's weekly story for the blog and LinkedIn, goes through the critique loop and Nika's review in a Claude Doc, and resumes after her review. Use whenever Igor wants a new column, blog post, newsletter, Nika story or content run, including when he only says "nova kolumna", "napiši blog", "delava nov newsletter", "nov NL", "pripravi novičnik", "nova Nikina zgodba", "HubSpot novost za Niko", "tedenski update za Niko", "nadaljuj Niko", "Nika je pregledala", "Nika je potrdila", "zaženi tovarno" or names a topic he wants written. This is the single entry point - it calls the other frodx skills itself.
 metadata:
-  version: 0.5.0
+  version: 0.6.0
 ---
 
 # FrodX Content Factory - deblo
@@ -47,9 +47,9 @@ Vrstni red ni kozmetičen. V teku 14. 9. 2026 so se `social_posts[]` izgubili, k
 
 **Mapa teka ne preživi seje - preverjeno 14.-15. 8. 2026.** V Cowork seji je CWD `/home/claude`, kar je efemerni oblačni vsebnik: `runs/` in `outbox/` nastaneta tam in umreta skupaj s sejo. Kar iz tega sledi za tvoje delo:
 
-- **Tek naj steče v eni seji.** Razdelek »Nadaljevanje prekinjenega teka« spodaj deluje samo znotraj iste seje.
+- **Tek naj steče v eni seji.** Razdelek »Nadaljevanje prekinjenega teka« spodaj deluje samo znotraj iste seje, razen veje Nika: nadaljuje se v novem chatu prek `CF-Teki` in zavihka v Docu.
 - **Ob vsakem gate-u pokaži Igorju vsebino, ne samo poti.** Besedilo, alt tekste in meta podatke izpiši v pogovor - pogovor preživi, mapa ne. Če je seja prekinjena, je transkript edini vir, iz katerega je mogoče tek obnoviti.
-- **Edina obstojna točka je oddaja**, zadnji korak veje, ko paket odide v aplikacijo. Do takrat obstaja tek samo v tej seji.
+- **Edina obstojna točka je oddaja**, zadnji korak veje, ko paket odide v aplikacijo. Do takrat obstaja tek samo v tej seji. Pri veji Nika je oddaja Niki (korak 5) taka točka: paket je v `CF-Teki`, besedilo v zavihku Doca.
 - Če tek prekineš sredi poti, to Igorju povej kot dejstvo: »mapa teka je izgubljena, imamo pa besedilo v pogovoru«. Ne trdi, da se tek nadaljuje kasneje, če se ne more.
 
 Obstojna rešitev (sinhronizacija mape teka na SharePoint prek n8n) je odprta točka, ne del tega skilla.
@@ -58,7 +58,7 @@ Obstojna rešitev (sinhronizacija mape teka na SharePoint prek n8n) je odprta to
 
 Tek mora v eni seji priti do oddaje. V teku novičnika 1. 10. 2026 je kontekst zmanjkal sredi teka, zato velja:
 
-- Izid n8n izvedbe bereš vedno z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Respond to Webhook"]`, nikoli cele izvedbe.
+- Izid n8n izvedbe bereš vedno z `get_workflow_execution`, `includeData: true` in `nodeNames: ["Respond to Webhook"]` (veja lahko predpiše drugo vozlišče, npr. Nika `Izid`), nikoli cele izvedbe.
 - Ne bereš `get_workflow_sdk_reference`, `get_node_types`, `search_nodes` ali `tool_guidance`. Tek ne gradi workflowov.
 - Ne bereš base64 in ne delaš posnetkov zaslona brskalnika.
 - Ne izpisuješ celih izdaj ali paketov v JSON-u. Igorju izdajo pokažeš z `izdaja_besedilo.py izpis` (novičnik) oziroma z besedilom kolumne.
