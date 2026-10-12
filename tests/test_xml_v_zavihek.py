@@ -38,6 +38,12 @@ def test_zavihek_zgodbe_je_enak_izvozu(tmp_path):
     assert izhod.read_bytes() == (FIKSNE / "nika_zavihek_prebran.md").read_bytes()
 
 
+def test_izpolnjen_zavihek_je_enak_izvozu(tmp_path):
+    izid, izhod = _pozeni(tmp_path, _beri("nika_zavihek_izpolnjen.xml"))
+    assert izid.returncode == 0, izid.stdout
+    assert izhod.read_bytes() == (FIKSNE / "nika_zavihek_izpolnjen.md").read_bytes()
+
+
 def test_meritev_je_enaka_izvozu(tmp_path):
     izid, izhod = _pozeni(tmp_path, _beri("docs_meritev.xml"))
     assert izid.returncode == 0, izid.stdout

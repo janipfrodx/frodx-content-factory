@@ -166,6 +166,16 @@ def test_prebran_nespremenjen_zavihek():
     assert len(izid["odprte"]) == 2
 
 
+def test_izpolnjen_zavihek_potrdi():
+    telo = _telo()
+    izpolnjen = (REPO / "tests" / "fixtures" / "nika_zavihek_izpolnjen.md").read_text(encoding="utf-8")
+    izid = iz.preberi(izpolnjen)
+    assert izid["odlocitev"]["decision"] == "approve"
+    assert iz.spremenjene_povedi(telo["story"]["blog_md"], izid["blog_md"]) == 1
+    assert iz.spremenjene_povedi(telo["story"]["linkedin_text"], izid["linkedin_text"]) == 0
+    assert len(izid["odprte"]) == 2
+
+
 def test_ubezana_navpicnica_v_celici():
     md = _izpolni(z.zgradi(_telo()), komentar="ena \\| dve")
     assert iz.preberi(md)["odlocitev"]["comment"] == "ena | dve"
