@@ -89,3 +89,10 @@ def test_kritika_ima_vhod_za_niko():
     vhod = vsebina[vsebina.index("## Vhod po veji"):]
     for niz in ("Za **Niko**", "besedilo.py izpis <state.json> sl", "besedilo.py vpis <state.json> sl", "450 besed"):
         assert niz in vhod, niz
+
+
+def test_preverba_prevoda_ima_vhod_za_niko():
+    vsebina = PREVERBA.read_text(encoding="utf-8")
+    vhod = vsebina[vsebina.index("## Vhod po veji"):]
+    for niz in ("Za **Niko**", "besedilo.py izpis <state.json> sl", "besedilo.py izpis <state.json> <jezik>", "besedilo.py vpis <state.json> <jezik>"):
+        assert niz in vhod, niz

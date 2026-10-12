@@ -302,6 +302,13 @@ Za **novičnik** (`frodx-content-factory/veje/novicnik/`), poti relativne na map
   V točki e varovalo poženeš vedno, tudi ko je žetev prazna (skripta takrat vrne 0). Končno verzijo (in vsak popravek iz točke 6.e) vpiši izključno z `python3 veje/novicnik/scripts/izdaja_besedilo.py vpis <state.json> <jezik> <besedilo.txt>`; ob `NAPAKA:` obnovi oznake in vpis ponovi. `_run.transcreation_audit` se zapiše enako kot pri kolumni.
 - **Native pregled:** zadolžitve za hrvaščino iz razdelka »Odprta zadolžitev za človeka« ne zapišeš. Igor HR pregleda sam na gate-u koraka 4 veje.
 
+Za **Niko** (`frodx-content-factory/veje/nika/`), poti relativne na mapo debla:
+
+- Točke 1-6 tečejo kot pri kolumni, za `en` in `hr`.
+- **Izvirnik:** `python3 veje/nika/scripts/besedilo.py izpis <state.json> sl`; **prevod:** `python3 veje/nika/scripts/besedilo.py izpis <state.json> <jezik>`.
+- **Zapis:** vsak popravek in končno verzijo audita vpiši z `python3 veje/nika/scripts/besedilo.py vpis <state.json> <jezik> <datoteka>`, ne v `languages.<jezik>.content`.
+- `_run.transcreation_check`, `_run.transcreation_audit` in `_run.open_tasks` se zapišejo kot pri kolumni.
+
 ## Kaj ne delaš
 
 - Ne pošiljaš slovenske kolumne v ta pregled. Za slovenščino je `frodx-critique-loop`.

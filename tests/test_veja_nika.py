@@ -221,9 +221,26 @@ def test_pregled_ime_zavihka_brez_povezave():
     assert "zavihek.py runs/<tek>/state.json --celice" in oddaja
 
 
-def test_koraki_po_6_se_niso_zapisani():
-    assert "Koraki 7-12 (naslovnica, objava) še niso zapisani" in _razdelek("Nadaljevanje")
-    assert "tek gre na korak 7" not in _razdelek("Nadaljevanje")
+def test_nadaljevanje_vodi_na_transkreacijo():
+    nad = _razdelek("Nadaljevanje")
+    assert "še niso zapisani" not in nad
+    assert "tek gre na korak 7" in nad
+    assert "dokler koraki 7-12" not in nad
+
+
+def test_nadaljevanje_zapise_v_zavihek_nika_ne_v_poslanega():
+    nad = _razdelek("Nadaljevanje")
+    assert "runs/<tek>/zavihek-nika.md" in nad
+    assert "zavihek.md" not in nad.replace("zavihek-nika.md", "")
+    assert "> runs/<tek>/zavihek.md" in _razdelek("Oddaja Niki")
+
+
+def test_korak_7_transkreacija_kot_kolumna():
+    korak = _razdelek("Transkreacija")
+    for niz in ("frodx-transcreation", "frodx-transcreation-check", "SL→EN", "SL→HR", "native", "_run.open_tasks",
+                "languages.en.linkedin_text", "meta_description", "besedilo.py vpis"):
+        assert niz in korak, niz
+    assert "**da**" in _vrstica_koraka(7)
 
 
 def test_potrdi_osvezi_blog_pred_check():

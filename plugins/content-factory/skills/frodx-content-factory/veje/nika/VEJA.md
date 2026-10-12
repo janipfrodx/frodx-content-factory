@@ -33,7 +33,7 @@ Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (
 
 ## Koraki
 
-Gate je pri korakih 1-4 in 6; korak 5 teče brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
+Gate je pri korakih 1-4, 6 in 7; korak 5 teče brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
 
 ```bash
 python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
@@ -47,6 +47,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 | 4 Kritika | `frodx-critique-loop`, vhod po razdelku »Skupni koraki«; nato znova `check.py --blog` | **da**: popravljena zgodba |
 | 5 Oddaja Niki | Zavihek v Docu in `cf-deliver-nika`, razdelek »Oddaja Niki« | brez vprašanja, Igorju poveš izid |
 | 6 Nadaljevanje | Razdelek »Nadaljevanje« | **da**: Nikine spremembe in odločitev |
+| 7 Transkreacija | razdelek »Transkreacija« | **da**: EN in HR (+ ocena audita za oba jezika) |
 
 ### Korak 1
 
@@ -176,15 +177,23 @@ Sprožilci: »nadaljuj Niko«, »Nika je pregledala«, »Nika je potrdila«.
 2. Preberi zavihek prek Claude Docs konektorja. Zavihek je `_run.tab_id`; če `_run` ni na voljo, ga vzemi iz stolpca `tab_id` vrstice `CF-Teki` za ta `run_slug`: `get_data_table_rows` z `dataTableId: "qXM8KuxMDyNQ9C0y"`, `projectId: "FucXmQlDiWLVsRHW"`, `filter: {"filters":[{"columnName":"run_slug","value":"<run_slug>"}]}`.
    - `read` s `container {"kind":"project","id":"f307990d-76ae-4e30-b9b2-9635fc39d412"}` in `ref {"object":"file","id":"<_run.tab_id>"}` vrne vozlišče telesa. Nato znova `read` z `ref {"object":"node","id":"<id iz content.id>"}`, brez payloada.
    - `xml` iz odgovora zapiši **dobesedno** v `runs/<tek>/zavihek.xml`. Če ima odgovor `next`, nadaljuj z `read` in payloadom `{"kind":"view", ...next}`; vsak naslednji kos shrani kot `zavihek-2.xml`, `zavihek-3.xml` in tako naprej.
-   - Poženi `python3 veje/nika/scripts/xml_v_zavihek.py runs/<tek>/zavihek.md runs/<tek>/zavihek.xml [runs/<tek>/zavihek-2.xml ...]`. Skripta preveri vsak odstavek proti Docsu in zapiše markdown zavihka. Ob NAPAKA zavihek enkrat preberi znova; če pade drugič, povej Igorju, kaj je skripta vrnila.
+   - Poženi `python3 veje/nika/scripts/xml_v_zavihek.py runs/<tek>/zavihek-nika.md runs/<tek>/zavihek.xml [runs/<tek>/zavihek-2.xml ...]`. Skripta preveri vsak odstavek proti Docsu in zapiše markdown zavihka. Ob NAPAKA zavihek enkrat preberi znova; če pade drugič, povej Igorju, kaj je skripta vrnila.
    - Neizbran spustni seznam je prazna celica; nespremenjen zavihek ima 0 spremenjenih povedi.
-3. `python3 veje/nika/scripts/iz_zavihka.py runs/<tek>/zavihek.md runs/<tek>/state.json`. NAPAKA (manjka razdelek, neznana vrednost): povej Igorju dobesedno in ga prosi, naj Niko prosi za popravek v zavihku.
+3. `python3 veje/nika/scripts/iz_zavihka.py runs/<tek>/zavihek-nika.md runs/<tek>/state.json`. NAPAKA (manjka razdelek, neznana vrednost): povej Igorju dobesedno in ga prosi, naj Niko prosi za popravek v zavihku.
 4. Odločitev prazna: Nika še ni končala; povej Igorju in končaj.
 5. »Zavrni«: povej razlog in komentar. V zavihku »Pregled« nastavi stanje »zavrnjeno«. Z Igorjem predelaj zgodbo (korak 3 ali 4). Pred ponovno oddajo iz `state.json` izbriši `_run.nika_izvirnik` (da ga `iz_zavihka.py` ob naslednjem branju znova zapiše iz novega zavihka in se spremembe ne štejejo proti staremu izvirniku), osveži zavihek (tabela odločitve prazna) in ponovi »Oddaja Niki«, ki stanje v »Pregled« znova nastavi na »čaka Niko«; `cf-deliver-nika` vrne `resubmitted`, ker je vrstica še v `caka_niko`.
 6. »Potrdi«: najprej osveži datoteko bloga z `python3 veje/nika/scripts/besedilo.py izpis runs/<tek>/state.json sl > runs/<tek>/zgodba-blog.md`, nato `python3 veje/nika/vendor/nika-update-writer/scripts/check.py runs/<tek>/zgodba-blog.md --blog --prev runs/<tek>/prev` in preverba paketa v fazi `niki`. Odprta oznaka `[PREVERI` v besedilu ali kršitev ustavi tek; neodkljukane oznake iz `odprte` naštej Igorju.
-7. Gate: pokaži Nikine spremembe (število spremenjenih povedi in povedi same), njeno sodbo in komentar. Po Igorjevem da v zavihku »Pregled« nastavi stanje »potrjeno«; tek se tu konča, dokler koraki 7-12 niso zapisani.
+7. Gate: pokaži Nikine spremembe (število spremenjenih povedi in povedi same), njeno sodbo in komentar. Po Igorjevem da v zavihku »Pregled« nastavi stanje »potrjeno«; tek gre na korak 7 (razdelek »Transkreacija«).
 
-Koraki 7-12 (naslovnica, objava) še niso zapisani; po Igorjevem da pri koraku 6 tek tu konča in Igor počaka na naslednjo verzijo.
+## Transkreacija
+
+Po pravilih veje kolumna, razdelek »Skupni koraki« (`veje/kolumna/VEJA.md`), z razliko v poljih:
+
+1. `frodx-transcreation` dvakrat: SL→EN in SL→HR. Vhod je `besedilo.py izpis <state.json> sl`; izhod vpišeš z `besedilo.py vpis <state.json> <jezik> <datoteka>` (prva vrstica `# <naslov>`).
+2. `frodx-transcreation-check` za `en` in `hr`, z auditom na koncu, kot pri kolumni; vhod v njegovem »Vhod po veji« (Nika). Zadolžitev za HR native pregled zapiše v `_run.open_tasks` sam.
+3. `story.meta_description` prevedi v `languages.<jezik>.meta_description` (največ 160 znakov).
+4. `story.linkedin_text` prevedi samo v EN, v `languages.en.linkedin_text`, po istem standardu kratke objave. HR LinkedIn objave ni.
+5. Gate: oba prevoda, oceni audita, EN LinkedIn objava; povej, da priporočaš HR native pregled.
 
 ## Posebnosti
 
