@@ -340,8 +340,10 @@ def test_korak_9_najzgodnejsi_cas_iz_urnik_py():
 
 
 def test_korak_11_sporocilo_s_povezavami_pred_vprasanjem():
+    vrstica = _vrstica_koraka(11)
+    assert vrstica.index("sporočilo s tremi povezavami") < vrstica.index("pojavno vprašanje")
     korak11 = _korak_objave(11)
-    sporocilo, vprasanje = korak11.split("Nato pojavno vprašanje")
+    sporocilo, vprasanje = korak11.split("Nato pojavno vprašanje", 1)
     assert korak11.index("navadno sporočilo") < korak11.index("Nato pojavno vprašanje")
     for niz in ("[SL osnutek](editor_url)", "[HR osnutek](editor_url)", "[EN osnutek](editor_url)",
                 "`_run.hubspot_posts`", "`story.linkedin_text`", "`languages.en.linkedin_text`"):

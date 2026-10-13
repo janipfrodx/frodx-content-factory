@@ -51,7 +51,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 | 8 Meta | `python3 veje/nika/scripts/meta.py runs/<tek>/state.json` | **da**: kampanja, oznake, naslovnice, naslovi in meta opisi v treh jezikih |
 | 9 Datumi | pojavno vprašanje, razdelek »Objava« | **da**: datum in ura bloga, dan LinkedIna |
 | 10 Osnutki | `cf-nika-publish` `pripravi`, razdelek »Objava« | brez vprašanja |
-| 11 Pregled osnutkov | pojavno vprašanje z zavihki SL, HR, EN, razdelek »Objava« | **da**: »Da, razporedi« ali »Ne, treba je popraviti« za vsak jezik |
+| 11 Pregled osnutkov | sporočilo s tremi povezavami na osnutke, nato pojavno vprašanje z zavihki SL, HR, EN, razdelek »Objava« | **da**: »Da, razporedi« ali »Ne, treba je popraviti« za vsak jezik |
 | 12 Razpored | `cf-nika-publish` `razporedi`, razdelek »Objava« | brez vprašanja, Igorju izid |
 
 ### Korak 1
