@@ -11,8 +11,8 @@ Ocena pod 9,0 je opozorilo, ker je Igor zgodbo z njo že potrdil na gate-u
 koraka 3.
 
 Faza niki (privzeta) preveri slovensko zgodbo za Nikin pregled. Faza objava
-doda prevode (EN, HR), meta podatke (kampanja, oznake, naslovnice) proti
-hubspot-taxonomy.md in urnik objave.
+doda prevode (EN, HR), sluge vseh treh jezikov, meta podatke (kampanja, oznake,
+naslovnice) proti hubspot-taxonomy.md in urnik objave.
 Z --telo zapiše telo za oddajo, a samo, kadar kršitev ni; če zapis spodleti,
 vrne exit 2.
 """
@@ -38,6 +38,8 @@ IZVORI = ("nacelo", "igor", "skill")
 KATEGORIJE = ("nova", "obstojeci", "priporocilo")
 VIRI = ("knowledge.hubspot.com", "hubspot.com", "www.hubspot.com")
 RUN_SLUG = re.compile(r"^[a-z0-9-]{3,120}$")
+SLUG = re.compile(r"^[a-z0-9]+(-[a-z0-9]+){2,5}$")
+SLUG_MAX = 60
 DATUM = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 URL = re.compile(r"https?://[^\s)\]]+")
 OZNAKA = re.compile(r"\[PREVERI[^\]]*\]")
@@ -129,7 +131,19 @@ def rubrika_iz_taksonomije(pot=TAKSONOMIJA):
     return izid
 
 
+def _preveri_slug(slug, pot, krsitve):
+    if _prazno(slug):
+        krsitve.append(f"{pot}: manjka (korak 8)")
+        return
+    if not SLUG.match(slug):
+        krsitve.append(f"{pot}: 3-6 besed iz malih črk a-z in števk, ločenih z enim vezajem, brez šumnikov (korak 8)")
+    if len(slug) > SLUG_MAX:
+        krsitve.append(f"{pot}: {len(slug)} znakov, največ {SLUG_MAX} (korak 8)")
+
+
 def _preveri_objavo(telo, krsitve, rubrika):
+    zgodba = telo.get("story") if isinstance(telo.get("story"), dict) else {}
+    _preveri_slug(zgodba.get("slug"), "story.slug", krsitve)
     jeziki = telo.get("languages") if isinstance(telo.get("languages"), dict) else {}
     for j in JEZIKI_PREVODA:
         jezik = jeziki.get(j) if isinstance(jeziki.get(j), dict) else {}
@@ -140,6 +154,7 @@ def _preveri_objavo(telo, krsitve, rubrika):
                 krsitve.append(f"languages.{j}.{polje}: manjka (korak 7)")
             elif OZNAKA.search(vrednost):
                 krsitve.append(f"languages.{j}.{polje}: odprta oznaka [PREVERI (korak 7)")
+        _preveri_slug(jezik.get("slug"), f"languages.{j}.slug", krsitve)
         meta_opis = jezik.get("meta_description")
         if not _prazno(meta_opis) and len(meta_opis) > 160:
             krsitve.append(f"languages.{j}.meta_description: {len(meta_opis)} znakov, največ 160 (korak 7)")

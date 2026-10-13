@@ -387,3 +387,16 @@ def test_obstojne_tocke_vkljucijo_osnutke():
     vsebina = (DEBLO / "SKILL.md").read_text(encoding="utf-8")
     assert "`stanje = osnutek`" in vsebina
     assert "osnutki v HubSpotu (korak 10;" in vsebina
+
+
+def test_korak_8_slug_za_vsak_jezik():
+    korak_8 = _razdelek("Koraki").split("### Korak 8")[1]
+    for niz in ("`story.slug`", "`languages.en.slug`", "`languages.hr.slug`", "60 znakov", "3-6 ključnih besed",
+                "`topics-razvrscanje-tiketov`", "sluge"):
+        assert niz in korak_8, niz
+    assert "slugi" in _vrstica_koraka(8)
+
+
+def test_preverba_paketa_objava_preveri_sluge():
+    objava = next(v for v in _razdelek("Preverba paketa").splitlines() if v.startswith("- faza `objava`"))
+    assert "sluge" in objava and "60 znakov" in objava

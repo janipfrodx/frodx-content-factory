@@ -25,6 +25,7 @@ Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (
 | `story`, `judgment`, `claims`, `preveri`, `warnings`, `score`, `formulas` | korak 3 |
 | `languages` | korak 7 (prevodi EN, HR) |
 | `meta` | korak 8 (kampanja, oznake, naslovnice) |
+| `story.slug`, `languages.en.slug`, `languages.hr.slug` | korak 8 (slug objave) |
 | `schedule` | korak 9 (urnik objave) |
 
 - `judgment.origin` je `nacelo` (presoja iz `vendor/nika-update-writer/references/nacela.md`, `principle` navede načelo), `igor` (Igorjev vnos iz `_run.vnos`) ali `skill` (ni ne načela ne vnosa).
@@ -48,7 +49,7 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 | 5 Oddaja Niki | Zavihek v Docu in `cf-deliver-nika`, razdelek »Oddaja Niki« | brez vprašanja, Igorju poveš izid |
 | 6 Nadaljevanje | Razdelek »Nadaljevanje« | **da**: Nikine spremembe in odločitev |
 | 7 Transkreacija | razdelek »Transkreacija« | **da**: EN in HR (+ ocena audita za oba jezika) |
-| 8 Meta | `python3 veje/nika/scripts/meta.py runs/<tek>/state.json` | **da**: kampanja, oznake, naslovnice, naslovi in meta opisi v treh jezikih |
+| 8 Meta | `python3 veje/nika/scripts/meta.py runs/<tek>/state.json`, nato slugi v treh jezikih (podrazdelek »Korak 8«) | **da**: kampanja, oznake, naslovnice, naslovi, meta opisi in slugi v treh jezikih |
 | 9 Datumi | pojavno vprašanje, razdelek »Objava« | **da**: datum in ura bloga, dan LinkedIna |
 | 10 Osnutki | `cf-nika-publish` `pripravi`, razdelek »Objava« | brez vprašanja |
 | 11 Pregled osnutkov | sporočilo s tremi povezavami na osnutke, nato pojavno vprašanje z zavihki SL, HR, EN, razdelek »Objava« | **da**: »Da, razporedi« ali »Ne, treba je popraviti« za vsak jezik |
@@ -101,7 +102,9 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 - Skripta vpiše `meta` (kampanja, oznake, naslovnice z URL-ji in alt teksti) iz razdelka »Rubrika HubSpot z Niko« v `veje/kolumna/publishing-meta/references/hubspot-taxonomy.md` in iz `veje/nika/assets/naslovnice.json`.
 - `MANJKA` pomeni človekov korak (H2 oznake, H3 kampanja, H4 naslovnice): povej ga Igorju in ne nadaljuj. Vrednosti ne izmišljaš.
 - Pillar povezav Nikina zgodba nima.
-- Gate: Igor pregleda kampanjo, oznake in naslovnice ter naslove in meta opise v SL, HR in EN. Po njegovem da gre tek na korak 9 (razdelek »Objava«).
+- Po `meta.py` napišeš slug za vsak jezik: `story.slug` (SL), `languages.en.slug`, `languages.hr.slug`. Slug je 3-6 ključnih besed teme v jeziku objave, ne cel naslov; male črke a-z in števke, brez šumnikov (č→c, ć→c, š→s, ž→z, đ→d), besede ločene z enim vezajem; največ 60 znakov. Primer: `topics-razvrscanje-tiketov`. Slug je javni URL, zato ga Igor vidi na gate-u skupaj z naslovi in meta opisi. Brez sluga bi n8n slug sestavil iz celega naslova in ga odrezal sredi besedne zveze.
+- Slug vpišeš v `state.json` v polje `slug` iste rezine, v kateri sta naslov in meta opis: za SL v `story`, za EN in HR v `languages.<jezik>` (kjer je že `meta_description` iz koraka 7).
+- Gate: Igor pregleda kampanjo, oznake in naslovnice ter naslove, meta opise in sluge v SL, HR in EN. Po njegovem da gre tek na korak 9 (razdelek »Objava«).
 
 ## Pisec in preslikava
 
@@ -151,7 +154,7 @@ Prvi ukaz teče pred oddajo Niki, drugi pred korakom 10 (objava); njegovo telo j
 - `source` z `kb_urls` na `knowledge.hubspot.com` ali `hubspot.com`; dejavnost iz `vertikale.md`; izvor presoje;
 - kategorijo vsake trditve ter URL in navedek vsake nove; da ima vsaka oznaka `[PREVERI` vrstico v `preveri`;
 - `check.py --blog` brez napake; da v besedilu ni vrstice `---` in ni dolgega pomišljaja; da paket ne nosi `_run`;
-- faza `objava` še: prevodi EN in HR (`languages`), meta podatki (kampanja, oznake, naslovnice) proti `hubspot-taxonomy.md` in urnik objave (`schedule`; zamik `publish_at` mora biti zamik `Europe/Ljubljana` na tisti dan, poleti +02:00, pozimi +01:00).
+- faza `objava` še: prevodi EN in HR (`languages`), meta podatki (kampanja, oznake, naslovnice) proti `hubspot-taxonomy.md` in urnik objave (`schedule`; zamik `publish_at` mora biti zamik `Europe/Ljubljana` na tisti dan, poleti +02:00, pozimi +01:00) in sluge `story.slug`, `languages.en.slug` in `languages.hr.slug` (3-6 besed iz malih črk a-z in števk, ločenih z enim vezajem, največ 60 znakov); faza `niki` sluga ne zahteva.
 
 `--telo` zapiše telo za oddajo samo, kadar kršitev ni. Ocena pod 9,0 je opozorilo. Vsaka kršitev pove pristojni korak.
 

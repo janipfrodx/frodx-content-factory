@@ -5,6 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[1]
 SKRIPTA = REPO / "plugins" / "content-factory" / "skills" / "frodx-content-factory" / "veje" / "nika" / "scripts" / "preveri_paket.py"
 FIXTURE = REPO / "tests" / "fixtures" / "nika_story_body.json"
@@ -235,6 +237,9 @@ def _objava():
         "covers": {j: {"url": f"https://f.hubspotusercontent.com/{j}.png", "alt": "Nika"} for j in ("sl", "en", "hr")},
     }
     telo["schedule"] = {"publish_at": "2099-10-20T07:00:00+02:00", "linkedin_date": "2099-10-20"}
+    telo["story"]["slug"] = "deal-progression-posodobitve-poslov"
+    telo["languages"]["en"]["slug"] = "deal-progression-deal-updates"
+    telo["languages"]["hr"]["slug"] = "deal-progression-azuriranje-poslova"
     return telo
 
 
@@ -321,3 +326,74 @@ def test_publish_at_z_napacnim_zamikom():
     assert not _ima(pp.preveri(telo, "objava")[0], "Europe/Ljubljana")
     telo["schedule"] = {"publish_at": "2099-10-20T07:00:00+02:00", "linkedin_date": "2099-10-20"}
     assert not _ima(pp.preveri(telo, "objava")[0], "Europe/Ljubljana")
+
+
+def _slug_krsitve(telo, faza="objava"):
+    rub = lambda: {"campaign_name": "Interest - Test", "campaign_guid": "00000000-0000-0000-0000-000000000000",
+                   "tags": {"sl": "1", "en": "2", "hr": "3"}}
+    return pp.preveri(telo, faza, rubrika=rub)[0]
+
+
+def _nastavi_slug(telo, jezik, vrednost):
+    rezina = telo["story"] if jezik == "sl" else telo["languages"][jezik]
+    if vrednost is None:
+        rezina.pop("slug", None)
+    else:
+        rezina["slug"] = vrednost
+
+
+POT_SLUGA = {"sl": "story.slug", "en": "languages.en.slug", "hr": "languages.hr.slug"}
+
+
+@pytest.mark.parametrize("jezik", ["sl", "en", "hr"])
+def test_slug_manjka(jezik):
+    telo = _objava()
+    _nastavi_slug(telo, jezik, None)
+    assert _ima(_slug_krsitve(telo), f"{POT_SLUGA[jezik]}: manjka", "korak 8")
+
+
+@pytest.mark.parametrize("jezik", ["sl", "en", "hr"])
+@pytest.mark.parametrize("slug", [
+    "Deal-Progression-Posodobitve",
+    "deal-progression-posodobitve-poslov-čas",
+    "deal--progression-posodobitve",
+    "deal-progression",
+    "a-b-c-d-e-f-g",
+    "deal-progression-posodobitve-poslov-po-pogovoru-v-hubspotu-zdaj",
+    "-deal-progression-posodobitve",
+    "deal-progression-posodobitve-",
+])
+def test_slug_napacen(jezik, slug):
+    telo = _objava()
+    _nastavi_slug(telo, jezik, slug)
+    assert _ima(_slug_krsitve(telo), POT_SLUGA[jezik], "korak 8")
+
+
+def test_slug_dolzina_60_je_ok_61_ni():
+    telo = _objava()
+    _nastavi_slug(telo, "sl", "a" * 12 + "-" + "b" * 12 + "-" + "c" * 34)
+    assert len(telo["story"]["slug"]) == 60
+    assert not _ima(_slug_krsitve(telo), "story.slug")
+    _nastavi_slug(telo, "sl", "a" * 12 + "-" + "b" * 12 + "-" + "c" * 35)
+    assert _ima(_slug_krsitve(telo), "story.slug", "61 znakov", "največ 60", "korak 8")
+
+
+@pytest.mark.parametrize("slug", ["topics-razvrscanje-tiketov", "a1-b2-c3", "a-b-c-d-e-f"])
+def test_slug_veljaven(slug):
+    telo = _objava()
+    for j in ("sl", "en", "hr"):
+        _nastavi_slug(telo, j, slug)
+    assert not _ima(_slug_krsitve(telo), "slug")
+
+
+def test_slug_ni_niz():
+    telo = _objava()
+    telo["story"]["slug"] = 5
+    assert _ima(_slug_krsitve(telo), "story.slug: manjka", "korak 8")
+
+
+def test_faza_niki_ne_zahteva_sluga():
+    telo = _telo()
+    telo["story"].pop("slug", None)
+    assert pp.preveri(telo, "niki")[0] == []
+    assert not _ima(pp.preveri(_telo(), "niki")[0], "slug")
