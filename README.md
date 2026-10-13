@@ -26,7 +26,7 @@ obe verziji za isto številko.
 
 ## Uporaba
 
-V Coworku napiši `/frodx-content-factory` in povej, kaj rabiš. Skill izbere pravo vejo: »nova kolumna« vodi skozi sedem korakov do objave na frodx.com, »pripravi novičnik« pa skozi šest korakov do osnutka v Newsletter Hubu. »Nova Nikina zgodba« pa skozi štiri korake od HubSpotovega tedenskega maila do preverjenega paketa; predaja v aplikacijo še ni zgrajena. Med koraki čaka na tvojo potrditev.
+V Coworku napiši `/frodx-content-factory` in povej, kaj rabiš. Skill izbere pravo vejo: »nova kolumna« vodi skozi sedem korakov do objave na frodx.com, »pripravi novičnik« pa skozi šest korakov do osnutka v Newsletter Hubu. »Nova Nikina zgodba« pa od HubSpotovega tedenskega maila skozi Nikin pregled v Docu do razporeda na HubSpot blogu in LinkedInu. Med koraki čaka na tvojo potrditev.
 
 ## Lastništvo vsebine
 
@@ -37,6 +37,8 @@ Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual`, `frodx-n
     python3 -m pytest tests/ -v
 
 ## Različice
+
+0.10.0: veja nika do konca po poti kolumne: transkreacija v EN in HR, meta podatki (kampanja, oznake, naslovnice), osnutki in razpored na HubSpot blogu prek cf-nika-publish, LinkedIn objava prek cf-nika-linkedin; nadaljevanje po osnutkih v novem chatu.
 
 0.9.0: veja nika gre skozi kritiko do Nikinega pregleda v Docu »Nikine zgodbe« in nazaj, paket nika_story v1.1, kratka LinkedIn objava.
 
