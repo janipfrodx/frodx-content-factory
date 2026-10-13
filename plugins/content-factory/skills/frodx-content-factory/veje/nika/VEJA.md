@@ -213,7 +213,7 @@ Po pravilih veje kolumna, razdelek »Skupni koraki« (`veje/kolumna/VEJA.md`), z
 
 Po koraku 8. `state.json` ima vse tri jezike in `meta`; HubSpot osnutke in razpored naredi `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`). Workflow ne objavljaš in ga ne aktiviraš: kličeš ga samo z `execute_workflow`.
 
-9. Vprašaj Igorja za datum in uro bloga ter dan LinkedIna (ena objava na Nikin profil, ena na stran FrodX, obe ob 7.30). LinkedIn ne sme pred blogom; na dan bloga mora biti blog do 7.30. Zapiši `schedule.publish_at` (ISO z zamikom `Europe/Ljubljana` na tisti dan: poleti +02:00, pozimi +01:00) in `schedule.linkedin_date`.
+9. Poženi `python3 veje/nika/scripts/urnik.py`; izpiše najzgodnejši čas bloga (zdaj + 15 minut, zaokroženo navzgor na četrt ure) kot `publish_at` in predlagani `linkedin_date`. Vprašaj Igorja za datum in uro bloga ter dan LinkedIna (ena objava na Nikin profil, ena na stran FrodX, obe ob 7.30). Prva ponujena možnost v vprašanju je ta `publish_at`, izpisan človeško (npr. »danes ob 11.00«), z `linkedin_date` iz istega izpisa. Prejšnjega časa od izpisanega `publish_at` ne sprejmeš: če ga Igor vpiše, povej najzgodnejši čas in vprašaj znova. Igor sme vpisati poljuben kasnejši čas; vsi časi so na četrt ure. LinkedIn ne sme pred blogom; na dan bloga mora biti blog do 7.30. Zapiši `schedule.publish_at` (ISO z zamikom `Europe/Ljubljana` na tisti dan: poleti +02:00, pozimi +01:00) in `schedule.linkedin_date`.
 10. `python3 veje/nika/scripts/preveri_paket.py runs/<tek>/state.json --faza objava --telo outbox/<run_slug>.json`; kršitev ustavi tek. Nato `execute_workflow` na `cf-nika-publish` (`ZhBP6iFc2JlVhrvt`) z `{mode: "pripravi", run_slug, paket_json}`, po istem vzorcu kot pri »Oddaja Niki«:
 
    ```json
