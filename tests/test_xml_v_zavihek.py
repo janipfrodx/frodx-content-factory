@@ -1,5 +1,7 @@
+import hashlib
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -120,3 +122,22 @@ def test_oblike_kot_izvoz_brez_ubezanja_zvezdice_in_podcrtaja(tmp_path):
     izid, izhod = _pozeni(tmp_path, _beri("docs_oblike.xml"))
     assert izid.returncode == 0, izid.stdout
     assert izhod.read_bytes() == (FIKSNE / "docs_oblike.md").read_bytes()
+
+
+def _linkedin_s_hard_breakom(vrstice):
+    deli = "<hardBreak id='.9'/>".join(f"<text id='.{i}'>{v}</text>" for i, v in enumerate(vrstice, 100))
+    h = hashlib.sha256("".join(vrstice).encode("utf-8")).hexdigest()[:8]
+    odstavek = f"<paragraph id='.3673' h='{h}'>{deli}</paragraph>"
+    xml = _beri("nika_zavihek_prebran.xml")
+    return re.sub(r"<paragraph id='\.3673'.*?</paragraph><paragraph id='\.3771'.*?</paragraph><paragraph id='\.3834'.*?</paragraph>",
+                  lambda _: odstavek, xml, count=1, flags=re.S)
+
+
+def test_linkedin_hard_break_iz_docsa_da_enojne_prelome_brez_backslasha(tmp_path):
+    vrstice = ["Prva vrstica.", "Druga vrstica.", "Tretja vrstica."]
+    izid, izhod = _pozeni(tmp_path, _linkedin_s_hard_breakom(vrstice))
+    assert izid.returncode == 0, izid.stdout
+    assert "\\\n" in izhod.read_text(encoding="utf-8")
+    prebrano = _nalozi("iz_zavihka").preberi(izhod.read_text(encoding="utf-8"))
+    assert prebrano["linkedin_text"] == "\n".join(vrstice)
+    assert "\\" not in prebrano["linkedin_text"]

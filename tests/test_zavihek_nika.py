@@ -179,3 +179,64 @@ def test_izpolnjen_zavihek_potrdi():
 def test_ubezana_navpicnica_v_celici():
     md = _izpolni(z.zgradi(_telo()), komentar="ena \\| dve")
     assert iz.preberi(md)["odlocitev"]["comment"] == "ena | dve"
+
+
+VRSTICE = ["Prva vrstica.", "Druga vrstica.", "Tretja vrstica.", "Četrta vrstica."]
+
+
+def _razdelek_linkedin(md):
+    return md.split("\n## LinkedIn\n")[1].split("\n## Trditve\n")[0]
+
+
+def test_linkedin_vrstice_so_loceni_odstavki():
+    telo = _telo()
+    telo["story"]["linkedin_text"] = "\n".join(VRSTICE)
+    razdelek = _razdelek_linkedin(z.zgradi(telo))
+    assert razdelek.strip("\n") == "\n\n".join(VRSTICE)
+
+
+def test_linkedin_prazne_vrstice_in_presledki_se_ne_podvojijo():
+    telo = _telo()
+    telo["story"]["linkedin_text"] = "\n" + "\n\n".join(f" {v} " for v in VRSTICE) + "\n\n"
+    assert _razdelek_linkedin(z.zgradi(telo)).strip("\n") == "\n\n".join(VRSTICE)
+
+
+@pytest.mark.parametrize("locilo", ["\n", "\n\n"])
+def test_linkedin_krozno_zapis_branje_ohrani_enojne_prelome(locilo):
+    telo = _telo()
+    telo["story"]["linkedin_text"] = locilo.join(VRSTICE)
+    izid = iz.preberi(_izpolni(z.zgradi(telo)))
+    assert izid["linkedin_text"] == "\n".join(VRSTICE)
+
+
+def test_linkedin_hard_break_iz_docsa_ni_dobesedni_backslash():
+    md = _izpolni(z.zgradi(_telo())).replace(
+        _razdelek_linkedin(z.zgradi(_telo())), "\n" + "\\\n".join(VRSTICE) + "\n")
+    assert "\\" in md
+    izid = iz.preberi(md)
+    assert izid["linkedin_text"] == "\n".join(VRSTICE)
+    assert "\\" not in izid["linkedin_text"]
+
+
+def test_oblika_prelomov_ne_spremeni_stevila_spremenjenih_povedi():
+    staro = "\n".join(VRSTICE)
+    for oblika in ("\n".join(VRSTICE), "\n\n".join(VRSTICE), "\\\n".join(VRSTICE)):
+        telo = _telo()
+        telo["story"]["linkedin_text"] = oblika
+        novo = iz.preberi(_izpolni(z.zgradi(telo)))["linkedin_text"]
+        assert iz.spremenjene_povedi(staro, novo) == 0
+
+
+def test_cli_ohrani_enojne_prelome_v_state(tmp_path):
+    import subprocess, sys
+    telo = _telo()
+    telo["story"]["linkedin_text"] = "\n".join(VRSTICE)
+    stanje = tmp_path / "state.json"
+    stanje.write_text(json.dumps(telo, ensure_ascii=False), encoding="utf-8")
+    zav = tmp_path / "zavihek.md"
+    zav.write_text(_izpolni(z.zgradi(telo)), encoding="utf-8")
+    izid = subprocess.run([sys.executable, str(SKRIPTE / "iz_zavihka.py"), str(zav), str(stanje)], capture_output=True, text=True)
+    assert izid.returncode == 0, izid.stdout
+    novo = json.loads(stanje.read_text(encoding="utf-8"))
+    assert novo["story"]["linkedin_text"] == "\n".join(VRSTICE)
+    assert novo["_run"]["nika_pregled"]["spremenjene_povedi"] == 0

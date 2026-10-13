@@ -27,6 +27,11 @@ def _brez_naslova(blog_md):
     return "\n".join(vrstice).strip("\n")
 
 
+def _odstavki_vrstic(besedilo):
+    """Vsaka neprazna vrstica svoj odstavek: Docs enojni prelom uvozi kot presledek, deli samo na prazno vrstico."""
+    return "\n\n".join(v.strip() for v in besedilo.splitlines() if v.strip())
+
+
 def _celica(niz):
     return str(niz).replace("|", "/").replace("\n", " ")
 
@@ -55,7 +60,7 @@ def zgradi(telo):
         "",
         f"## {RAZDELKI[3]}",
         "",
-        z["linkedin_text"].strip("\n"),
+        _odstavki_vrstic(z["linkedin_text"]),
         "",
         f"## {RAZDELKI[4]}",
         "",

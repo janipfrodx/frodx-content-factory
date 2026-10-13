@@ -100,12 +100,18 @@ def _odprte(razdelek):
     return odprte
 
 
+def _objava_v_vrstice(besedilo):
+    """Odstavki in hard breaki iz Docsa nazaj v obliko paketa: ena vrstica, enojni prelomi."""
+    vrstice = (v.strip() for v in besedilo.replace("\\\n", "\n").split("\n"))
+    return "\n".join(v for v in vrstice if v)
+
+
 def preberi(md):
     naslov, r = _razdelki(md)
     return {
         "title": naslov,
         "blog_md": f"# {naslov}\n\n{r['Zgodba za blog']}",
-        "linkedin_text": r["LinkedIn"],
+        "linkedin_text": _objava_v_vrstice(r["LinkedIn"]),
         "odlocitev": _odlocitev(r["Nikina odločitev"]),
         "odprte": _odprte(r[RAZDELKI[1]]),
     }
