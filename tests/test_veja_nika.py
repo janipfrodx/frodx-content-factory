@@ -326,8 +326,40 @@ def test_razporedi_vrstica_ni_posodobljena():
 
 def test_korak_11_pokaze_linkedin_besedili():
     korak11 = _korak_objave(11)
-    for niz in ("`story.linkedin_text`", "`languages.en.linkedin_text`", "kratka objava"):
+    for niz in ("`story.linkedin_text`", "`languages.en.linkedin_text`", "kratka objava", "`schedule.publish_at`"):
         assert niz in korak11, niz
+
+
+def test_korak_9_najzgodnejsi_cas_iz_urnik_py():
+    korak9 = _korak_objave(9)
+    for niz in ("python3 veje/nika/scripts/urnik.py", "`publish_at`", "`linkedin_date`", "četrt ure",
+                "Prva ponujena možnost", "Prejšnjega časa od izpisanega `publish_at` ne sprejmeš"):
+        assert niz in korak9, niz
+    assert "urnik.py` poženi znova" in _korak_objave(11)
+    assert "urnik.py` poženi znova" in _korak_objave(12)
+
+
+def test_korak_11_sporocilo_s_povezavami_pred_vprasanjem():
+    korak11 = _korak_objave(11)
+    sporocilo, vprasanje = korak11.split("Nato pojavno vprašanje")
+    assert korak11.index("navadno sporočilo") < korak11.index("Nato pojavno vprašanje")
+    for niz in ("[SL osnutek](editor_url)", "[HR osnutek](editor_url)", "[EN osnutek](editor_url)",
+                "`_run.hubspot_posts`", "`story.linkedin_text`", "`languages.en.linkedin_text`"):
+        assert niz in sporocilo, niz
+    vprasanje = vprasanje.split("Ob »Ne«")[0]
+    for niz in ("brez URL-jev", "Da, razporedi", "Ne, treba je popraviti"):
+        assert niz in vprasanje, niz
+    assert "editor_url" not in vprasanje
+    assert "samo za jezike, ki še niso »Da«" in korak11
+    assert "najprej znova pošlji sporočilo" in korak11
+
+
+def test_korak_12_linkedin_po_dejanskem_stanju():
+    korak12 = _korak_objave(12)
+    for niz in ("search_workflows", "cC1okNFo5bwsLq5D", "`active`", "`active: true`", "`active: false`",
+                "NE bosta objavljeni", "Nikoli ne trdi, da LinkedIn objavi sam"):
+        assert niz in korak12, niz
+    assert "LinkedIn objavi `cf-nika-linkedin` ob 7.30 sam." not in VEJA.read_text(encoding="utf-8")
 
 
 def test_meta_vodi_na_korak_9():
