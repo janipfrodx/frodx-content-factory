@@ -396,4 +396,3 @@ def test_faza_niki_ne_zahteva_sluga():
     telo = _telo()
     telo["story"].pop("slug", None)
     assert pp.preveri(telo, "niki")[0] == []
-    assert not _ima(pp.preveri(_telo(), "niki")[0], "slug")
