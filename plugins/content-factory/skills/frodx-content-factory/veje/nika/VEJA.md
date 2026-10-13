@@ -33,7 +33,7 @@ Ne sem: Igorjeva kolumna ali blog brez omembe Nike (veja kolumna) in novičnik (
 
 ## Koraki
 
-Gate je pri korakih 1-4, 6-9 in 11; koraki 5, 10 in 12 tečejo brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
+Gate je pri korakih 1, 2, 4, 6-9 in 11; koraki 3, 5, 10 in 12 tečejo brez vprašanja. Tek nastane ob gate-u koraka 1, ko je novost potrjena:
 
 ```bash
 python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
@@ -43,8 +43,8 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 |---|---|---|
 | 1 Novost | Igor prilepi novost iz maila (naslov, opis, status). Pravila so v podrazdelku »Korak 1«. | **da**: je to novost, ki jo pišemo. Nato `init_run.py`, iz prilepljenega izpolni `source` in `_run.kandidat` |
 | 2 Kartica | Javni članek na `knowledge.hubspot.com` po naslovu novosti, prebran z `web_fetch`. Kartica po `vendor/nika-update-writer/references/vir.md`, predlog dejavnosti in dileme (`vendor/nika-update-writer/references/vertikale.md`). Pravila so v podrazdelku »Korak 2«. | **da**: kartica, dejavnost, dilema; Igor sme dodati svoj vnos |
-| 3 Zgodba | Pisec, njegovi koraki 6-8, presoja po njegovem koraku 5: z Igorjevim vnosom ali brez njega iz `nacela.md`. `check.py --blog`, razvrstitev trditev, ocena po `vendor/nika-update-writer/references/rubrika.md`; LinkedIn je kratka objava. Pravila so v podrazdelku »Korak 3«. | **da**: Igor prebere zgodbo za blog, kratko LinkedIn objavo, trditve, oznake `[PREVERI]` in oceno |
-| 4 Kritika | `frodx-critique-loop`, vhod po razdelku »Skupni koraki«; nato znova `check.py --blog` | **da**: popravljena zgodba |
+| 3 Zgodba | Pisec, njegovi koraki 6-8, presoja po njegovem koraku 5: z Igorjevim vnosom ali brez njega iz `nacela.md`. `check.py --blog`, razvrstitev trditev, ocena po `vendor/nika-update-writer/references/rubrika.md`; LinkedIn je kratka objava. Pravila so v podrazdelku »Korak 3«. | brez vprašanja: zgodba gre takoj v kritiko |
+| 4 Kritika | `frodx-critique-loop`, vhod po razdelku »Skupni koraki«; nato znova `check.py --blog`. Pravila so v podrazdelku »Korak 4«. | **da**: Igor prvič prebere zgodbo, po kritiki: blog, kratko LinkedIn objavo, trditve, oznake `[PREVERI]`, oceno in izid kritike; »v redu« ali »popravi« |
 | 5 Oddaja Niki | Zavihek v Docu in `cf-deliver-nika`, razdelek »Oddaja Niki« | brez vprašanja, Igorju poveš izid |
 | 6 Nadaljevanje | Razdelek »Nadaljevanje« | **da**: Nikine spremembe in odločitev |
 | 7 Transkreacija | razdelek »Transkreacija« | **da**: EN in HR (+ ocena audita za oba jezika) |
@@ -83,10 +83,18 @@ python3 scripts/init_run.py --veja nika "<naslov novosti>" runs
 - `story.linkedin_text` je kratka objava po standardu kolumne `veje/kolumna/vendor/igor-column-writer/references/social-posts.md` (3-4 kratke vrstice, brez povezave in brez oznake zanjo), v Nikinem glasu, o isti novosti. Pisčevega pravila »isto besedilo za blog in LinkedIn« ne uporabiš. Preveri jo `preveri_paket.py`.
 - Prejšnje zgodbe v `runs/<tek>/prev/` so zadnje tri objave z oznako rubrike »HubSpot z Niko« (SL), ki jih dobiš prek HubSpot konektorja, vsaka kot `.md`. Če je objav s to oznako manj kot tri, ima mapa toliko zgodb, kolikor jih je (morda nobene). Primere iz `vendor/nika-update-writer/references/primeri/` `check.py` primerja sam.
 - Napaka `check.py`, nerazvrščena trditev ali nova zmožnost brez URL-ja ustavi paket. Opozorila `check.py` zapiši v `warnings`.
-- Pri oceni pod 9,0 zgodbo enkrat revidiraj in povej, kaj manjka. Na gate-u Igor odloči, ali gre naprej.
+- Pri oceni pod 9,0 zgodbo enkrat revidiraj, preden gre v kritiko; kaj manjka, poveš Igorju na gate-u koraka 4.
+- Korak 3 nima gate-a: po `check.py` in oceni gre zgodba takoj v kritiko (korak 4). Napaka, ki ustavi paket, ustavi tudi kritiko; povej jo Igorju.
 - Presoja, ki je ne pokrije nobeno načelo in je Igor ne poda, ima `origin: skill`. Dilemo zapiši kot vprašanje za Niko v `preveri`, ne kot njeno odločitev.
 - Vsaka oznaka `[PREVERI: ...]` v besedilu ima svojo vrstico v `preveri`. Odprta oznaka ustavi korak 6.
 - Besedilo nima vrstice `---`, ker bi `check.py` preveril samo del za njo.
+
+### Korak 4
+
+- Kritika teče brez vprašanja pred njo. Po zadnjem krogu znova `check.py --blog` in ocena po `rubrika.md` na popravljeni zgodbi.
+- Gate: pokaži zgodbo za blog, kratko LinkedIn objavo, trditve, oznake `[PREVERI]`, oceno in izid kritike (število krogov, sprejete in zavrnjene pripombe, morebiten padel ocenjevalec). Igor izbere »v redu« ali »popravi«.
+- »Popravi«: Igorjeve popravke vpiši z `besedilo.py vpis`, znova `check.py --blog` in pokaži znova. Igorjevi popravki ne gredo v nov krog kritike.
+- Po »v redu« gre tek na korak 5 (»Oddaja Niki«).
 
 ### Korak 8
 

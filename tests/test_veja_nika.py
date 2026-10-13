@@ -98,8 +98,18 @@ def test_korak_2_dejstva_iz_besedila_clanka():
 
 
 def test_koraki_do_nadaljevanja():
-    for n, gate in ((1, True), (2, True), (3, True), (4, True), (5, False), (6, True)):
+    for n, gate in ((1, True), (2, True), (3, False), (4, True), (5, False), (6, True)):
         assert ("**da**" in _vrstica_koraka(n)) is gate, n
+
+
+def test_igor_zgodbo_vidi_sele_po_kritiki():
+    korak_3 = _razdelek("Koraki").split("### Korak 3")[1].split("### Korak 4")[0]
+    assert "takoj v kritiko" in korak_3
+    korak_4 = _razdelek("Koraki").split("### Korak 4")[1].split("### Korak 8")[0]
+    for niz in ("izid kritike", "»popravi«", "ne gredo v nov krog", "Oddaja Niki"):
+        assert niz in korak_4, niz
+    kritika = (DEBLO.parent / "frodx-critique-loop" / "SKILL.md").read_text(encoding="utf-8")
+    assert "takoj po koraku 3" in kritika
 
 
 def test_korak_1_igor_prilepi_novost():

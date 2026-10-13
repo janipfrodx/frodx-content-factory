@@ -38,6 +38,8 @@ Skilli `igor-column-writer`, `frodx-transcreation`, `frodx-key-visual`, `frodx-n
 
 ## Različice
 
+0.10.2: veja nika: zgodba gre po pisanju takoj v kritiko (GPT in Gemini); Igor jo prvič vidi po kritiki, en gate namesto dveh.
+
 0.10.1: veja nika: najzgodnejši čas bloga je zdaj + 15 minut, zaokroženo na četrt ure (urnik.py); povezave na osnutke v koraku 11 v sporočilu pred vprašanjem; po razporedu LinkedIn po dejanskem stanju cf-nika-linkedin.
 
 0.10.0: veja nika do konca po poti kolumne: transkreacija v EN in HR, meta podatki (kampanja, oznake, naslovnice), osnutki in razpored na HubSpot blogu prek cf-nika-publish, LinkedIn objava prek cf-nika-linkedin; nadaljevanje po osnutkih v novem chatu.
